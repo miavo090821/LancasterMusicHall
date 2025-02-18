@@ -1,4 +1,4 @@
-package com.lancaster.marketing;
+package main.java.com.lancaster.marketing;
 
 import java.util.Map;
 

@@ -1,7 +1,5 @@
 package com.lancaster.marketing;
 
-package com.lancaster.marketing;
-
 import com.lancaster.operations.modules.CalendarModule;
 import com.lancaster.operations.modules.RoomConfigurationSystem;
 import com.lancaster.operations.modules.IncomeTracker;
