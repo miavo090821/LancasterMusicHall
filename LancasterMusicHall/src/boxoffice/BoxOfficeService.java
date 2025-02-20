@@ -5,102 +5,75 @@ import operations.entities.FinancialRecord;
 import operations.entities.Seat;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BoxOfficeService implements BoxOfficeInterface {
+
+    private final Map<Integer, Booking> bookings = new HashMap<>(); // Store bookings in memory
+    private final FinancialRecord financialRecord = new FinancialRecord(1000.0, 500.0, 500.0); // Example financial data
+
+    public BoxOfficeService() {
+        // Populate some sample data
+        List<Seat> seats = List.of(
+                new Seat('A', 1, Seat.Type.REGULAR),
+                new Seat('A', 2, Seat.Type.REGULAR),
+                new Seat('A', 3, Seat.Type.WHEELCHAIR)
+        );
+
+        bookings.put(1, new Booking(1, "Concert A", LocalDate.of(2025, 3, 1), LocalDate.of(2025, 3, 1), "Main Hall", 50, 5000, seats));
+        bookings.put(2, new Booking(2, "Theatre B", LocalDate.of(2025, 3, 2), LocalDate.of(2025, 3, 2), "Theatre 1", 30, 3000, seats));
+    }
 
     // --- Calendar Access ---
     @Override
     public List<Booking> getBookingsByDateRange(LocalDate startDate, LocalDate endDate) {
-        // Simulate fetching bookings within the date range
-        // In a real implementation, this would query a database or external system
-        return List.of(
-            new Booking(
-                    1,
-                    "Hello",
-                    "2025-03-01",
-                    "2025-03-02",
-                    "Hall",
-                    10,
-                    1000,
-                    List.of(
-                            new Seat(
-                                    'a',
-                                    1,
-                                    Seat.Type.REGULAR
-                            ),
-                            new Seat(
-                                    'a',
-                                    2,
-                                    Seat.Type.REGULAR
-                            ),
-                            new Seat(
-                                    'a',
-                                    3,
-                                    Seat.Type.WHEELCHAIR
-                            )
-                    )
-
-            ),
-            new Booking(
-                    1,
-                    "Hello 2",
-                    "2025-03-01",
-                    "2025-03-02",
-                    "Hall",
-                    10,
-                    1000,
-                    List.of(
-                            new Seat(
-                                    'a',
-                                    1,
-                                    Seat.Type.REGULAR
-                            ),
-                            new Seat(
-                                    'a',
-                                    2,
-                                    Seat.Type.REGULAR
-                            ),
-                            new Seat(
-                                    'a',
-                                    3,
-                                    Seat.Type.WHEELCHAIR
-                            )
-                    )
-            )
-        );
+        return bookings.values().stream()
+                .filter(booking -> !booking.getStartDate().isBefore(startDate) && !booking.getStartDate().isAfter(endDate))
+                .collect(Collectors.toList());
     }
 
     @Override
     public boolean notifyBookingChanges(int bookingId, Booking updatedDetails) {
-        // Simulate notifying the Box Office of booking changes
-        System.out.println("Notified Box Office of changes to booking ID " + bookingId);
-        return true; // Assume notification is always successful
+        if (!bookings.containsKey(bookingId)) {
+            System.err.println("Booking ID not found: " + bookingId);
+            return false;
+        }
+        bookings.put(bookingId, updatedDetails);
+        System.out.println("Booking updated successfully: " + bookingId);
+        return true;
     }
 
     // --- Sales Monitoring ---
     @Override
     public FinancialRecord getSalesDashboardData() {
-        // Simulate fetching sales dashboard data
-        return new FinancialRecord(200.0, 100.0, 100.0); // 1000.0, 500.0, 500.0 Example revenue, cost, and profit
+        return financialRecord; // Return stored financial data
     }
 
     // --- Revenue Info ---
     @Override
     public FinancialRecord getRevenueBreakdownForBooking(int bookingId) {
-        // Simulate fetching revenue breakdown for a booking
-        return new FinancialRecord(200.0, 100.0, 100.0); //  Example revenue, cost, and profit
+        if (!bookings.containsKey(bookingId)) {
+            System.err.println("Invalid booking ID: " + bookingId);
+            return new FinancialRecord(0, 0, 0);
+        }
+        return financialRecord; // Ideally, calculate per-booking revenue
     }
 
+    // --- Seating Plans ---
     @Override
     public List<Seat> getSeatingPlanForBooking(int bookingId) {
-        return List.of();
+        return bookings.containsKey(bookingId) ? bookings.get(bookingId).getSeats() : Collections.emptyList();
     }
 
     @Override
     public boolean updateSeatingPlan(int bookingId, List<Seat> updatedSeats) {
-        return false;
+        if (!bookings.containsKey(bookingId)) {
+            System.err.println("Booking ID not found: " + bookingId);
+            return false;
+        }
+        bookings.get(bookingId).setSeats(updatedSeats);
+        System.out.println("Seating plan updated for booking ID " + bookingId);
+        return true;
     }
-
-
 }

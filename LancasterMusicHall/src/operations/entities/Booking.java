@@ -1,19 +1,19 @@
 package operations.entities;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public class Booking {
-     int bookingId;
-     String title;
-     String dateStart;
-     String dateEnd;
-     String location;
-     int price;
-     int capacity;
-     List<Seat> seatingPlan;  // List of seats in the seating plan
+    private int bookingId;
+    private String title;
+    private LocalDate dateStart;
+    private LocalDate dateEnd;
+    private String location;
+    private int price;
+    private int capacity;
+    private List<Seat> seatingPlan; // List of seats in the seating plan
 
-    public Booking(int bookingId, String title, String dateStart, String dateEnd,
+    public Booking(int bookingId, String title, LocalDate dateStart, LocalDate dateEnd,
                    String location, int price, int capacity, List<Seat> seatingPlan) {
         this.bookingId = bookingId;
         this.title = title;
@@ -25,5 +25,17 @@ public class Booking {
         this.seatingPlan = seatingPlan;
     }
 
-    // Constructors, Getters, Setters...
+    public LocalDate getStartDate() {
+        return dateStart;
+    }
+
+    public List<Seat> getSeats() {
+        return seatingPlan;
+    }
+
+    public void setSeats(List<Seat> newSeats) {
+        this.seatingPlan = newSeats;
+    }
+
+    // Getters and Setters
 }

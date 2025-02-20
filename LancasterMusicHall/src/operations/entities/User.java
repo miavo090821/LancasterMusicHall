@@ -7,12 +7,12 @@ public class User {
     private String role;
     private String password;
 
-    public User(int i, String aliceJohnson, String mail, String operations, String pass123) {
-        userId = i;
-        fullName = aliceJohnson;
-        email = mail;
-        role = operations;
-        password = pass123;
+    public User(int userId, String fullName, String email, String role, String password) {
+        this.userId = userId;
+        this.fullName = fullName;
+        this.email = email;
+        this.role = role;
+        this.password = password;
     }
 
     // Constructors, Getters, Setters...

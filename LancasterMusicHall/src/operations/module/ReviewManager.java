@@ -1,4 +1,4 @@
-package com.lancaster.operations.module;
+package operations.module;
 
 import operations.entities.Review;
 
