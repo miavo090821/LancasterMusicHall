@@ -1,4 +1,4 @@
-package com.lancaster.operations.module;
+package operations.module;
 
 import operations.entities.FinancialRecord;
 
@@ -11,4 +11,8 @@ public class IncomeTracker {
     public double calculateProfit(int bookingId) { /* ... */ return 0.0; }
     public double getTotalRevenueForPeriod(String startDate, String endDate) { /* ... */ return 0.0; }
     public List<FinancialRecord> getAllRecords() { /* ... */ return null; }
+
+    public String getRevenueForActivity(int activityId) {
+        return null;
+    }
 }

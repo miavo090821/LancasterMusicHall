@@ -5,7 +5,12 @@ public class Activity {
     private String name;             // e.g., "Concert", "Meeting", "Film Show"
     private String startDate;        // Date Field
     private String endDate;          // Date Field
-    private String type;             // e.g., "Show", "Film", "Meeting"
+    private Type type;             // e.g., "Show", "Film", "Meeting"
+
+    // Enum for seat types
+    public enum Type {
+        SHOW, FILM, MEETING
+    }
 
     // Link to Meeting, Show, or Film if needed:
     private Meeting meeting;         // If it's a Meeting

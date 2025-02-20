@@ -3,8 +3,8 @@ package marketing;
 
 import operations.entities.Booking;
 import operations.module.CalendarModule;
-import operations.modules.IncomeTracker;
-import operations.modules.RoomConfigurationSystem;
+import operations.module.IncomeTracker;
+import operations.module.RoomConfigurationSystem;
 
 import java.util.List;
 import java.util.Map;
