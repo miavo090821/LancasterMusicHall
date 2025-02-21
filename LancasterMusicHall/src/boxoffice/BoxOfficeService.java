@@ -44,22 +44,6 @@ public class BoxOfficeService implements BoxOfficeInterface {
         return true;
     }
 
-    // --- Sales Monitoring ---
-    @Override
-    public FinancialRecord getSalesDashboardData() {
-        return financialRecord; // Return stored financial data
-    }
-
-    // --- Revenue Info ---
-    @Override
-    public FinancialRecord getRevenueBreakdownForBooking(int bookingId) {
-        if (!bookings.containsKey(bookingId)) {
-            System.err.println("Invalid booking ID: " + bookingId);
-            return new FinancialRecord(0, 0, 0);
-        }
-        return financialRecord; // Ideally, calculate per-booking revenue
-    }
-
     // --- Seating Plans ---
     @Override
     public List<Seat> getSeatingPlanForBooking(int bookingId) {
@@ -76,4 +60,32 @@ public class BoxOfficeService implements BoxOfficeInterface {
         System.out.println("Seating plan updated for booking ID " + bookingId);
         return true;
     }
+
+    @Override
+    public List<Seat> getHeldAccessibleSeats(int bookingId) {
+        // Fetch the seating plan for the given booking
+        List<Seat> seatingPlan = getSeatingPlanForBooking(bookingId);
+
+        // Filter the seats to return only those designated as wheelchair accessible or companion seats
+        return seatingPlan.stream()
+                .filter(seat -> seat.isWheelchairAccessible() || seat.isCompanionSeat())
+                .toList();
+    }
+
 }
+
+//    // --- Sales Monitoring ---
+//    @Override
+//    public FinancialRecord getSalesDashboardData() {
+//        return financialRecord; // Return stored financial data
+//    }
+//
+//    // --- Revenue Info ---
+//    @Override
+//    public FinancialRecord getRevenueBreakdownForBooking(int bookingId) {
+//        if (!bookings.containsKey(bookingId)) {
+//            System.err.println("Invalid booking ID: " + bookingId);
+//            return new FinancialRecord(0, 0, 0);
+//        }
+//        return financialRecord; // Ideally, calculate per-booking revenue
+//    }
