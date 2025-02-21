@@ -16,9 +16,9 @@ public class BoxOfficeService implements BoxOfficeInterface {
     public BoxOfficeService() {
         // Populate some sample data
         List<Seat> seats = List.of(
-                new Seat('A', 1, Seat.Type.REGULAR),
-                new Seat('A', 2, Seat.Type.REGULAR),
-                new Seat('A', 3, Seat.Type.WHEELCHAIR)
+                new Seat('A', 1, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
+                new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
+                new Seat('A', 3, Seat.Type.WHEELCHAIR, Seat.Status.AVAILABLE)
         );
 
         bookings.put(1, new Booking(1, "Concert A", LocalDate.of(2025, 3, 1), LocalDate.of(2025, 3, 1), "Main Hall", 50, 5000, seats));

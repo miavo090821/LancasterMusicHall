@@ -37,5 +37,17 @@ public class Booking {
         this.seatingPlan = newSeats;
     }
 
-    // Getters and Setters
+    @Override
+    public String toString() {
+        return "Booking{" +
+                "ID=" + bookingId +
+                ", Title='" + title + '\'' +
+                ", Start Date=" + dateStart +
+                ", End Date=" + dateEnd +
+                ", Location='" + location + '\'' +
+                ", Price=" + price +
+                ", Capacity=" + capacity +
+                ", Seats=" + seatingPlan.size() +
+                '}';
+    }
 }

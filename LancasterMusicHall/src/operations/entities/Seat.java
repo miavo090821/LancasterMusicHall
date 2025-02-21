@@ -1,24 +1,36 @@
 package operations.entities;
 
 public class Seat {
+    char row;          // Row number of the seat
+    int number;       // Seat number within the row
+    Type type;      // Type of seat
+    Status status;      // Type of seat
+
+
+    // Enum for seat types
     public enum Type {
-        REGULAR, VIP, WHEELCHAIR, RESTRICTED_VIEW
+        REGULAR, RESTRICTED, WHEELCHAIR
     }
 
-    private char row;
-    private int number;
-    private Type type;
-    private boolean isAvailable;
+    // Enum for seat status
+    public enum Status {
+        AVAILABLE, SOLD, HELD
+    }
 
-    public Seat(char row, int number, Type type) {
+    // Constructor
+    public Seat(char row, int number, Type type, Status status) {
         this.row = row;
         this.number = number;
         this.type = type;
-        this.isAvailable = true;
+        this.status = status;
     }
-
-    public void bookSeat() { this.isAvailable = false; }
-    public void releaseSeat() { this.isAvailable = true; }
-
-    // Getters and Setters
+    @Override
+    public String toString() {
+        return "Seat{" +
+                "row=" + row +
+                ", number=" + number +
+                ", type='" + type + '\'' +
+                ", status='" + status + '\'' +
+                '}'+'\n';
+    }
 }

@@ -10,4 +10,16 @@ public class Customer {
     private String phoneNumber;
 
     // Constructors, Getters, Setters...
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "ID=" + customerId +
+                ", full name='" + fullName + '\'' +
+                ", email=" + email +
+                ", phone number=" + phoneNumber +
+                ", date of birth='" + dob + '\'' +
+                ", discount=" + discount +
+                ", paymentDetails=" + paymentDetails +
+                '}';
+    }
 }

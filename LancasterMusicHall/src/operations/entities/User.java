@@ -16,4 +16,14 @@ public class User {
     }
 
     // Constructors, Getters, Setters...
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", fullName='" + fullName + '\'' +
+                ", email='" + email + '\'' +
+                ", role='" + role + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
 }

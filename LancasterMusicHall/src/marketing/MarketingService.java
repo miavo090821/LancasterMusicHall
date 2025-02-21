@@ -1,6 +1,5 @@
 package marketing;
 
-
 import operations.entities.Booking;
 import operations.module.CalendarModule;
 import operations.module.IncomeTracker;

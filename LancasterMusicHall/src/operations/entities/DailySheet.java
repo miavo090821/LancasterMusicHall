@@ -8,5 +8,4 @@ public class DailySheet {
     private double totalRevenue;
     private String configurations;   // JSON or text about room setups
 
-    // Constructors, Getters, Setters...
 }

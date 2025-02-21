@@ -17,5 +17,14 @@ public class Activity {
     private Show show;               // If it's a Show
     private Film film;               // If it's a Film
 
-    // Constructors, Getters, Setters...
+    @Override
+    public String toString() {
+        return "Activity{" +
+                "ID=" + activityId +
+                ", Name='" + name + '\'' +
+                ", Start Date=" + startDate +
+                ", End Date=" + endDate +
+                ", Type='" + type + '\'' +
+                '}';
+    }
 }

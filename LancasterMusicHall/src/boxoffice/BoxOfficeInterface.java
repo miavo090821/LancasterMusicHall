@@ -30,7 +30,7 @@ public interface BoxOfficeInterface {
     /**
      * Notify the Box Office of any changes to bookings (e.g., cancellations, rescheduling).
      *
-     * @param bookingId      The ID of the booking.
+     * @param bookingId The ID of the booking.
      * @param updatedDetails The updated booking details.
      * @return True if the update was successfully communicated.
      */
@@ -40,7 +40,6 @@ public interface BoxOfficeInterface {
 
     /**
      * Provides real-time or near real-time sales status.
-     *
      * @return A summary (could be JSON or a custom object) of ticket sales, seats sold, revenue, etc.
      */
     FinancialRecord getSalesDashboardData();
