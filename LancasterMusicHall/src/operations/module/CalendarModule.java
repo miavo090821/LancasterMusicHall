@@ -5,6 +5,7 @@ import operations.entities.Activity;
 import operations.entities.Venue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CalendarModule {
@@ -14,15 +15,35 @@ public class CalendarModule {
     public CalendarModule() {
         bookings = new ArrayList<>();
         // Sample data
+
         // Create an Activity and a Venue with all required fields
         Activity activity1 = new Activity(1, "Concert");
         Venue venue1 = new Venue(1, "Main Hall", "Hall", 300);
-        Booking booking1 = new Booking(101, "2025-03-01", "2025-03-01", activity1, venue1, false, null);
+        // Use an empty list (or a sample seat list) for seats
+        Booking booking1 = new Booking(
+                101,
+                "2025-03-01",
+                "2025-03-01",
+                activity1,
+                venue1,
+                false,
+                null,
+                Collections.emptyList()
+        );
         bookings.add(booking1);
 
         Activity activity2 = new Activity(2, "Film Screening");
         Venue venue2 = new Venue(2, "Small Hall", "Hall", 150);
-        Booking booking2 = new Booking(102, "2025-03-02", "2025-03-02", activity2, venue2, true, "2025-03-29");
+        Booking booking2 = new Booking(
+                102,
+                "2025-03-02",
+                "2025-03-02",
+                activity2,
+                venue2,
+                true,
+                "2025-03-29",
+                Collections.emptyList()
+        );
         bookings.add(booking2);
     }
 
@@ -68,9 +89,23 @@ public class CalendarModule {
         Activity filmActivity = new Activity(filmId, "Film Screening");
         // Use Main Hall as default for film screenings
         Venue mainHall = new Venue(1, "Main Hall", "Hall", 300);
-        Booking newBooking = new Booking(200 + filmId, proposedDate, proposedDate, filmActivity, mainHall, false, null);
+        Booking newBooking = new Booking(
+                200 + filmId,
+                proposedDate,
+                proposedDate,
+                filmActivity,
+                mainHall,
+                false,
+                null,
+                Collections.emptyList()
+        );
         bookings.add(newBooking);
         System.out.println("Scheduled film booking: " + newBooking.getId());
         return true;
+    }
+
+    // Adds a new booking to the calendar
+    public void addBooking(Booking booking) {
+        bookings.add(booking);
     }
 }

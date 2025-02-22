@@ -1,20 +1,33 @@
 package operations.entities;
 
+import java.util.List;
+
 public class Booking {
-    private int id;  // Unique booking identifier
-    private String startDate;
-    private String endDate;
-    private Activity activity; // Associated activity (e.g., Concert, Film Screening)
-    private Venue venue;
-    private boolean held;
-    private String holdExpiryDate;
+    private int id;                    // Unique booking identifier
+    private String startDate;          // Start date as a String (e.g., "2025-03-01")
+    private String endDate;            // End date as a String
+    private Activity activity;         // Associated Activity object
+    private Venue venue;               // Associated Venue object
+    private boolean held;              // Indicates if the booking is on hold
+    private String holdExpiryDate;     // Expiry date for the hold (or null if not applicable)
+    private List<Seat> seats;          // List of seats associated with the booking
 
     // Default constructor
     public Booking() {
     }
 
-    // Parameterized constructor
-    public Booking(int id, String startDate, String endDate, Activity activity, Venue venue, boolean held, String holdExpiryDate) {
+    /**
+     * Parameterized constructor with all fields.
+     * @param id Unique booking ID.
+     * @param startDate Start date as a String.
+     * @param endDate End date as a String.
+     * @param activity The associated Activity.
+     * @param venue The associated Venue.
+     * @param held Whether the booking is on hold.
+     * @param holdExpiryDate The hold expiry date (or null).
+     * @param seats List of seats for the booking.
+     */
+    public Booking(int id, String startDate, String endDate, Activity activity, Venue venue, boolean held, String holdExpiryDate, List<Seat> seats) {
         this.id = id;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -22,6 +35,7 @@ public class Booking {
         this.venue = venue;
         this.held = held;
         this.holdExpiryDate = holdExpiryDate;
+        this.seats = seats;
     }
 
     // Getters and Setters
@@ -50,24 +64,16 @@ public class Booking {
         this.endDate = endDate;
     }
 
-    // --- Activity Functions ---
-    /**
-     * Returns the associated Activity object.
-     */
     public Activity getActivity() {
         return activity;
     }
 
-    /**
-     * Sets the associated Activity object.
-     */
     public void setActivity(Activity activity) {
         this.activity = activity;
     }
 
     /**
      * Returns the name of the associated Activity.
-     * @return The activity name, or "N/A" if no activity is associated.
      */
     public String getActivityName() {
         return (activity != null) ? activity.getName() : "N/A";
@@ -75,13 +81,11 @@ public class Booking {
 
     /**
      * Returns the ID of the associated Activity.
-     * @return The activity ID if available, or -1 if no activity is associated.
      */
     public int getActivityID() {
         return (activity != null) ? activity.getActivityId() : -1;
     }
 
-    // --- Venue Functions ---
     public Venue getVenue() {
         return venue;
     }
@@ -90,7 +94,6 @@ public class Booking {
         this.venue = venue;
     }
 
-    // --- Held & Expiry Functions ---
     public boolean isHeld() {
         return held;
     }
@@ -107,6 +110,14 @@ public class Booking {
         this.holdExpiryDate = holdExpiryDate;
     }
 
+    public List<Seat> getSeats() {
+        return seats;
+    }
+
+    public void setSeats(List<Seat> seats) {
+        this.seats = seats;
+    }
+
     @Override
     public String toString() {
         return "Booking{" +
@@ -117,6 +128,7 @@ public class Booking {
                 ", venue=" + (venue != null ? venue.getName() : "N/A") +
                 ", held=" + held +
                 ", holdExpiryDate='" + holdExpiryDate + '\'' +
+                ", seats=" + seats +
                 '}';
     }
 }

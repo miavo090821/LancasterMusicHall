@@ -1,8 +1,10 @@
 package boxoffice;
 
+import operations.entities.Activity;
 import operations.entities.Booking;
 import operations.entities.FinancialRecord;
 import operations.entities.Seat;
+import operations.entities.Venue;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -11,7 +13,7 @@ import java.util.stream.Collectors;
 public class BoxOfficeService implements BoxOfficeInterface {
 
     private final Map<Integer, Booking> bookings = new HashMap<>(); // Store bookings in memory
-    private final FinancialRecord financialRecord = new FinancialRecord(1000.0, 500.0, 500.0); // Example financial data
+    private final FinancialRecord financialRecord;
 
     public BoxOfficeService() {
         // Populate some sample data
@@ -21,15 +23,45 @@ public class BoxOfficeService implements BoxOfficeInterface {
                 new Seat('A', 3, Seat.Type.WHEELCHAIR, Seat.Status.AVAILABLE)
         );
 
-        bookings.put(1, new Booking(1, "Concert A", LocalDate.of(2025, 3, 1), LocalDate.of(2025, 3, 1), "Main Hall", 50, 5000, seats));
-        bookings.put(2, new Booking(2, "Theatre B", LocalDate.of(2025, 3, 2), LocalDate.of(2025, 3, 2), "Theatre 1", 30, 3000, seats));
+        // Create sample bookings using the new Booking constructor:
+        // Booking(int id, String startDate, String endDate, Activity activity, Venue venue, boolean held, String holdExpiryDate, List<Seat> seats)
+        Booking booking1 = new Booking(
+                1,
+                LocalDate.of(2025, 3, 1).toString(),
+                LocalDate.of(2025, 3, 1).toString(),
+                new Activity(1, "Concert A"),
+                new Venue(1, "Main Hall", "Hall", 300),
+                false,
+                null,
+                seats
+        );
+        Booking booking2 = new Booking(
+                2,
+                LocalDate.of(2025, 3, 2).toString(),
+                LocalDate.of(2025, 3, 2).toString(),
+                new Activity(2, "Theatre B"),
+                new Venue(2, "Theatre 1", "Theatre", 200),
+                false,
+                null,
+                seats
+        );
+        bookings.put(1, booking1);
+        bookings.put(2, booking2);
+
+        // Initialize financialRecord using the updated FinancialRecord constructor:
+        // FinancialRecord(int financialRecordId, Booking booking, double revenue, double cost, String date)
+        // We'll use booking1 as our sample booking.
+        financialRecord = new FinancialRecord(1, booking1, 1000.0, 500.0, booking1.getStartDate());
     }
 
     // --- Calendar Access ---
     @Override
     public List<Booking> getBookingsByDateRange(LocalDate startDate, LocalDate endDate) {
         return bookings.values().stream()
-                .filter(booking -> !booking.getStartDate().isBefore(startDate) && !booking.getStartDate().isAfter(endDate))
+                .filter(booking -> {
+                    LocalDate bookingDate = LocalDate.parse(booking.getStartDate());
+                    return (!bookingDate.isBefore(startDate)) && (!bookingDate.isAfter(endDate));
+                })
                 .collect(Collectors.toList());
     }
 
@@ -67,25 +99,12 @@ public class BoxOfficeService implements BoxOfficeInterface {
         List<Seat> seatingPlan = getSeatingPlanForBooking(bookingId);
 
         // Filter the seats to return only those designated as wheelchair accessible or companion seats
-        return seatingPlan.stream()
-                .filter(seat -> seat.isWheelchairAccessible() || seat.isCompanionSeat())
-                .toList();
+        List<Seat> filteredSeats = new ArrayList<>();
+        for (Seat seat : seatingPlan) {
+            if (seat.isWheelchairAccessible() || seat.isCompanionSeat()) {
+                filteredSeats.add(seat);
+            }
+        }
+        return filteredSeats;
     }
-
 }
-
-//    // --- Sales Monitoring ---
-//    @Override
-//    public FinancialRecord getSalesDashboardData() {
-//        return financialRecord; // Return stored financial data
-//    }
-//
-//    // --- Revenue Info ---
-//    @Override
-//    public FinancialRecord getRevenueBreakdownForBooking(int bookingId) {
-//        if (!bookings.containsKey(bookingId)) {
-//            System.err.println("Invalid booking ID: " + bookingId);
-//            return new FinancialRecord(0, 0, 0);
-//        }
-//        return financialRecord; // Ideally, calculate per-booking revenue
-//    }
