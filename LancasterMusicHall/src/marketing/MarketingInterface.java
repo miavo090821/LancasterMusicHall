@@ -29,7 +29,7 @@ public interface MarketingInterface {
 
     // --- 3. Seating Plans ---
     /**
-     * get the seating plan for a specific
+     * get the seating plan for a specific activity or event.
      * @param activityId The ID of the activity.
      * @return a string showing the specified activity
      */

@@ -18,4 +18,8 @@ public class CalendarModule {
     public Booking getBookingById(int bookingId) {
         return null;
     }
+
+    public boolean scheduleFilm(int filmId, String proposedDate) {
+        return true;
+    }
 }

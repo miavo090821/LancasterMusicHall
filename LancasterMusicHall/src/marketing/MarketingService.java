@@ -26,7 +26,15 @@ public class MarketingService implements MarketingInterface {
     public String viewCalendar(String startDate, String endDate) {
         // Fetch bookings within the specified date range
         List<Booking> bookings = calendarModule.getBookingsForDate(startDate, endDate);
-        return "Formatted Calendar Data for " + startDate + " to " + endDate + ": " + bookings.toString();
+        StringBuilder calendarData = new StringBuilder();
+        for (Booking booking : bookings) {
+            calendarData.append("Booking ID: ").append(booking.getId())
+                    .append(", Activity: ").append(booking.getActivityName())
+                    .append(", Start Date: ").append(booking.getStartDate())
+                    .append(", End Date: ").append(booking.getEndDate())
+                    .append("\n");
+        }
+        return calendarData.toString();
     }
 
     @Override
@@ -46,21 +54,19 @@ public class MarketingService implements MarketingInterface {
     @Override
     public String getSeatingPlan(int activityId) {
         // Fetch seating plan for the specified activity
-        return "Seating Plan for activity " + activityId;
+        return roomConfigSystem.getSeatingPlan(activityId);
     }
 
     @Override
     public String getConfigurationDetails(int bookingId) {
-        // Step 1: Fetch the booking details
-        Booking booking = calendarModule.getBookingById(bookingId); // Assuming CalendarModule has this method
+        // Fetch the booking details
+        Booking booking = calendarModule.getBookingById(bookingId);
         if (booking == null) {
             return "Booking not found for ID: " + bookingId;
         }
 
-        // Step 2: Fetch the configuration details for the booking
+        // Fetch the configuration details for the booking
         String configuration = roomConfigSystem.getConfiguration(booking);
-
-        // Step 3: Return the configuration details
         return "Configuration details for booking ID " + bookingId + ":\n" + configuration;
     }
 
@@ -75,28 +81,27 @@ public class MarketingService implements MarketingInterface {
     @Override
     public String getUsageReports(String startDate, String endDate) {
         // Fetch usage reports for the specified date range
-        return "Usage report from " + startDate + " to " + endDate;
+        return incomeTracker.getUsageReport(startDate, endDate);
     }
 
     // --- 7. Communication on Held Spaces ---
     @Override
     public String getHeldSpaces() {
         // Fetch held spaces and their expiry details
-        return "List of held spaces with expiry details";
+        return roomConfigSystem.getHeldSpaces();
     }
 
     // --- 8. Film Showings ---
     @Override
     public boolean scheduleFilm(int filmId, String proposedDate) {
         // Schedule a film for the proposed date
-        System.out.println("Scheduling film " + filmId + " on " + proposedDate);
-        return true; // Assume scheduling is always successful
+        return calendarModule.scheduleFilm(filmId, proposedDate);
     }
 
     // --- 9. Daily Sheets ---
     @Override
     public String getDailySheet(String date) {
         // Fetch daily usage sheet for the specified date
-        return "Daily sheet for " + date;
+        return incomeTracker.getDailySheet(date);
     }
 }

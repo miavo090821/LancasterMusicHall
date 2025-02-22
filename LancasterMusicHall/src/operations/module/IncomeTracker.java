@@ -15,4 +15,12 @@ public class IncomeTracker {
     public String getRevenueForActivity(int activityId) {
         return null;
     }
+
+    public String getUsageReport(String startDate, String endDate) {
+        return null;
+    }
+
+    public String getDailySheet(String date) {
+        return null;
+    }
 }

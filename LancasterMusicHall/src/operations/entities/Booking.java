@@ -25,10 +25,6 @@ public class Booking {
         this.seatingPlan = seatingPlan;
     }
 
-    public LocalDate getStartDate() {
-        return dateStart;
-    }
-
     public List<Seat> getSeats() {
         return seatingPlan;
     }
@@ -49,5 +45,21 @@ public class Booking {
                 ", Capacity=" + capacity +
                 ", Seats=" + seatingPlan.size() +
                 '}';
+    }
+
+    public int getId() {
+        return bookingId;
+    }
+
+    public String getActivityName() {
+        return title;
+    }
+
+    public LocalDate getStartDate() {
+        return dateStart;
+    }
+
+    public LocalDate getEndDate() {
+        return dateEnd;
     }
 }
