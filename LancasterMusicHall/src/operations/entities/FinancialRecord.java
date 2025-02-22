@@ -1,30 +1,68 @@
 package operations.entities;
 
 public class FinancialRecord {
-    private int financialRecordId;   // ID field
-    private Booking booking;         // Tied to a specific booking
+    private int financialRecordId;
+    private Booking booking;
     private double revenue;
     private double cost;
-    private double profit;           // revenue - cost
-    private String date;             // Date Field
+    private double profit;
+    private String date;
 
-    public FinancialRecord(double revenue, double cost, double profit) {
+    public FinancialRecord() {}
+
+    public FinancialRecord(int financialRecordId, Booking booking, double revenue, double cost, String date) {
+        this.financialRecordId = financialRecordId;
+        this.booking = booking;
         this.revenue = revenue;
         this.cost = cost;
-        this.profit = profit;
-
-        System.out.println("The revenue: " + revenue + " and cost: " + cost + " and profit: " + profit);
+        this.profit = revenue - cost;
+        this.date = date;
     }
 
-    // Constructors, Getters, Setters...
-    @Override
-    public String toString() {
-        return "FinancialRecord{" +
-                "ID=" + financialRecordId +
-                ", revenue='" + revenue + '\'' +
-                ", cost=" + cost +
-                ", profit=" + profit +
-                ", date='" + date + '\'' +
-                '}';
+    // Getters and Setters
+    public int getFinancialRecordId() {
+        return financialRecordId;
+    }
+
+    public void setFinancialRecordId(int financialRecordId) {
+        this.financialRecordId = financialRecordId;
+    }
+
+    public Booking getBooking() {
+        return booking;
+    }
+
+    public void setBooking(Booking booking) {
+        this.booking = booking;
+    }
+
+    public double getRevenue() {
+        return revenue;
+    }
+
+    public void setRevenue(double revenue) {
+        this.revenue = revenue;
+        this.profit = this.revenue - this.cost;
+    }
+
+    public double getCost() {
+        return cost;
+    }
+
+    public void setCost(double cost) {
+        this.cost = cost;
+        this.profit = this.revenue - this.cost;
+    }
+
+    public double getProfit() {
+        return profit;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }

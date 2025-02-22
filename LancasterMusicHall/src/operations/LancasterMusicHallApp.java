@@ -2,10 +2,6 @@ package operations;
 
 import operations.entities.Booking;
 import operations.entities.User;
-import operations.module.CalendarModule;
-import operations.module.IncomeTracker;
-import operations.module.ReviewManager;
-import operations.module.RoomConfigurationSystem;
 
 import java.time.LocalDate;
 import java.util.List;

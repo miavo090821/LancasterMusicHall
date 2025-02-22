@@ -1,65 +1,122 @@
 package operations.entities;
 
-import java.time.LocalDate;
-import java.util.List;
-
 public class Booking {
-    private int bookingId;
-    private String title;
-    private LocalDate dateStart;
-    private LocalDate dateEnd;
-    private String location;
-    private int price;
-    private int capacity;
-    private List<Seat> seatingPlan; // List of seats in the seating plan
+    private int id;  // Unique booking identifier
+    private String startDate;
+    private String endDate;
+    private Activity activity; // Associated activity (e.g., Concert, Film Screening)
+    private Venue venue;
+    private boolean held;
+    private String holdExpiryDate;
 
-    public Booking(int bookingId, String title, LocalDate dateStart, LocalDate dateEnd,
-                   String location, int price, int capacity, List<Seat> seatingPlan) {
-        this.bookingId = bookingId;
-        this.title = title;
-        this.dateStart = dateStart;
-        this.dateEnd = dateEnd;
-        this.location = location;
-        this.price = price;
-        this.capacity = capacity;
-        this.seatingPlan = seatingPlan;
+    // Default constructor
+    public Booking() {
     }
 
-    public List<Seat> getSeats() {
-        return seatingPlan;
+    // Parameterized constructor
+    public Booking(int id, String startDate, String endDate, Activity activity, Venue venue, boolean held, String holdExpiryDate) {
+        this.id = id;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.activity = activity;
+        this.venue = venue;
+        this.held = held;
+        this.holdExpiryDate = holdExpiryDate;
     }
 
-    public void setSeats(List<Seat> newSeats) {
-        this.seatingPlan = newSeats;
+    // Getters and Setters
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    // --- Activity Functions ---
+    /**
+     * Returns the associated Activity object.
+     */
+    public Activity getActivity() {
+        return activity;
+    }
+
+    /**
+     * Sets the associated Activity object.
+     */
+    public void setActivity(Activity activity) {
+        this.activity = activity;
+    }
+
+    /**
+     * Returns the name of the associated Activity.
+     * @return The activity name, or "N/A" if no activity is associated.
+     */
+    public String getActivityName() {
+        return (activity != null) ? activity.getName() : "N/A";
+    }
+
+    /**
+     * Returns the ID of the associated Activity.
+     * @return The activity ID if available, or -1 if no activity is associated.
+     */
+    public int getActivityID() {
+        return (activity != null) ? activity.getActivityId() : -1;
+    }
+
+    // --- Venue Functions ---
+    public Venue getVenue() {
+        return venue;
+    }
+
+    public void setVenue(Venue venue) {
+        this.venue = venue;
+    }
+
+    // --- Held & Expiry Functions ---
+    public boolean isHeld() {
+        return held;
+    }
+
+    public void setHeld(boolean held) {
+        this.held = held;
+    }
+
+    public String getHoldExpiryDate() {
+        return holdExpiryDate;
+    }
+
+    public void setHoldExpiryDate(String holdExpiryDate) {
+        this.holdExpiryDate = holdExpiryDate;
     }
 
     @Override
     public String toString() {
         return "Booking{" +
-                "ID=" + bookingId +
-                ", Title='" + title + '\'' +
-                ", Start Date=" + dateStart +
-                ", End Date=" + dateEnd +
-                ", Location='" + location + '\'' +
-                ", Price=" + price +
-                ", Capacity=" + capacity +
-                ", Seats=" + seatingPlan.size() +
+                "id=" + id +
+                ", startDate='" + startDate + '\'' +
+                ", endDate='" + endDate + '\'' +
+                ", activity=" + (activity != null ? activity.getName() : "N/A") +
+                ", venue=" + (venue != null ? venue.getName() : "N/A") +
+                ", held=" + held +
+                ", holdExpiryDate='" + holdExpiryDate + '\'' +
                 '}';
-    }
-
-    public int getId() {
-        return bookingId;
-    }
-
-    public String getActivityName() {
-        return title;
-    }
-
-    public LocalDate getStartDate() {
-        return dateStart;
-    }
-
-    public LocalDate getEndDate() {
-        return dateEnd;
     }
 }

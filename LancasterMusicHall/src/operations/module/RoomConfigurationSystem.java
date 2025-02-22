@@ -2,28 +2,44 @@ package operations.module;
 
 import operations.entities.Booking;
 import operations.entities.DailySheet;
-import operations.entities.Seat;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class RoomConfigurationSystem {
-    // Handles specifying and scheduling room setup details
 
-    public void setConfiguration(Booking booking, String configurationDetails) { /* ... */ }
-    public String getConfiguration(Booking booking) { /* ... */ return ""; }
-    public DailySheet generateDailySheet(String date) { /* ... */ return null; }
-
+    // Returns a sample room availability map for a given date.
     public Map<String, String> getRoomAvailability(String date) {
-        return null;
+        Map<String, String> availability = new HashMap<>();
+        availability.put("Main Hall", "Available");
+        availability.put("Small Hall", "Booked");
+        availability.put("Rehearsal Room", "Available");
+        return availability;
     }
 
+    // Returns a sample seating plan for the specified activity.
     public String getSeatingPlan(int activityId) {
-        return null;
+        return "Seating plan for activity " + activityId + ": [A1, A2, A3, B1, B2, B3]";
     }
 
+    // Returns configuration details for the given booking.
+    public String getConfiguration(Booking booking) {
+        return "Configuration for booking " + booking.getId() +
+                ": Layout - Theatre style; Equipment - Standard sound system.";
+    }
+
+    // Returns a sample string listing held spaces with expiry details.
     public String getHeldSpaces() {
-        return null;
+        return "Held Spaces: Booking ID 102 (Small Hall) - Expires on 2025-03-29.";
+    }
+
+    // Generates a daily sheet (summary) for the given date.
+    public DailySheet generateDailySheet(String date) {
+        DailySheet sheet = new DailySheet();
+        sheet.setDate(date);
+        sheet.setBookings("Bookings on " + date + ": [Booking 101, Booking 102]");
+        sheet.setConfigurations("Configurations: Theatre style, standard equipment.");
+        sheet.setTotalRevenue(1500.00);
+        return sheet;
     }
 }

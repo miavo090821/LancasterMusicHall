@@ -1,34 +1,36 @@
 package operations.entities;
 
-import operations.entities.Activities.Film;
-import operations.entities.Activities.Meeting;
-import operations.entities.Activities.Show;
-
 public class Activity {
-    private int activityId;          // ID field
-    private String name;             // e.g., "Concert", "Meeting", "Film Show"
-    private String startDate;        // Date Field
-    private String endDate;          // Date Field
-    private Type type;             // e.g., "Show", "Film", "Meeting"
+    private int activityId;
+    private String name;
 
-    // Enum for seat types
-    public enum Type {
-        SHOW, FILM, MEETING
+    // Default constructor
+    public Activity() {
     }
 
-    // Link to Meeting, Show, or Film if needed:
-    private Meeting meeting;         // If it's a Meeting
-    private Show show;               // If it's a Show
-    private Film film;               // If it's a Film
+    // Parameterized constructor
+    public Activity(int activityId, String name) {
+        this.activityId = activityId;
+        this.name = name;
+    }
 
-    @Override
-    public String toString() {
-        return "Activity{" +
-                "ID=" + activityId +
-                ", Name='" + name + '\'' +
-                ", Start Date=" + startDate +
-                ", End Date=" + endDate +
-                ", Type='" + type + '\'' +
-                '}';
+    // Getter for activityId
+    public int getActivityId() {
+        return activityId;
+    }
+
+    // Setter for activityId
+    public void setActivityId(int activityId) {
+        this.activityId = activityId;
+    }
+
+    // Getter for name
+    public String getName() {
+        return name;
+    }
+
+    // Setter for name
+    public void setName(String name) {
+        this.name = name;
     }
 }
