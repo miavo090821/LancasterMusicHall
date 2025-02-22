@@ -15,17 +15,18 @@ public interface BoxOfficeInterface {
      * Get all bookings (shows, films, meetings, etc.) scheduled within a specific date range.
      * @param startDate The start of the date range.
      * @param endDate   The end of the date range.
-     * @return A list of bookings happening within this period, including:
+     * @return A list of bookings happening within this period, each booking has a:
      * - Title
      * - Date & Time
      * - Location (room/venue)
      * - Ticket price
-     * - Expected attendance
+     * - Capacity
+     * - Seating plan
      */
     List<Booking> getBookingsByDateRange(LocalDate startDate, LocalDate endDate);
 
     /**
-     * Notify the Box Office when a booking changes (e.g., a show is rescheduled or canceled).
+     * Notify the Box Office when a booking changes (e.g., if a show is rescheduled or canceled).
      * @param bookingId The ID of the booking being updated.
      * @param updatedDetails The new booking details.
      * @return True if the update was successful.
@@ -38,9 +39,9 @@ public interface BoxOfficeInterface {
      * Get the seating chart for a specific event.
      * @param bookingId The ID of the event.
      * @return A list of seats showing:
-     * - Seat numbers
+     * - Seat row, and number
      * - Whether they are available, sold, held, or have restricted views
-     * - If they are wheelchair-accessible
+     * - If they are wheelchair-accessible or their companions
      */
     List<Seat> getSeatingPlanForBooking(int bookingId);
 

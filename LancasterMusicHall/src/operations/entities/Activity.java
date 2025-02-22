@@ -1,5 +1,9 @@
 package operations.entities;
 
+import operations.entities.Activities.Film;
+import operations.entities.Activities.Meeting;
+import operations.entities.Activities.Show;
+
 public class Activity {
     private int activityId;          // ID field
     private String name;             // e.g., "Concert", "Meeting", "Film Show"

@@ -1,4 +1,4 @@
-package operations.entities;
+package operations.entities.Activities;
 
 public class Show {
     private int showId;              // ID field
