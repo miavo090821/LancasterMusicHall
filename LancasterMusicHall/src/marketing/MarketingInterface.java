@@ -7,7 +7,7 @@ public interface MarketingInterface {
     /**
      * Get all bookings scheduled within a specific date range
      * @param startDate The start date.
-     * @param endDate The end the date.
+     * @param endDate The end date.
      * @return A list of bookings happening within this period
      */
     String viewCalendar(String startDate, String endDate);

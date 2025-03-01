@@ -13,15 +13,33 @@ public class Seat {
 
     // Enum for seat status
     public enum Status {
-        AVAILABLE, SOLD, HELD
+        AVAILABLE, SOLD, HELD;
+    }
+
+    public String stringStatus(Status status){
+        return switch (status) {
+            case AVAILABLE -> "Available";
+            case HELD -> "Held";
+            case SOLD -> "Sold";
+        };
+    }
+    public String stringType(Type type){
+        return switch (type) {
+            case COMPANION -> "Companion";
+            case REGULAR -> "Regular";
+            case RESTRICTED -> "Restricted";
+            case WHEELCHAIR -> "Wheelchair";
+            
+        };
     }
 
     // Constructor
     public Seat(char row, int number, Type type, Status status) {
         this.row = row;
         this.number = number;
-        this.type = type;
         this.status = status;
+        this.type = type;
+
     }
 
     // Check if the seat is wheelchair accessible
@@ -53,11 +71,11 @@ public class Seat {
 
     @Override
     public String toString() {
-        return "Seat{" +
+        return "Seat:" +
                 "row=" + row +
                 ", number=" + number +
-                ", type=" + type +
-                ", status=" + status +
-                "}\n";
+                ", type=" + stringType(type) +
+                ", status=" + stringStatus(status) +
+                "\n";
     }
 }

@@ -120,15 +120,20 @@ public class Booking {
 
     @Override
     public String toString() {
-        return "Booking{" +
+        StringBuilder seatingPlanStr = new StringBuilder();
+
+        for (Seat seat : seats) {
+            seatingPlanStr.append(seat.toString()); // Appends each seat on a new line
+        }
+
+        return "Booking: \n" +
                 "id=" + id +
                 ", startDate='" + startDate + '\'' +
                 ", endDate='" + endDate + '\'' +
                 ", activity=" + (activity != null ? activity.getName() : "N/A") +
                 ", venue=" + (venue != null ? venue.getName() : "N/A") +
                 ", held=" + held +
-                ", holdExpiryDate='" + holdExpiryDate + '\'' +
-                ", seats=" + seats +
-                '}';
+                ", holdExpiryDate='" + holdExpiryDate + '\n' +
+                "Seating plan:\n" + seatingPlanStr.toString();
     }
 }
