@@ -3,73 +3,49 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class MyLayoutGUI {
-    /**
-     * Initialise the frame, and the three main parts:
-     *      1. Top Panel
-     *      2. Main Panel
-     *      3. Bottom Panel
-     * */
     public static void main(String[] args) {
-        // Create the main application frame
         JFrame frame = new JFrame("Layout Example");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(500, 400);
-        frame.setLayout(new BorderLayout()); // Using BorderLayout to organize sections
+        frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
-        // Add all panels to the frame
         frame.add(getTopPanel(), BorderLayout.NORTH);
         frame.add(getMainCenterPanel(), BorderLayout.CENTER);
         frame.add(getBottomPanel(), BorderLayout.SOUTH);
 
         frame.setVisible(true);
     }
-    /**
-     * change color to look at the sections
-     */
 
-    // [1] Top Panel - Application Title
-    /**
-     * function to write the title, Lancaster music hall
-     * */
     private static JPanel getTopPanel() {
-        JPanel topPanel = new JPanel();
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
         topPanel.setBackground(Color.white);
-        topPanel.setBorder(new EmptyBorder(20, 0, 0, 0)); // Adds padding at the top
-        topPanel.setPreferredSize(new Dimension(700, 80));
+        topPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
+        topPanel.setMaximumSize(new Dimension(500, 150));
 
         JLabel titleLabel = new JLabel("Lancaster Music Hall");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 27));
         topPanel.add(titleLabel);
 
         return topPanel;
     }
 
-    // [2] Main Center Panel - Contains login components
-    /**
-     * function to write the main section, split into four parts:
-     *         1. Login Panel
-     *         2. Staff ID Panel
-     *         3. Password Panel
-     *         4. ButtonPanel
-     * */
     private static JPanel getMainCenterPanel() {
         JPanel mainCenterPanel = new JPanel();
-        mainCenterPanel.setLayout(new BoxLayout(mainCenterPanel, BoxLayout.Y_AXIS)); // Stack components vertically
+        mainCenterPanel.setLayout(new BoxLayout(mainCenterPanel, BoxLayout.Y_AXIS));
+        mainCenterPanel.setMaximumSize(new Dimension(500, 240));
+
         mainCenterPanel.add(getLoginPanel());
         mainCenterPanel.add(getStaffIDPanel());
         mainCenterPanel.add(getPasswordPanel());
         mainCenterPanel.add(getButtonPanel());
+
         return mainCenterPanel;
     }
 
-    /**
-     * function to write staff login:
-     * */
-    // [3] Center Panel - Login Section Header
     private static JPanel getLoginPanel() {
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 15));
         centerPanel.setBackground(Color.white);
-        centerPanel.setPreferredSize(new Dimension(700, 30));
+        centerPanel.setMaximumSize(new Dimension(500, 60));
 
         JLabel contentLabel = new JLabel("Staff Login:");
         contentLabel.setFont(new Font("Arial", Font.BOLD, 20));
@@ -78,17 +54,14 @@ public class MyLayoutGUI {
         return centerPanel;
     }
 
-    /**
-     * function to write staff ID
-     * */
-    // [4] Staff ID Panel - Label and Input Field
     private static JPanel getStaffIDPanel() {
-        JPanel staffIDPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduce horizontal gap
+        JPanel staffIDPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         staffIDPanel.add(Box.createHorizontalStrut(90));
+        staffIDPanel.setMaximumSize(new Dimension(500, 60));
         staffIDPanel.setBackground(Color.white);
 
         JLabel staffIdLabel = new JLabel("Staff ID:");
-        staffIdLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        staffIdLabel.setFont(new Font("Arial", Font.BOLD, 20));
 
         JTextField staffIdField = new JTextField(15);
 
@@ -97,18 +70,14 @@ public class MyLayoutGUI {
         return staffIDPanel;
     }
 
-    /**
-     * function to write staff password
-     * */
-    // [5] Password Panel - Label and Input Field
     private static JPanel getPasswordPanel() {
-        JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduce horizontal gap
+        JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         passwordPanel.add(Box.createHorizontalStrut(90));
-
+        passwordPanel.setMaximumSize(new Dimension(500, 60));
         passwordPanel.setBackground(Color.white);
 
         JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        passwordLabel.setFont(new Font("Arial", Font.BOLD, 20));
 
         JPasswordField passwordField = new JPasswordField(15);
 
@@ -117,13 +86,9 @@ public class MyLayoutGUI {
         return passwordPanel;
     }
 
-    /**
-     * function to write enter button
-     * */
-    // [6] Enter Button Panel
     private static JPanel getButtonPanel() {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5)); // Reduced vertical gap
-        buttonPanel.setPreferredSize(new Dimension(700, 30));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
+        buttonPanel.setMaximumSize(new Dimension(500, 60));
         buttonPanel.setBackground(Color.white);
 
         JButton enterButton = new JButton("Enter");
@@ -134,13 +99,13 @@ public class MyLayoutGUI {
         enterButton.setContentAreaFilled(true);
         enterButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Add Hover Effect for Button
         enterButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                enterButton.setBackground(new Color(50, 150, 250)); // Darker Blue on hover
+                enterButton.setBackground(new Color(50, 150, 250));
             }
+
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                enterButton.setBackground(Color.WHITE); // Reverts to original
+                enterButton.setBackground(Color.WHITE);
             }
         });
 
@@ -148,23 +113,19 @@ public class MyLayoutGUI {
         return buttonPanel;
     }
 
-
-    /**
-     * Bottom panel has one part:
-     *        1. forgotten password button
-     * */
     private static JPanel getBottomPanel() {
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 0)); // Reduced vertical padding
+        JPanel bottomPanel = new JPanel((new FlowLayout(FlowLayout.LEFT, 50, 20)));
         bottomPanel.setBackground(Color.white);
-        bottomPanel.setPreferredSize(new Dimension(700, 40)); // Reduced height
+        bottomPanel.setPreferredSize(new Dimension(700, 75));
 
         JButton forgotPasswordButton = new JButton("Forgotten Password?");
         forgotPasswordButton.setBorderPainted(false);
         forgotPasswordButton.setContentAreaFilled(false);
-        forgotPasswordButton.setForeground(Color.blue);
+        forgotPasswordButton.setForeground(Color.BLUE);
         forgotPasswordButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         bottomPanel.add(forgotPasswordButton);
         return bottomPanel;
     }
+
 }
