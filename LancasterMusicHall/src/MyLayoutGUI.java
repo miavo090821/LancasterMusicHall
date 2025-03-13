@@ -3,6 +3,12 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class MyLayoutGUI {
+    /**
+     * Initialise the frame, and the three main parts:
+     *      1. Top Panel
+     *      2. Main Panel
+     *      3. Bottom Panel
+     * */
     public static void main(String[] args) {
         JFrame frame = new JFrame("Layout Example");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -16,6 +22,15 @@ public class MyLayoutGUI {
         frame.setVisible(true);
     }
 
+    /**
+     * change color to look at the sections
+     *
+     **/
+
+    // [1] Top Panel - Application Title
+     /**
+     * function to write the title, Lancaster music hall
+     * */
     private static JPanel getTopPanel() {
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
         topPanel.setBackground(Color.white);
@@ -29,6 +44,14 @@ public class MyLayoutGUI {
         return topPanel;
     }
 
+    // [2] Main Center Panel - Contains login components
+    /**
+     * function to write the main section, split into four parts:
+     *         1. Login Panel
+     *         2. Staff ID Panel
+     *         3. Password Panel
+     *         4. ButtonPanel
+     * */
     private static JPanel getMainCenterPanel() {
         JPanel mainCenterPanel = new JPanel();
         mainCenterPanel.setLayout(new BoxLayout(mainCenterPanel, BoxLayout.Y_AXIS));
@@ -42,6 +65,10 @@ public class MyLayoutGUI {
         return mainCenterPanel;
     }
 
+    /**
+     * function to write staff login:
+     * */
+    // [3] Center Panel - Login Section Header
     private static JPanel getLoginPanel() {
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 15));
         centerPanel.setBackground(Color.white);
@@ -54,6 +81,10 @@ public class MyLayoutGUI {
         return centerPanel;
     }
 
+    /**
+     * function to write staff ID
+     * */
+    // [4] Staff ID Panel - Label and Input Field
     private static JPanel getStaffIDPanel() {
         JPanel staffIDPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         staffIDPanel.add(Box.createHorizontalStrut(90));
@@ -70,6 +101,10 @@ public class MyLayoutGUI {
         return staffIDPanel;
     }
 
+    /**
+     * function to write staff password
+     * */
+    // [5] Password Panel - Label and Input Field
     private static JPanel getPasswordPanel() {
         JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         passwordPanel.add(Box.createHorizontalStrut(90));
@@ -86,6 +121,10 @@ public class MyLayoutGUI {
         return passwordPanel;
     }
 
+    /**
+     * function to write enter button
+     * */
+    // [6] Enter Button Panel
     private static JPanel getButtonPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
         buttonPanel.setMaximumSize(new Dimension(500, 60));
@@ -113,6 +152,10 @@ public class MyLayoutGUI {
         return buttonPanel;
     }
 
+    /**
+     * Bottom panel has one part:
+     *        1. forgotten password button
+     * */
     private static JPanel getBottomPanel() {
         JPanel bottomPanel = new JPanel((new FlowLayout(FlowLayout.LEFT, 50, 20)));
         bottomPanel.setBackground(Color.white);
