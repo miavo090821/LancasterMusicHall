@@ -2,7 +2,11 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class MyLayoutGUI {
+public class StaffLoginGUI {
+    // the staff id and password fields
+    private JTextField staffIdField;
+    private JPasswordField passwordField;
+
     /**
      * Initialise the frame, and the three main parts:
      *      1. Top Panel
@@ -10,14 +14,23 @@ public class MyLayoutGUI {
      *      3. Bottom Panel
      * */
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Layout Example");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 400);
-        frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+        SwingUtilities.invokeLater(StaffLoginGUI::new);
+    }
 
-        frame.add(getTopPanel(), BorderLayout.NORTH);
-        frame.add(getMainCenterPanel(), BorderLayout.CENTER);
-        frame.add(getBottomPanel(), BorderLayout.SOUTH);
+    public StaffLoginGUI() {
+        staffIdField = new JTextField(15);
+        passwordField = new JPasswordField(15);
+
+        JFrame frame = new JFrame("Staff Login"); // name of the window
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // frame deletes after closing window
+        frame.setSize(500, 400);
+        frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS)); // components will be arranged vertically
+        // components = (buttons, panels, labels)
+
+        // you have to add the panels to the frame
+        frame.add(getTopPanel());
+        frame.add(getMainCenterPanel());
+        frame.add(getBottomPanel());
 
         frame.setVisible(true);
     }
@@ -28,10 +41,10 @@ public class MyLayoutGUI {
      **/
 
     // [1] Top Panel - Application Title
-     /**
+    /**
      * function to write the title, Lancaster music hall
      * */
-    private static JPanel getTopPanel() {
+    private JPanel getTopPanel() {
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
         topPanel.setBackground(Color.white);
         topPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
@@ -52,7 +65,7 @@ public class MyLayoutGUI {
      *         3. Password Panel
      *         4. ButtonPanel
      * */
-    private static JPanel getMainCenterPanel() {
+    private JPanel getMainCenterPanel() {
         JPanel mainCenterPanel = new JPanel();
         mainCenterPanel.setLayout(new BoxLayout(mainCenterPanel, BoxLayout.Y_AXIS));
         mainCenterPanel.setMaximumSize(new Dimension(500, 240));
@@ -69,7 +82,7 @@ public class MyLayoutGUI {
      * function to write staff login:
      * */
     // [3] Center Panel - Login Section Header
-    private static JPanel getLoginPanel() {
+    private JPanel getLoginPanel() {
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 15));
         centerPanel.setBackground(Color.white);
         centerPanel.setMaximumSize(new Dimension(500, 60));
@@ -85,7 +98,7 @@ public class MyLayoutGUI {
      * function to write staff ID
      * */
     // [4] Staff ID Panel - Label and Input Field
-    private static JPanel getStaffIDPanel() {
+    private JPanel getStaffIDPanel() {
         JPanel staffIDPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         staffIDPanel.add(Box.createHorizontalStrut(90));
         staffIDPanel.setMaximumSize(new Dimension(500, 60));
@@ -93,8 +106,6 @@ public class MyLayoutGUI {
 
         JLabel staffIdLabel = new JLabel("Staff ID:");
         staffIdLabel.setFont(new Font("Arial", Font.BOLD, 20));
-
-        JTextField staffIdField = new JTextField(15);
 
         staffIDPanel.add(staffIdLabel);
         staffIDPanel.add(staffIdField);
@@ -105,7 +116,7 @@ public class MyLayoutGUI {
      * function to write staff password
      * */
     // [5] Password Panel - Label and Input Field
-    private static JPanel getPasswordPanel() {
+    private JPanel getPasswordPanel() {
         JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         passwordPanel.add(Box.createHorizontalStrut(90));
         passwordPanel.setMaximumSize(new Dimension(500, 60));
@@ -113,8 +124,6 @@ public class MyLayoutGUI {
 
         JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setFont(new Font("Arial", Font.BOLD, 20));
-
-        JPasswordField passwordField = new JPasswordField(15);
 
         passwordPanel.add(passwordLabel);
         passwordPanel.add(passwordField);
@@ -125,7 +134,7 @@ public class MyLayoutGUI {
      * function to write enter button
      * */
     // [6] Enter Button Panel
-    private static JPanel getButtonPanel() {
+    private JPanel getButtonPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
         buttonPanel.setMaximumSize(new Dimension(500, 60));
         buttonPanel.setBackground(Color.white);
@@ -148,6 +157,16 @@ public class MyLayoutGUI {
             }
         });
 
+        enterButton.addActionListener(e -> {
+            if (getStaffID().isEmpty() || getPassword().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Please enter Staff ID and Password", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
         buttonPanel.add(enterButton);
         return buttonPanel;
     }
@@ -156,7 +175,7 @@ public class MyLayoutGUI {
      * Bottom panel has one part:
      *        1. forgotten password button
      * */
-    private static JPanel getBottomPanel() {
+    private JPanel getBottomPanel() {
         JPanel bottomPanel = new JPanel((new FlowLayout(FlowLayout.LEFT, 50, 20)));
         bottomPanel.setBackground(Color.white);
         bottomPanel.setPreferredSize(new Dimension(700, 75));
@@ -171,4 +190,13 @@ public class MyLayoutGUI {
         return bottomPanel;
     }
 
+    // New method to get the Staff ID from the field
+    private String getStaffID() {
+        return staffIdField.getText();
+    }
+
+    // New method to get the Password from the field
+    private String getPassword() {
+        return new String(passwordField.getPassword());
+    }
 }
