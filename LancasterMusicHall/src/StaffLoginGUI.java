@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 
 public class StaffLoginGUI {
     // the staff id and password fields
@@ -45,10 +46,9 @@ public class StaffLoginGUI {
      * function to write the title, Lancaster music hall
      * */
     private JPanel getTopPanel() {
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 20));
         topPanel.setBackground(Color.white);
-        topPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
-        topPanel.setMaximumSize(new Dimension(500, 150));
+        topPanel.setPreferredSize(new Dimension(500, 40));
 
         JLabel titleLabel = new JLabel("Lancaster Music Hall");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 27));
@@ -68,7 +68,6 @@ public class StaffLoginGUI {
     private JPanel getMainCenterPanel() {
         JPanel mainCenterPanel = new JPanel();
         mainCenterPanel.setLayout(new BoxLayout(mainCenterPanel, BoxLayout.Y_AXIS));
-        mainCenterPanel.setMaximumSize(new Dimension(500, 240));
 
         mainCenterPanel.add(getLoginPanel());
         mainCenterPanel.add(getStaffIDPanel());
@@ -85,7 +84,7 @@ public class StaffLoginGUI {
     private JPanel getLoginPanel() {
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 15));
         centerPanel.setBackground(Color.white);
-        centerPanel.setMaximumSize(new Dimension(500, 60));
+        centerPanel.setPreferredSize(new Dimension(500, 30));
 
         JLabel contentLabel = new JLabel("Staff Login:");
         contentLabel.setFont(new Font("Arial", Font.BOLD, 20));
@@ -101,7 +100,7 @@ public class StaffLoginGUI {
     private JPanel getStaffIDPanel() {
         JPanel staffIDPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         staffIDPanel.add(Box.createHorizontalStrut(90));
-        staffIDPanel.setMaximumSize(new Dimension(500, 60));
+        staffIDPanel.setPreferredSize(new Dimension(500, 30));
         staffIDPanel.setBackground(Color.white);
 
         JLabel staffIdLabel = new JLabel("Staff ID:");
@@ -119,7 +118,7 @@ public class StaffLoginGUI {
     private JPanel getPasswordPanel() {
         JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         passwordPanel.add(Box.createHorizontalStrut(90));
-        passwordPanel.setMaximumSize(new Dimension(500, 60));
+        passwordPanel.setPreferredSize(new Dimension(500, 30));
         passwordPanel.setBackground(Color.white);
 
         JLabel passwordLabel = new JLabel("Password:");
@@ -136,7 +135,7 @@ public class StaffLoginGUI {
     // [6] Enter Button Panel
     private JPanel getButtonPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
-        buttonPanel.setMaximumSize(new Dimension(500, 60));
+        buttonPanel.setPreferredSize(new Dimension(500, 30));
         buttonPanel.setBackground(Color.white);
 
         JButton enterButton = new JButton("Enter");
@@ -176,9 +175,9 @@ public class StaffLoginGUI {
      *        1. forgotten password button
      * */
     private JPanel getBottomPanel() {
-        JPanel bottomPanel = new JPanel((new FlowLayout(FlowLayout.LEFT, 50, 20)));
+        JPanel bottomPanel = new JPanel((new FlowLayout(FlowLayout.LEFT, 50, 0)));
         bottomPanel.setBackground(Color.white);
-        bottomPanel.setPreferredSize(new Dimension(700, 75));
+        bottomPanel.setPreferredSize(new Dimension(700, 40));
 
         JButton forgotPasswordButton = new JButton("Forgotten Password?");
         forgotPasswordButton.setBorderPainted(false);
