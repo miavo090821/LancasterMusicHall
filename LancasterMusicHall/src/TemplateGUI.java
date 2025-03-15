@@ -5,67 +5,20 @@ import java.awt.*;
 // Main class to run both Part 1 and Part 2
 public class TemplateGUI {
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            //new Part1GUI(); // Run Part 1 GUI
-            new Part2GUI(); // Run Part 2 GUI
-        });
+        SwingUtilities.invokeLater(TemplateGUI::new);
     }
-}
 
-/**
- part 1 - JFrames and JPanels
- **/
-class Part1GUI extends JFrame {
-    public Part1GUI() {
-        super("GUI Example");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 400);
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+    public TemplateGUI() {
+        JFrame frame = new JFrame("Template Window");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(500, 400);
+        frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
-        // making the top panel
-        JPanel topPanel = new JPanel();
-        topPanel.setBackground(Color.white);
-        topPanel.setPreferredSize(new Dimension(500, 60));
+        frame.add(getTopPanel());
+        frame.add(getMainContainer());
+        frame.add(getBottomPanel());
 
-        // adding the title
-        JLabel titleLabel = new JLabel("Application Title");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 27));
-        topPanel.add(titleLabel);
-
-        // making the main section 1
-        JPanel mainSection1 = new JPanel();
-        mainSection1.setBackground(new Color(89, 237, 255));
-        mainSection1.setPreferredSize(new Dimension(500, 280));
-
-        // making the bottom panel
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(new Color(142, 143, 255));
-        bottomPanel.setPreferredSize(new Dimension(500, 60));
-
-        // adding panels to the frame
-        add(topPanel);
-        add(mainSection1);
-        add(bottomPanel);
-
-        setVisible(true);
-    }
-}
-
-/**
- part 2 - Staff Login GUI
- **/
-class Part2GUI extends JFrame {
-    public Part2GUI() {
-        super("Template Window");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 400);
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
-
-        add(getTopPanel());
-        add(getMainContainer());
-        add(getBottomPanel());
-
-        setVisible(true);
+        frame.setVisible(true);
     }
 
     /**
@@ -74,7 +27,7 @@ class Part2GUI extends JFrame {
     private JPanel getTopPanel() {
         JPanel topPanel = new JPanel();
         topPanel.setBackground(new Color(142, 143, 255)); // colouring the background
-        topPanel.setPreferredSize(new Dimension(500, 80));
+        topPanel.setPreferredSize(new Dimension(500, 40));
 
         return topPanel;
     }
@@ -161,3 +114,6 @@ class Part2GUI extends JFrame {
         return bottomPanel;
     }
 }
+
+
+
