@@ -1,0 +1,10 @@
+Date: Monday 1st January 2025
+Start Time: 11:00
+End Time: 12:00
+Room: Room 1
+Company Name: CinemaLTD
+Contact Details:
+Primary Contact: John Smith
+Telephone: 07855645977
+Email: john.smith@cinemaltd.com
+

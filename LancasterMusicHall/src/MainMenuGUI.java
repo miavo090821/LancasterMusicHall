@@ -12,7 +12,6 @@ public class MainMenuGUI {
     }
     private JPanel cardPanel;
     private CardLayout cardLayout;
-    private static final String fileName = "reminders.txt";
 
     public MainMenuGUI() {
         JFrame frame = new JFrame("Main Menu");
@@ -26,10 +25,6 @@ public class MainMenuGUI {
         // Create main content area using CardLayout
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
-
-//        frame.add(getTopPanel());
-//        frame.add(getMainContainer());
-//        frame.add(getBottomPanel());
 
         // Add different sections (cards) to the panel
         cardPanel.add(createHomePanel(), "Home");
@@ -65,18 +60,95 @@ public class MainMenuGUI {
     }
 
     private JPanel getCalenderPanel() {
-        JPanel navBar = new JPanel();
-        navBar.setLayout(new FlowLayout());
-        return navBar;
+        String fileName = "calender.txt";
+        JPanel calenderPanel = new JPanel(new BorderLayout());
+        calenderPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        calenderPanel.setLayout(new BoxLayout(calenderPanel, BoxLayout.Y_AXIS));
+
+        // Section 1: Text Area
+        JPanel textRemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
+        textRemPanel.setBackground(Color.WHITE);
+        textRemPanel.setPreferredSize(new Dimension(600, 270));
+        textRemPanel.setBackground(new Color(255, 255, 255))   ;
+
+        JTextArea textReminder = new JTextArea(loadTextFromFile(fileName));  // Load saved text
+        textReminder.setFont(new Font("Arial", Font.PLAIN, 16));
+        textReminder.setPreferredSize(new Dimension(480, 270));
+        textRemPanel.add(new JScrollPane(textReminder));
+
+        // Section 2: Bottom Panel
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
+        bottomPanel.setBackground(Color.white);
+        bottomPanel.setPreferredSize(new Dimension(600, 40));
+
+        String[] actions = {"Edit", "Delete", "Save"};
+
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        actionPanel.setPreferredSize(new Dimension(400, 40));
+        actionPanel.setBackground(Color.white);
+
+        for (String action : actions) {
+            JButton button = new JButton(action);
+            button.setFont(new Font("Arial", Font.BOLD, 16));
+            button.setBackground(Color.WHITE);
+            button.setFocusPainted(false);
+            button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            actionPanel.add(button);
+
+            if (action.equals("Edit")) {
+                // Enable editing in JTextArea
+                button.addActionListener(e -> {
+                    textReminder.setEditable(true);
+                    textReminder.setBackground(Color.YELLOW); // Highlight to show edit mode
+                });
+            } else if (action.equals("Delete")) {
+                // Clear text with confirmation
+                button.addActionListener(e -> {
+                    int confirm = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you want to delete this text?",
+                            "Confirm Deletion",
+                            JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        textReminder.setText(""); // Clear text
+                        saveTextToFile("", fileName); // Save empty file
+                    }
+                });
+            } else if (action.equals("Save")) {
+                // Save text to file
+                button.addActionListener(e -> {
+                    saveTextToFile(textReminder.getText(), fileName);
+                    textReminder.setEditable(false); // Disable editing after saving
+                    textReminder.setBackground(Color.WHITE); // Reset background
+                    JOptionPane.showMessageDialog(null, "Text saved successfully!");
+                });
+            }
+        }
+
+        JButton logoutButton = new JButton("Log Out");
+        logoutButton.setFont(new Font("Arial", Font.BOLD, 16));
+        logoutButton.setBackground(Color.WHITE);
+        logoutButton.setFocusPainted(false);
+        logoutButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        bottomPanel.add(actionPanel);
+        bottomPanel.add(logoutButton);
+
+        // Add to main panel
+        calenderPanel.add(textRemPanel);
+        calenderPanel.add(bottomPanel);
+
+        return calenderPanel;
     }
 
     private JPanel createHomePanel() {
+        String fileName = "reminders.txt";
         JPanel homePanel = new JPanel(new BorderLayout());
         homePanel.setBorder(new EmptyBorder(0, 0, 0, 0));
         homePanel.setLayout(new BoxLayout(homePanel, BoxLayout.Y_AXIS));
 
         // Section 1: Label
-        JPanel remindersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 25));
+        JPanel remindersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
         remindersPanel.setPreferredSize(new Dimension(600, 30));
         remindersPanel.setBackground(Color.WHITE);
         JLabel remindersLabel = new JLabel("Important Reminders:");
@@ -84,9 +156,10 @@ public class MainMenuGUI {
         remindersPanel.add(remindersLabel);
 
         // Section 2: Text Area
-        JPanel textRemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 0));
+        JPanel textRemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
         textRemPanel.setBackground(Color.WHITE);
-        JTextArea textReminder = new JTextArea(loadTextFromFile());  // Load saved text
+        JTextArea textReminder = new JTextArea(loadTextFromFile(fileName));  // Load saved text
+        textReminder.setFont(new Font("Arial", Font.PLAIN, 16));
         textReminder.setPreferredSize(new Dimension(350, 200));
         textRemPanel.add(new JScrollPane(textReminder));
 
@@ -98,16 +171,14 @@ public class MainMenuGUI {
         JButton button = new JButton("Log Out");
         button.setFont(new Font("Arial", Font.BOLD, 16));
         button.setBackground(Color.WHITE);
-        button.setBorderPainted(true);
         button.setFocusPainted(false);
-        button.setContentAreaFilled(true);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         // Save text before closing
-        button.addActionListener(e -> saveTextToFile(textReminder.getText()));
+        button.addActionListener(e -> saveTextToFile(textReminder.getText(), fileName));
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(50, 150, 250));
+                button.setBackground(new Color(255, 255, 255));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
@@ -200,9 +271,6 @@ public class MainMenuGUI {
         return navigationTab;
     }
 
-    /**
-     * function to write the title
-     * */
     private JPanel getTopPanel() {
         JPanel topPanel = new JPanel();
         topPanel.setBackground(Color.white);
@@ -215,29 +283,31 @@ public class MainMenuGUI {
         return topPanel;
     }
 
-    private void saveTextToFile(String text) {
+    private void saveTextToFile(String text, String fileName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             writer.write(text);
+            System.out.println("Saved to: " + new File(fileName).getAbsolutePath()); // Debugging
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private String loadTextFromFile() {
+    private String loadTextFromFile(String fileName) {
         StringBuilder content = new StringBuilder();
+        File file = new File(fileName);
+        System.out.println("Trying to load from: " + file.getAbsolutePath()); // Debugging
+        if (!file.exists()) {
+            System.out.println("No saved file found: " + file.getAbsolutePath());
+            return "";
+        }
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 content.append(line).append("\n");
             }
         } catch (IOException e) {
-            System.out.println("No saved reminders found.");
+            e.printStackTrace();
         }
         return content.toString();
     }
-
-
 }
-
-
-
