@@ -3,6 +3,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.*;
 
 // Main class to run both Part 1 and Part 2
 public class MainMenuGUI {
@@ -11,6 +12,7 @@ public class MainMenuGUI {
     }
     private JPanel cardPanel;
     private CardLayout cardLayout;
+    private static final String fileName = "reminders.txt";
 
     public MainMenuGUI() {
         JFrame frame = new JFrame("Main Menu");
@@ -73,15 +75,51 @@ public class MainMenuGUI {
         homePanel.setBorder(new EmptyBorder(0, 0, 0, 0));
         homePanel.setLayout(new BoxLayout(homePanel, BoxLayout.Y_AXIS));
 
-        // Log Out Button
-//        JButton logOutButton = new JButton("Log Out");
-//        logOutButton.addActionListener(e -> System.exit(0));
-//        homePanel.add(logOutButton, BorderLayout.SOUTH);
+        // Section 1: Label
+        JPanel remindersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 25));
+        remindersPanel.setPreferredSize(new Dimension(600, 30));
+        remindersPanel.setBackground(Color.WHITE);
+        JLabel remindersLabel = new JLabel("Important Reminders:");
+        remindersLabel.setFont(new Font("Arial", Font.BOLD, 27));
+        remindersPanel.add(remindersLabel);
 
-        // Important Reminders Section
-        homePanel.add(getMainSection1());
-        homePanel.add(getMainSection2());
-        homePanel.add(getBottomPanel());
+        // Section 2: Text Area
+        JPanel textRemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 0));
+        textRemPanel.setBackground(Color.WHITE);
+        JTextArea textReminder = new JTextArea(loadTextFromFile());  // Load saved text
+        textReminder.setPreferredSize(new Dimension(350, 200));
+        textRemPanel.add(new JScrollPane(textReminder));
+
+        // Section 3: Bottom Panel
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 50, 0));
+        bottomPanel.setBackground(Color.white);
+        bottomPanel.setPreferredSize(new Dimension(600, 30));
+
+        JButton button = new JButton("Log Out");
+        button.setFont(new Font("Arial", Font.BOLD, 16));
+        button.setBackground(Color.WHITE);
+        button.setBorderPainted(true);
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(true);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Save text before closing
+        button.addActionListener(e -> saveTextToFile(textReminder.getText()));
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(50, 150, 250));
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(Color.WHITE);
+            }
+        });
+        bottomPanel.add(button);
+
+        // Add to main panel
+        homePanel.add(remindersPanel);
+        homePanel.add(textRemPanel);
+        homePanel.add(bottomPanel);
 
         return homePanel;
     }
@@ -118,7 +156,6 @@ public class MainMenuGUI {
             Color defaultColor = new Color(170, 136, 200);
             Color hoverColor = new Color(210, 180, 255); // Light purple hover
             Color borderColor = new Color(128, 0, 128); // Purple outline
-            Color selectedColor = hoverColor; // Same as hover for selected
 
             // Hover effect
             button.addMouseListener(new MouseAdapter() {
@@ -149,7 +186,7 @@ public class MainMenuGUI {
 
                 // Set new active button
                 activeButton = button;
-                button.setBackground(selectedColor);
+                button.setBackground(hoverColor);
                 button.setBorder(BorderFactory.createLineBorder(borderColor, 2));
 
                 // Switch to the selected panel
@@ -162,8 +199,6 @@ public class MainMenuGUI {
         navigationTab.add(navBar);
         return navigationTab;
     }
-
-
 
     /**
      * function to write the title
@@ -180,69 +215,28 @@ public class MainMenuGUI {
         return topPanel;
     }
 
-    /**
-     * function to write section 1:
-     * */
-    private JPanel getMainSection1() {
-        JPanel remindersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,50,25));
-        remindersPanel.setBackground(new Color(255, 255, 255)); // colouring the background
-        remindersPanel.setPreferredSize(new Dimension(600, 30));
-
-        JLabel remindersLabel = new JLabel("Important Reminders:");
-        remindersLabel.setFont(new Font("Arial", Font.BOLD, 27));
-
-        remindersPanel.add((remindersLabel), BorderLayout.NORTH);
-
-        return remindersPanel;
+    private void saveTextToFile(String text) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            writer.write(text);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * function to write section 2
-     * */
-    private JPanel getMainSection2() {
-        JPanel textRemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,50,0));
-        textRemPanel.setPreferredSize(new Dimension(600, 140));
-        textRemPanel.setBackground(new Color(255, 255, 255)); // colouring the background
-
-        JTextArea textReminder = new JTextArea("- TheatreCo contract deadline\n- 11:00 CinemaLTD Booking");
-        textReminder.setEditable(true);
-        textReminder.setPreferredSize(new Dimension(350, 180));
-        textRemPanel.add(new JScrollPane(textReminder), BorderLayout.CENTER);
-
-        return textRemPanel;
-    }
-
-    /**
-     * Bottom panel has one part:
-     *        1. Bottom Section
-     * */
-    private JPanel getBottomPanel() {
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT,50,25));
-        bottomPanel.setPreferredSize(new Dimension(600, 30));
-        bottomPanel.setBackground(new Color(255, 255, 255)); // colouring the background
-
-        JButton button = new JButton("Log Out");
-        button.setFont(new Font("Arial", Font.BOLD, 16));
-        button.setBackground(Color.WHITE);
-        button.setBorderPainted(true);
-        button.setFocusPainted(false);
-        button.setContentAreaFilled(true);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(50, 150, 250));
+    private String loadTextFromFile() {
+        StringBuilder content = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
             }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(Color.WHITE);
-            }
-        });
-
-        bottomPanel.add(button);
-
-        return bottomPanel;
+        } catch (IOException e) {
+            System.out.println("No saved reminders found.");
+        }
+        return content.toString();
     }
+
+
 }
 
 
