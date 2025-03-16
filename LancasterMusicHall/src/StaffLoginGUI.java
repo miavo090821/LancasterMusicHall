@@ -36,11 +36,6 @@ public class StaffLoginGUI {
         frame.setVisible(true);
     }
 
-    /**
-     * change color to look at the sections
-     *
-     **/
-
     // [1] Top Panel - Application Title
     /**
      * function to write the title, Lancaster music hall
@@ -143,7 +138,6 @@ public class StaffLoginGUI {
         enterButton.setBackground(Color.WHITE);
         enterButton.setBorderPainted(false);
         enterButton.setFocusPainted(false);
-        enterButton.setContentAreaFilled(true);
         enterButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         enterButton.addMouseListener(new java.awt.event.MouseAdapter() {
