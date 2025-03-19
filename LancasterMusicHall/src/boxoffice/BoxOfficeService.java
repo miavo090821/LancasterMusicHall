@@ -7,6 +7,7 @@ import operations.entities.Seat;
 import operations.entities.Venue;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,8 +28,10 @@ public class BoxOfficeService implements BoxOfficeInterface {
         // Booking(int id, String startDate, String endDate, Activity activity, Venue venue, boolean held, String holdExpiryDate, List<Seat> seats)
         Booking booking1 = new Booking(
                 1,
-                LocalDate.of(2025, 3, 1).toString(),
-                LocalDate.of(2025, 3, 1).toString(),
+                LocalDate.of(2025, 3, 1),
+                LocalDate.of(2025, 3, 1),
+                LocalTime.of(10,20),
+                LocalTime.of(5,20),
                 new Activity(1, "Concert A"),
                 new Venue(1, "Main Hall", "Hall", 300),
                 false,
@@ -37,8 +40,10 @@ public class BoxOfficeService implements BoxOfficeInterface {
         );
         Booking booking2 = new Booking(
                 2,
-                LocalDate.of(2025, 3, 2).toString(),
-                LocalDate.of(2025, 3, 2).toString(),
+                LocalDate.of(2025, 3, 2),
+                LocalDate.of(2025, 3, 2),
+                LocalTime.of(10,20),
+                LocalTime.of(5,20),
                 new Activity(2, "Theatre B"),
                 new Venue(2, "Theatre 1", "Theatre", 200),
                 false,
@@ -59,7 +64,7 @@ public class BoxOfficeService implements BoxOfficeInterface {
     public List<Booking> getBookingsByDateRange(LocalDate startDate, LocalDate endDate) {
         return bookings.values().stream()
                 .filter(booking -> {
-                    LocalDate bookingDate = LocalDate.parse(booking.getStartDate());
+                    LocalDate bookingDate = booking.getStartDate();
                     return (!bookingDate.isBefore(startDate)) && (!bookingDate.isAfter(endDate));
                 })
                 .collect(Collectors.toList());

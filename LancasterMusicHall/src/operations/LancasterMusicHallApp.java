@@ -11,6 +11,7 @@ import operations.module.ReviewManager;
 import operations.module.RoomConfigurationSystem;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public class LancasterMusicHallApp {
@@ -40,8 +41,10 @@ public class LancasterMusicHallApp {
         // Create a new Booking using the updated constructor (8 parameters)
         Booking newBooking = new Booking(
                 101,
-                LocalDate.of(2025, 3, 1).toString(),
-                LocalDate.of(2025, 3, 3).toString(),
+                LocalDate.of(2025, 3, 1),
+                LocalDate.of(2025, 3, 3),
+                LocalTime.of(10,20),
+                LocalTime.of(5,20),
                 rockConcert,
                 mainHall,
                 false,
