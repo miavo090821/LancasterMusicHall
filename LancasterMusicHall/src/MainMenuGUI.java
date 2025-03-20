@@ -156,14 +156,14 @@ public class MainMenuGUI {
 
         // Scroll if needed
         JScrollPane scrollPane = new JScrollPane(calendarPanel);
-        scrollPane.setPreferredSize(new Dimension(550, 300)); // Smaller scroll area
+        scrollPane.setPreferredSize(new Dimension(580, 300)); // Smaller scroll area
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         mainPanel.add(scrollPane);
 
         // === Bottom Panel ===
-        JPanel bottomPanel = new JPanel(new FlowLayout());
-        bottomPanel.setPreferredSize(new Dimension(500, 50));
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        bottomPanel.setPreferredSize(new Dimension(600, 50));
         bottomPanel.setBackground(Color.WHITE);
 
         JButton newEventButton = new JButton("New Event");
@@ -254,6 +254,18 @@ public class MainMenuGUI {
                 LocalDate.of(2025, 3, 3),
                 LocalTime.of(10,20),
                 LocalTime.of(12,20),
+                movieActivity,
+                hallVenue,
+                false,
+                null,
+                seats
+        ));
+        bookings.add(new Booking(
+                101,
+                LocalDate.of(2025, 3, 2),
+                LocalDate.of(2025, 3, 5),
+                LocalTime.of(14,20),
+                LocalTime.of(16,20),
                 movieActivity,
                 hallVenue,
                 false,
