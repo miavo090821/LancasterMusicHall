@@ -1,5 +1,6 @@
 package marketing;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 public interface MarketingInterface {
@@ -10,7 +11,7 @@ public interface MarketingInterface {
      * @param endDate The end date.
      * @return A list of bookings happening within this period
      */
-    String viewCalendar(String startDate, String endDate);
+    String viewCalendar(LocalDate startDate, LocalDate endDate);
 
     /**
      *  Notify the system about changes to a booking (e.g., cancellations)
@@ -25,7 +26,7 @@ public interface MarketingInterface {
      * @param date The date to check.
      * @return a map showing available spaces and details
      */
-    Map<String, String> getSpaceAvailability(String date);
+    Map<String, String> getSpaceAvailability(LocalDate date);
 
     // --- 3. Seating Plans ---
     /**
@@ -58,7 +59,7 @@ public interface MarketingInterface {
      * @param endDate The end date.
      * @return A usage report.
      */
-    String getUsageReports(String startDate, String endDate);
+    String getUsageReports(LocalDate startDate, LocalDate endDate);
 
     // --- 7. Communication on Held Spaces ---
     /**
@@ -74,7 +75,7 @@ public interface MarketingInterface {
      * @param proposedDate The proposed screening date.
      * @return True if the scheduling was successful.
      */
-    boolean scheduleFilm(int filmId, String proposedDate);
+    boolean scheduleFilm(int filmId, LocalDate proposedDate);
 
     // --- 9. Daily Sheets ---
     /**
@@ -82,5 +83,5 @@ public interface MarketingInterface {
      * @param date The date to check.
      * @return A daily schedule report.
      */
-    String getDailySheet(String date);
+    String getDailySheet(LocalDate date);
 }

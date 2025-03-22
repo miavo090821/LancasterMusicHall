@@ -2,6 +2,7 @@ package operations.module;
 
 import operations.entities.FinancialRecord;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,12 +34,12 @@ public class IncomeTracker {
     }
 
     // Generates and returns a sample usage report for a given date range.
-    public String getUsageReport(String startDate, String endDate) {
+    public String getUsageReport(LocalDate startDate, LocalDate endDate) {
         return "Usage Report from " + startDate + " to " + endDate + ": 5 bookings, average occupancy 80%.";
     }
 
     // Returns a sample daily sheet summary as a string.
-    public String getDailySheet(String date) {
+    public String getDailySheet(LocalDate date) {
         return "Daily Sheet for " + date + ": 3 bookings, total revenue $1500.";
     }
 }

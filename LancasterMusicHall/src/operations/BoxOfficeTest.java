@@ -7,6 +7,7 @@ import operations.entities.Seat;
 import operations.entities.Venue;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public class BoxOfficeTest {
@@ -38,9 +39,11 @@ public class BoxOfficeTest {
         );
         // Create updated booking using the correct constructor with 8 parameters:
         Booking updatedBooking = new Booking(
-                1,
-                LocalDate.of(2025, 3, 1).toString(),
-                LocalDate.of(2025, 3, 2).toString(),
+                101,
+                LocalDate.of(2025, 3, 1),
+                LocalDate.of(2025, 3, 3),
+                LocalTime.of(10,20),
+                LocalTime.of(5,20),
                 updatedActivity,
                 updatedVenue,
                 false,

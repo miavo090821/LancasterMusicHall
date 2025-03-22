@@ -1,16 +1,18 @@
 package operations.entities;
 
+import java.time.LocalDate;
+
 public class FinancialRecord {
     private int financialRecordId;
     private Booking booking;
     private double revenue;
     private double cost;
     private double profit;
-    private String date;
+    private LocalDate date;
 
     public FinancialRecord() {}
 
-    public FinancialRecord(int financialRecordId, Booking booking, double revenue, double cost, String date) {
+    public FinancialRecord(int financialRecordId, Booking booking, double revenue, double cost, LocalDate date) {
         this.financialRecordId = financialRecordId;
         this.booking = booking;
         this.revenue = revenue;
@@ -58,11 +60,11 @@ public class FinancialRecord {
         return profit;
     }
 
-    public String getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 }

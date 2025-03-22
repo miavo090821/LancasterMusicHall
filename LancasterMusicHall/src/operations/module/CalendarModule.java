@@ -4,6 +4,8 @@ import operations.entities.Booking;
 import operations.entities.Activity;
 import operations.entities.Venue;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,8 +24,10 @@ public class CalendarModule {
         // Use an empty list (or a sample seat list) for seats
         Booking booking1 = new Booking(
                 101,
-                "2025-03-01",
-                "2025-03-01",
+                LocalDate.of(2025, 3, 1),
+                LocalDate.of(2025, 3, 3),
+                LocalTime.of(10,20),
+                LocalTime.of(5,20),
                 activity1,
                 venue1,
                 false,
@@ -36,8 +40,10 @@ public class CalendarModule {
         Venue venue2 = new Venue(2, "Small Hall", "Hall", 150);
         Booking booking2 = new Booking(
                 102,
-                "2025-03-02",
-                "2025-03-02",
+                LocalDate.of(2025, 3, 1),
+                LocalDate.of(2025, 3, 3),
+                LocalTime.of(10,20),
+                LocalTime.of(5,20),
                 activity2,
                 venue2,
                 true,
@@ -48,10 +54,10 @@ public class CalendarModule {
     }
 
     // Returns all bookings whose start and end dates fall within the specified range.
-    public List<Booking> getBookingsForDate(String startDate, String endDate) {
+    public List<Booking> getBookingsForDate(LocalDate startDate, LocalDate endDate) {
         List<Booking> results = new ArrayList<>();
         for (Booking b : bookings) {
-            if (b.getStartDate().compareTo(startDate) >= 0 && b.getEndDate().compareTo(endDate) <= 0) {
+            if (!b.getStartDate().isBefore(startDate) && !b.getEndDate().isAfter(endDate)) {
                 results.add(b);
             }
         }
@@ -84,7 +90,7 @@ public class CalendarModule {
     }
 
     // Simulate scheduling a film by creating a new booking.
-    public boolean scheduleFilm(int filmId, String proposedDate) {
+    public boolean scheduleFilm(int filmId, LocalDate proposedDate) {
         // For simplicity, simulate by creating a new booking with a Film activity.
         Activity filmActivity = new Activity(filmId, "Film Screening");
         // Use Main Hall as default for film screenings
@@ -93,6 +99,8 @@ public class CalendarModule {
                 200 + filmId,
                 proposedDate,
                 proposedDate,
+                LocalTime.of(10,20),
+                LocalTime.of(5,20),
                 filmActivity,
                 mainHall,
                 false,
