@@ -1,7 +1,7 @@
+package GUI;
+
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 
 public class StaffLoginGUI {
     // the staff id and password fields
