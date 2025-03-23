@@ -1,34 +1,44 @@
 package GUI;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import Database.SQLConnection;
 
 public class StaffLoginGUI {
-    // the staff id and password fields
+    // Fields for staff ID and password input
     private JTextField staffIdField;
     private JPasswordField passwordField;
+    private JFrame frame;
+
+    // SQLConnection instance to interact with the database.
+    private SQLConnection sqlConnection;
 
     /**
-     * Initialise the frame, and the three main parts:
-     *      1. Top Panel
-     *      2. Main Panel
-     *      3. Bottom Panel
-     * */
+     * Main method to start the Staff Login GUI.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(StaffLoginGUI::new);
     }
 
+    /**
+     * Constructor to initialize the Staff Login GUI and SQL connection.
+     */
     public StaffLoginGUI() {
+        // Initialize SQL connection instance.
+        sqlConnection = new SQLConnection();
+
         staffIdField = new JTextField(15);
         passwordField = new JPasswordField(15);
 
-        JFrame frame = new JFrame("Staff Login"); // name of the window
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // frame deletes after closing window
+        frame = new JFrame("Staff Login");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(500, 400);
-        frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS)); // components will be arranged vertically
-        // components = (buttons, panels, labels)
+        frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
-        // you have to add the panels to the frame
+        // Add panels to the frame.
         frame.add(getTopPanel());
         frame.add(getMainCenterPanel());
         frame.add(getBottomPanel());
@@ -37,9 +47,6 @@ public class StaffLoginGUI {
     }
 
     // [1] Top Panel - Application Title
-    /**
-     * function to write the title, Lancaster music hall
-     * */
     private JPanel getTopPanel() {
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 20));
         topPanel.setBackground(Color.white);
@@ -53,13 +60,6 @@ public class StaffLoginGUI {
     }
 
     // [2] Main Center Panel - Contains login components
-    /**
-     * function to write the main section, split into four parts:
-     *         1. Login Panel
-     *         2. Staff ID Panel
-     *         3. Password Panel
-     *         4. ButtonPanel
-     * */
     private JPanel getMainCenterPanel() {
         JPanel mainCenterPanel = new JPanel();
         mainCenterPanel.setLayout(new BoxLayout(mainCenterPanel, BoxLayout.Y_AXIS));
@@ -72,9 +72,6 @@ public class StaffLoginGUI {
         return mainCenterPanel;
     }
 
-    /**
-     * function to write staff login:
-     * */
     // [3] Center Panel - Login Section Header
     private JPanel getLoginPanel() {
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 15));
@@ -88,9 +85,6 @@ public class StaffLoginGUI {
         return centerPanel;
     }
 
-    /**
-     * function to write staff ID
-     * */
     // [4] Staff ID Panel - Label and Input Field
     private JPanel getStaffIDPanel() {
         JPanel staffIDPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
@@ -106,9 +100,6 @@ public class StaffLoginGUI {
         return staffIDPanel;
     }
 
-    /**
-     * function to write staff password
-     * */
     // [5] Password Panel - Label and Input Field
     private JPanel getPasswordPanel() {
         JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
@@ -124,10 +115,7 @@ public class StaffLoginGUI {
         return passwordPanel;
     }
 
-    /**
-     * function to write enter button
-     * */
-    // [6] Enter Button Panel
+    // [6] Enter Button Panel - Handles Login Action
     private JPanel getButtonPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
         buttonPanel.setPreferredSize(new Dimension(500, 30));
@@ -140,23 +128,33 @@ public class StaffLoginGUI {
         enterButton.setFocusPainted(false);
         enterButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        enterButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        // Hover effects for Enter button
+        enterButton.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 enterButton.setBackground(new Color(50, 150, 250));
             }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent evt) {
                 enterButton.setBackground(Color.WHITE);
             }
         });
 
+        // Action listener for login validation using SQL query.
         enterButton.addActionListener(e -> {
-            if (getStaffID().isEmpty() || getPassword().isEmpty()) {
+            String staffId = getStaffID();
+            String password = getPassword();
+            if (staffId.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Please enter Staff ID and Password", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-            else
-            {
-                JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                // Validate credentials using SQLConnection's loginStaff method.
+                boolean isValid = sqlConnection.loginStaff(staffId, password);
+                if (isValid) {
+                    JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    // After successful login, open Main Menu GUI.
+                    new MainMenuGUI();
+                    frame.dispose(); // Close login window.
+                } else {
+                    JOptionPane.showMessageDialog(null, "Invalid Staff ID or Password", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
@@ -164,12 +162,9 @@ public class StaffLoginGUI {
         return buttonPanel;
     }
 
-    /**
-     * Bottom panel has one part:
-     *        1. forgotten password button
-     * */
+    // [7] Bottom Panel - Contains Forgotten Password Option
     private JPanel getBottomPanel() {
-        JPanel bottomPanel = new JPanel((new FlowLayout(FlowLayout.LEFT, 50, 0)));
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 0));
         bottomPanel.setBackground(Color.white);
         bottomPanel.setPreferredSize(new Dimension(700, 40));
 
@@ -179,17 +174,87 @@ public class StaffLoginGUI {
         forgotPasswordButton.setForeground(Color.BLUE);
         forgotPasswordButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+        // Action listener to open the Password Reset dialog.
+        forgotPasswordButton.addActionListener(e -> showResetPasswordDialog());
+
         bottomPanel.add(forgotPasswordButton);
         return bottomPanel;
     }
 
-    // New method to get the Staff ID from the field
+    // Utility method to get Staff ID from input field.
     private String getStaffID() {
-        return staffIdField.getText();
+        return staffIdField.getText().trim();
     }
 
-    // New method to get the Password from the field
+    // Utility method to get Password from input field.
     private String getPassword() {
         return new String(passwordField.getPassword());
+    }
+
+    /**
+     * Displays a dialog for resetting the password.
+     */
+    private void showResetPasswordDialog() {
+        JDialog resetDialog = new JDialog(frame, "Reset Password", true);
+        resetDialog.setSize(400, 300);
+        resetDialog.setLayout(new BoxLayout(resetDialog.getContentPane(), BoxLayout.Y_AXIS));
+
+        JPanel infoPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        infoPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JLabel idLabel = new JLabel("Staff ID:");
+        JTextField idField = new JTextField();
+
+        JLabel emailLabel = new JLabel("Email:");
+        JTextField emailField = new JTextField();
+
+        JLabel newPassLabel = new JLabel("New Password:");
+        JPasswordField newPassField = new JPasswordField();
+
+        JLabel confirmPassLabel = new JLabel("Confirm Password:");
+        JPasswordField confirmPassField = new JPasswordField();
+
+        infoPanel.add(idLabel);
+        infoPanel.add(idField);
+        infoPanel.add(emailLabel);
+        infoPanel.add(emailField);
+        infoPanel.add(newPassLabel);
+        infoPanel.add(newPassField);
+        infoPanel.add(confirmPassLabel);
+        infoPanel.add(confirmPassField);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JButton resetButton = new JButton("Reset Password");
+        resetButton.addActionListener(e -> {
+            String staffId = idField.getText().trim();
+            String email = emailField.getText().trim();
+            String newPassword = new String(newPassField.getPassword());
+            String confirmPassword = new String(confirmPassField.getPassword());
+
+            if (staffId.isEmpty() || email.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+                JOptionPane.showMessageDialog(resetDialog, "All fields are required", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!newPassword.equals(confirmPassword)) {
+                JOptionPane.showMessageDialog(resetDialog, "Passwords do not match", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Call SQLConnection to update the password.
+            boolean success = sqlConnection.resetPassword(staffId, email, newPassword);
+            if (success) {
+                JOptionPane.showMessageDialog(resetDialog, "Password reset successful", "Success", JOptionPane.INFORMATION_MESSAGE);
+                resetDialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(resetDialog, "Password reset failed. Please check your Staff ID and Email.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        buttonPanel.add(resetButton);
+
+        resetDialog.add(infoPanel);
+        resetDialog.add(buttonPanel);
+        resetDialog.setLocationRelativeTo(frame);
+        resetDialog.setVisible(true);
     }
 }
