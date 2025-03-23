@@ -7,7 +7,7 @@ public class Schedule {
     private List<Event> events;
 
     public Schedule() {
-        this.events = new ArrayList<>();
+        events = new ArrayList<>();
     }
 
     public List<Event> getEvents() {
@@ -16,5 +16,9 @@ public class Schedule {
 
     public void addEvent(Event event) {
         events.add(event);
+    }
+
+    public void removeEvent(Event event) {
+        events.remove(event);
     }
 }
