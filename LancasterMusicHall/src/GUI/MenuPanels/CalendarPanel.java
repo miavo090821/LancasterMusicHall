@@ -1,5 +1,6 @@
 package GUI.MenuPanels;
 
+import GUI.MainMenuGUI;
 import operations.entities.Activity;
 import operations.entities.Booking;
 import operations.entities.Seat;
@@ -16,7 +17,7 @@ import java.util.Locale;
 
 public class CalendarPanel extends JPanel {
 
-    public CalendarPanel() {
+    public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         setPreferredSize(new Dimension(800, 450)); // More width
         setBackground(Color.WHITE);
 
@@ -113,6 +114,10 @@ public class CalendarPanel extends JPanel {
         newEventButton.setFont(new Font("Arial", Font.BOLD, 12));
         newEventButton.setBackground(new Color(200, 170, 250));
         newEventButton.setPreferredSize(new Dimension(120, 30)); // Smaller button
+
+        // Click action to switch tabs and highlight the active button
+        newEventButton.addActionListener(e -> {cardLayout.show(cardPanel, "NewEvent");});
+
         bottomPanel.add(newEventButton);
 
         add(bottomPanel);

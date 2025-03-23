@@ -33,11 +33,12 @@ public class MainMenuGUI {
 
         // Add different sections (cards) to the panel
         cardPanel.add(new HomePanel(this), "Home");
-        cardPanel.add(new CalendarPanel(), "Calendar");
+        cardPanel.add(new CalendarPanel(this, cardLayout, cardPanel), "Calendar");
         cardPanel.add(new VenueDetailsPanel(this), "Diary");
         cardPanel.add(new BookingPanel(this), "Booking");
         cardPanel.add(getReportsPanel(), "Reports");
         cardPanel.add(new SettingsPanel(this), "Settings");
+        cardPanel.add(new EventPanel(this), "NewEvent");
 
         // Add components to frame
         frame.add(getTopPanel());
