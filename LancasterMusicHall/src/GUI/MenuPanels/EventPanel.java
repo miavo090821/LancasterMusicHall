@@ -2,7 +2,6 @@ package GUI.MenuPanels;
 
 import Database.SQLConnection;
 import GUI.MainMenuGUI;
-import com.toedter.calendar.JCalendar;
 import com.toedter.calendar.JDateChooser;
 import operations.entities.Activity;
 import operations.entities.Booking;
@@ -218,37 +217,4 @@ public class EventPanel extends JPanel {
         panel.add(textField);
         return panel;
     }
-
-    public static void applyMinimalFlatUI() {
-        Color white = Color.WHITE;
-        Color lightGray = new Color(220, 220, 220);
-        Color darkGray = new Color(50, 50, 50);
-
-        // Global background and text colors
-        UIManager.put("Panel.background", white);
-        UIManager.put("Button.background", white);
-        UIManager.put("ComboBox.background", white);
-        UIManager.put("TextField.background", white);
-        UIManager.put("FormattedTextField.background", white);
-        UIManager.put("Spinner.background", white);
-
-        UIManager.put("Button.foreground", darkGray);
-        UIManager.put("ComboBox.foreground", darkGray);
-        UIManager.put("TextField.foreground", darkGray);
-        UIManager.put("FormattedTextField.foreground", darkGray);
-        UIManager.put("Spinner.foreground", darkGray);
-
-        // Flat borders
-        Border flatBorder = BorderFactory.createLineBorder(lightGray, 1);
-        UIManager.put("TextField.border", flatBorder);
-        UIManager.put("ComboBox.border", flatBorder);
-        UIManager.put("Spinner.border", flatBorder);
-        UIManager.put("Button.border", flatBorder);
-
-        // Remove focus painting (dotted outlines)
-        UIManager.put("Button.focusPainted", false);
-        UIManager.put("ComboBox.focusPainted", false);
-    }
-
-
 }
