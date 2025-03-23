@@ -104,10 +104,10 @@ public class SQLConnection implements SQLInterface {
 
     /**
      * Creates a new booking record in the database.
-     * Both the Operation team and the Box Office team can call this method.
+     * Both the Operations and Box Office teams can call this method.
      *
      * Assumptions:
-     * - Booking's startDate and endDate are stored as ISO strings (yyyy-MM-dd).
+     * - Booking's startDate and endDate are stored as ISO strings ("yyyy-MM-dd").
      * - holdExpiryDate is also in ISO format (if provided); otherwise, it is null.
      * - Venue is stored using its venueId.
      *
@@ -194,4 +194,42 @@ public class SQLConnection implements SQLInterface {
         }
         return success;
     }
+
+    /**
+     * Updates a marketing campaign in the database.
+     * This method is called by the Marketing team.
+     * After updating, it notifies all registered listeners so that the Operations team
+     * (or any other interested modules) can refresh the latest marketing data.
+     *
+     * @param campaignId the ID of the marketing campaign.
+     * @param newContent the new content or status for the campaign.
+     * @return true if the update was successful, false otherwise.
+     */
+    public boolean updateMarketingCampaign(int campaignId, String newContent) {
+        boolean success = false;
+        String query = "UPDATE MarketingCampaign SET content = ? WHERE campaign_id = ?";
+
+        try (Connection con = DriverManager.getConnection(url, dbUser, dbPassword);
+             PreparedStatement ps = con.prepareStatement(query)) {
+
+            con.setAutoCommit(false);
+            ps.setString(1, newContent);
+            ps.setInt(2, campaignId);
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                con.commit();
+                success = true;
+                // Notify listeners that a marketing update occurred.
+                notifyUpdateListeners("marketingUpdate", campaignId);
+            } else {
+                con.rollback();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
+    // Additional methods (e.g., cancelBooking) can follow a similar pattern.
 }

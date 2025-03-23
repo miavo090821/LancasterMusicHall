@@ -53,7 +53,73 @@ public class Report implements IReport {
         return (double) startTime / 100.0;
     }
 
-    
+    @Override
+    public int getPrice() {
+        return price;
+    }
+
+    @Override
+    public double getDoublePrice() {
+        // e.g. price=999 -> 9.99
+        return price / 100.0;
+    }
+
+    @Override
+    public Map<ETicketType, Integer> getSeatsSold() {
+        return seats;
+    }
+
+    @Override
+    public Map<ETicketType, Integer> getRefundSeats() {
+        return refundedSeats;
+    }
+
+    @Override
+    public double getRefundSum() {
+        double sum = 0;
+        for (ETicketType type : ETicketType.values()) {
+            int refundedCount = refundedSeats.getOrDefault(type, 0);
+            sum += (refundedCount * getDoublePrice()) * (type == ETicketType.DISCOUNTED || type == ETicketType.DISABLED ? discount : 1.0);
+        }
+        return sum;
+    }
+
+    @Override
+    public List<String> getRefundNotes() {
+        return refundComplaints;
+    }
+
+    @Override
+    public double getTotalRevenue() {
+        // Example: total seats sold * price, minus discount for certain types
+        double revenue = 0;
+        for (ETicketType type : ETicketType.values()) {
+            int soldCount = seats.getOrDefault(type, 0);
+            double seatRevenue = soldCount * getDoublePrice();
+            if (type == ETicketType.DISCOUNTED || type == ETicketType.DISABLED) {
+                seatRevenue *= discount;
+            }
+            revenue += seatRevenue;
+        }
+        return revenue;
+    }
+
+    @Override
+    public String generateReport() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Title: ").append(title).append("\n");
+        sb.append("Date: ").append(date).append("\n");
+        sb.append("Start Time: ").append(getStartTime()).append("\n");
+        sb.append("Price: £").append(getDoublePrice()).append("\n");
+        sb.append("Discount: ").append((1 - discount) * 100).append("%\n\n");
+
+        sb.append("Seats Sold:\n");
+        for (ETicketType type : ETicketType.values()) {
+            int soldCount = seats.getOrDefault(type, 0);
+            int refundCount = refundedSeats.getOrDefault(type, 0);
+            sb.append("  ").append(type).append(": Sold=").append(soldCount)
+                    .append(", Refunded=").append(refundCount).append("\n");
+        }
 
         sb.append("\nTotal revenue: £").append(getTotalRevenue()).append("\n");
         sb.append("Refund sum: £").append(getRefundSum()).append("\n\n");
