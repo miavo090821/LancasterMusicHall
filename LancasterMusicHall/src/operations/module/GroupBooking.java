@@ -15,7 +15,7 @@ public class GroupBooking {
     public String getBookingName() {
         return groupName;
     }
-
+//  here is the method to show all the bookings details
     public List<BookingDetails> getBookingList() {
         return bookingList;
     }

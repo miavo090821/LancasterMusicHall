@@ -1,12 +1,18 @@
 package Database;
 // this supports 3 teams in connecting databases with the interfaces
+import operations.entities.Activity;
 import operations.entities.Booking;
+import operations.entities.Seat;
+import operations.entities.Venue;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,43 +122,56 @@ public class SQLConnection implements SQLInterface {
      */
     public boolean createBooking(Booking booking) {
         boolean success = false;
-        String query = "INSERT INTO Booking " +
-                "(booking_id, start_date, end_date, activity_id, venue_id, held, hold_expiry_date) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // Include start_time and end_time columns
+        String query = "INSERT INTO Booking "
+                + "(booking_id, start_date, end_date, start_time, end_time, "
+                + " activity_id, venue_id, held, hold_expiry_date) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection con = DriverManager.getConnection(url, dbUser, dbPassword);
              PreparedStatement ps = con.prepareStatement(query)) {
 
             con.setAutoCommit(false);
 
-            // Set booking ID
+            // 1) Booking ID
             ps.setInt(1, booking.getId());
 
-            // Convert date strings (ISO format "yyyy-MM-dd") to java.sql.Date.
+            // 2) Start Date (LocalDate -> java.sql.Date)
             ps.setDate(2, java.sql.Date.valueOf(booking.getStartDate()));
+
+            // 3) End Date (LocalDate -> java.sql.Date)
             ps.setDate(3, java.sql.Date.valueOf(booking.getEndDate()));
 
-            // Activity ID from the associated Activity.
-            ps.setInt(4, booking.getActivityID());
+            // 4) Start Time (LocalTime -> java.sql.Time)
+            ps.setTime(4, java.sql.Time.valueOf(booking.getStartTime()));
 
-            // Use getVenueId() from Venue class.
-            ps.setInt(5, (booking.getVenue() != null ? booking.getVenue().getVenueId() : 0));
+            // 5) End Time (LocalTime -> java.sql.Time)
+            ps.setTime(5, java.sql.Time.valueOf(booking.getEndTime()));
 
-            // Held flag.
-            ps.setBoolean(6, booking.isHeld());
+            // 6) Activity ID
+            ps.setInt(6, booking.getActivityID());
 
-            // Hold expiry date: if provided, convert to sql.Date; else set as NULL.
-            if (booking.getHoldExpiryDate() != null && !booking.getHoldExpiryDate().isEmpty()) {
-                ps.setDate(7, java.sql.Date.valueOf(booking.getHoldExpiryDate()));
+            // 7) Venue ID
+            if (booking.getVenue() != null) {
+                ps.setInt(7, booking.getVenue().getVenueId());
             } else {
-                ps.setNull(7, Types.DATE);
+                ps.setNull(7, Types.INTEGER);
+            }
+
+            // 8) Held
+            ps.setBoolean(8, booking.isHeld());
+
+            // 9) Hold Expiry Date
+            if (booking.getHoldExpiryDate() != null && !booking.getHoldExpiryDate().isEmpty()) {
+                ps.setDate(9, java.sql.Date.valueOf(booking.getHoldExpiryDate()));
+            } else {
+                ps.setNull(9, Types.DATE);
             }
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
                 con.commit();
                 success = true;
-                // Notify all listeners that a booking was created.
                 notifyUpdateListeners("bookingCreated", booking.getId());
             } else {
                 con.rollback();
@@ -163,6 +182,7 @@ public class SQLConnection implements SQLInterface {
 
         return success;
     }
+
 
     /**
      * Example method to update a booking in the DB.
@@ -231,17 +251,63 @@ public class SQLConnection implements SQLInterface {
         return success;
     }
 
+//    here is the method to get the bookings on calendar
     /**
      * Example read method to retrieve all bookings.
      * This can be used by the Operations team to refresh their view.
      */
     public List<Booking> getAllBookings() {
         List<Booking> bookings = new ArrayList<>();
-        String query = "SELECT * FROM Booking";
-        // Implementation: run query, build Booking objects, add to list
-        // For brevity, the detailed implementation is omitted.
+        String query = "SELECT booking_id, start_date, end_date, start_time, end_time, "
+                + "activity_id, venue_id, held, hold_expiry_date "
+                + "FROM Booking";
+
+        try (Connection con = DriverManager.getConnection(url, dbUser, dbPassword);
+             PreparedStatement ps = con.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                int bookingId = rs.getInt("booking_id");
+                LocalDate startDate = rs.getDate("start_date").toLocalDate();
+                LocalDate endDate = rs.getDate("end_date").toLocalDate();
+                LocalTime startTime = rs.getTime("start_time").toLocalTime();
+                LocalTime endTime = rs.getTime("end_time").toLocalTime();
+
+                int activityId = rs.getInt("activity_id");
+                int venueId = rs.getInt("venue_id");
+                boolean held = rs.getBoolean("held");
+                String holdExpiryDateStr = null;
+                if (rs.getDate("hold_expiry_date") != null) {
+                    holdExpiryDateStr = rs.getDate("hold_expiry_date").toString(); // or convert to a string
+                }
+
+                // For now, create a placeholder Activity/Venue (or fetch them properly if you have separate tables).
+                Activity activity = new Activity(activityId, "Activity" + activityId);
+                Venue venue = new Venue(venueId, "Venue" + venueId, "Hall", 300);
+
+                // You can load seats from another table if you store them separately.
+                List<Seat> seats = new ArrayList<>();
+
+                Booking booking = new Booking(
+                        bookingId,
+                        startDate,
+                        endDate,
+                        startTime,
+                        endTime,
+                        activity,
+                        venue,
+                        held,
+                        holdExpiryDateStr,
+                        seats
+                );
+                bookings.add(booking);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return bookings;
     }
+
 
     // Additional methods (e.g., cancelBooking) can follow a similar pattern.
 }
