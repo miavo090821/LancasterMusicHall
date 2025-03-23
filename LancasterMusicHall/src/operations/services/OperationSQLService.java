@@ -2,61 +2,138 @@ package operations.services;
 
 import Database.SQLConnection;
 import Database.DatabaseUpdateListener;
-import operations.interfaces.*;
+import operations.interfaces.OperationsInterface;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import java.util.*;
-import java.util.Date;
-
-/**
- * Implements IOperations for the Operation team.
- * Also implements DatabaseUpdateListener so it can react
- * to any DB updates triggered by Box Office or Marketing.
- */
-public class OperationSQLService implements IOperations, DatabaseUpdateListener {
-
-    // Reuse the same credentials from SQLConnection
-    private final String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/xxx";
-    private final String dbUser = "your_db_username";
-    private final String dbPassword = "your_db_password";
-
-    // A reference to the shared SQLConnection
+public class OperationSQLService implements OperationsInterface, DatabaseUpdateListener {
     private final SQLConnection sqlConnection;
 
     public OperationSQLService() {
         sqlConnection = new SQLConnection();
-        // Register this service so it gets notifications (e.g. booking updates)
+        // Register this service so it receives notifications.
         sqlConnection.registerUpdateListener(this);
     }
 
+    // Implement OperationsInterface methods (getFilmUpdate, getEventRoom, etc.)
+    // ...
+
+    /**
+     * This method is invoked whenever the SQLConnection notifies an update.
+     */
     @Override
-
-
-    
-
-    @Override
-    public String generateDailyReport(Date day) {
-        List<IReport> dailyReports = getDailyReports(day);
-        StringBuilder sb = new StringBuilder("DAILY REPORT\n\n");
-        for (IReport rep : dailyReports) {
-            sb.append(rep.generateReport()).append("\n\n");
+    public void databaseUpdated(String updateType, Object data) {
+        switch (updateType) {
+            case "bookingCreated":
+                System.out.println("Operations service: New booking created with ID " + data);
+                // Refresh bookings/reports as needed.
+                break;
+            case "bookingUpdate":
+                System.out.println("Operations service: Booking updated. ID: " + data);
+                // Re-query booking details.
+                break;
+            case "marketingUpdate":
+                System.out.println("Operations service: Marketing update received for campaign ID " + data);
+                // Re-query or refresh marketing data as needed.
+                break;
+            case "passwordReset":
+                System.out.println("Operations service: Password reset for staff " + data);
+                break;
+            default:
+                System.out.println("Operations service: Unknown update type " + updateType);
         }
-        return sb.toString();
+    }
+
+    // ... Implement other OperationsInterface methods ...
+
+    @Override
+    public String getFilmUpdate(operations.module.Schedule schedule) {
+        // Implementation here...
+        return "";
     }
 
     @Override
-    public String generateWeeklyReport(Date day) {
-        List<IReport> weeklyReports = getWeeklyReports(day);
-        StringBuilder sb = new StringBuilder("WEEKLY REPORT\n\n");
-        for (IReport rep : weeklyReports) {
-            sb.append(rep.generateReport()).append("\n\n");
-        }
-        return sb.toString();
+    public String getEventRoom(operations.module.Event event) {
+        // Implementation here...
+        return "";
     }
 
-  }
+    @Override
+    public LocalDate getEventDate(operations.module.Event event) {
+        // Implementation here...
+        return null;
+    }
+
+    @Override
+    public LocalTime getEventTime(operations.module.Event event) {
+        // Implementation here...
+        return null;
+    }
+
+    @Override
+    public String reasonofBooking(operations.module.Event event) {
+        // Implementation here...
+        return "";
+    }
+
+    @Override
+    public int getOverallAttendance(operations.module.Event event) {
+        // Implementation here...
+        return 0;
+    }
+
+    @Override
+    public List<operations.entities.Seat> getGroupBookingHeldSeats(operations.module.GroupBooking group) {
+        // Implementation here...
+        return null;
+    }
+
+    @Override
+    public String getGroupName(operations.module.GroupBooking group) {
+        // Implementation here...
+        return "";
+    }
+
+    @Override
+    public String getOrganizerName(operations.entities.Booking booking) {
+        // Implementation here...
+        return "";
+    }
+
+    @Override
+    public int getNumberofSeatsNeeded(operations.module.GroupBooking booking) {
+        // Implementation here...
+        return 0;
+    }
+
+    @Override
+    public int getNumberofAccessibleSeatsNeeded(operations.module.GroupBooking groupbooking) {
+        // Implementation here...
+        return 0;
+    }
+
+    @Override
+    public List<operations.entities.Seat> getBookedSeatsForEvent(operations.module.Event event) {
+        // Implementation here...
+        return null;
+    }
+
+    @Override
+    public List<operations.entities.Booking> getRecordofDiscounts(operations.module.Event event) {
+        // Implementation here...
+        return null;
+    }
+
+    @Override
+    public operations.module.Schedule getVenueTours(operations.module.Schedule overallSchedule) {
+        // Implementation here...
+        return null;
+    }
+
+    @Override
+    public int getAttendeesCount(operations.module.Event event) {
+        // Implementation here...
+        return 0;
+    }
+}
