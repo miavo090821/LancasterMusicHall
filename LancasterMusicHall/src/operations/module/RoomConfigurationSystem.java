@@ -3,13 +3,14 @@ package operations.module;
 import operations.entities.Booking;
 import operations.entities.DailySheet;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RoomConfigurationSystem {
 
     // Returns a sample room availability map for a given date.
-    public Map<String, String> getRoomAvailability(String date) {
+    public Map<String, String> getRoomAvailability(LocalDate date) {
         Map<String, String> availability = new HashMap<>();
         availability.put("Main Hall", "Available");
         availability.put("Small Hall", "Booked");

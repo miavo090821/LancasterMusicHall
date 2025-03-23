@@ -1,8 +1,12 @@
+package GUI;
+
+import Database.SQLConnection;
+import GUI.MenuPanels.*;
+
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.*;
 
 // Main class to run both Part 1 and Part 2
@@ -10,14 +14,16 @@ public class MainMenuGUI {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainMenuGUI::new);
     }
+    // Create the navigation bar
+    private JButton activeButton = null; // Track the currently selected button
     private JPanel cardPanel;
     private CardLayout cardLayout;
-    private static final String fileName = "reminders.txt";
+    private SQLConnection sqlConnection = new SQLConnection();
 
     public MainMenuGUI() {
         JFrame frame = new JFrame("Main Menu");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 500);
+        frame.setSize(600, 600);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
         // Create navigation bar
@@ -26,17 +32,16 @@ public class MainMenuGUI {
         // Create main content area using CardLayout
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
-
-//        frame.add(getTopPanel());
-//        frame.add(getMainContainer());
-//        frame.add(getBottomPanel());
+        CalendarPanel calendar = new CalendarPanel(this, cardLayout, cardPanel );
 
         // Add different sections (cards) to the panel
-        cardPanel.add(createHomePanel(), "Home");
-        cardPanel.add(getCalenderPanel(), "Calendar");
-        cardPanel.add(getDiaryPanel(), "Diary");
+        cardPanel.add(new HomePanel(this), "Home");
+        cardPanel.add(calendar, "Calendar");
+        cardPanel.add(new VenueDetailsPanel(this), "Diary");
+        cardPanel.add(new BookingPanel(this), "Booking");
         cardPanel.add(getReportsPanel(), "Reports");
-        cardPanel.add(getSettingsPanel(), "Settings");
+        cardPanel.add(new SettingsPanel(this), "Settings");
+        cardPanel.add(new EventPanel(this), "NewEvent");
 
         // Add components to frame
         frame.add(getTopPanel());
@@ -46,86 +51,12 @@ public class MainMenuGUI {
         frame.setVisible(true);
     }
 
-    private JPanel getSettingsPanel() {
-        JPanel navBar = new JPanel();
-        navBar.setLayout(new FlowLayout());
-        return navBar;
-    }
-
-    private JPanel getDiaryPanel() {
-        JPanel navBar = new JPanel();
-        navBar.setLayout(new FlowLayout());
-        return navBar;
-    }
-
     private JPanel getReportsPanel() {
         JPanel navBar = new JPanel();
         navBar.setLayout(new FlowLayout());
+
         return navBar;
     }
-
-    private JPanel getCalenderPanel() {
-        JPanel navBar = new JPanel();
-        navBar.setLayout(new FlowLayout());
-        return navBar;
-    }
-
-    private JPanel createHomePanel() {
-        JPanel homePanel = new JPanel(new BorderLayout());
-        homePanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-        homePanel.setLayout(new BoxLayout(homePanel, BoxLayout.Y_AXIS));
-
-        // Section 1: Label
-        JPanel remindersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 25));
-        remindersPanel.setPreferredSize(new Dimension(600, 30));
-        remindersPanel.setBackground(Color.WHITE);
-        JLabel remindersLabel = new JLabel("Important Reminders:");
-        remindersLabel.setFont(new Font("Arial", Font.BOLD, 27));
-        remindersPanel.add(remindersLabel);
-
-        // Section 2: Text Area
-        JPanel textRemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 0));
-        textRemPanel.setBackground(Color.WHITE);
-        JTextArea textReminder = new JTextArea(loadTextFromFile());  // Load saved text
-        textReminder.setPreferredSize(new Dimension(350, 200));
-        textRemPanel.add(new JScrollPane(textReminder));
-
-        // Section 3: Bottom Panel
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 50, 0));
-        bottomPanel.setBackground(Color.white);
-        bottomPanel.setPreferredSize(new Dimension(600, 30));
-
-        JButton button = new JButton("Log Out");
-        button.setFont(new Font("Arial", Font.BOLD, 16));
-        button.setBackground(Color.WHITE);
-        button.setBorderPainted(true);
-        button.setFocusPainted(false);
-        button.setContentAreaFilled(true);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        // Save text before closing
-        button.addActionListener(e -> saveTextToFile(textReminder.getText()));
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(50, 150, 250));
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(Color.WHITE);
-            }
-        });
-        bottomPanel.add(button);
-
-        // Add to main panel
-        homePanel.add(remindersPanel);
-        homePanel.add(textRemPanel);
-        homePanel.add(bottomPanel);
-
-        return homePanel;
-    }
-
-    // Create the navigation bar
-    private JButton activeButton = null; // Track the currently selected button
 
     private JPanel createNavBar() {
         JPanel navigationTab = new JPanel();
@@ -133,12 +64,12 @@ public class MainMenuGUI {
         navigationTab.setBackground(Color.WHITE);
 
         JPanel navBar = new JPanel();
-        navBar.setLayout(new GridLayout(1, 5, 0, 0)); // 1 row, 5 columns
+        navBar.setLayout(new GridLayout(1, 6, 0, 0)); // 1 row, 5 columns
         navBar.setPreferredSize(new Dimension(550, 60)); // Fixed width and height
         navBar.setBackground(new Color(200, 170, 230)); // Purple background
         navBar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Full black border
 
-        String[] tabs = {"Home", "Calendar", "Diary", "Reports", "Settings"};
+        String[] tabs = {"Home", "Calendar", "Diary","Booking", "Reports", "Settings"};
 
         for (String tab : tabs) {
             JButton button = new JButton(tab);
@@ -200,9 +131,6 @@ public class MainMenuGUI {
         return navigationTab;
     }
 
-    /**
-     * function to write the title
-     * */
     private JPanel getTopPanel() {
         JPanel topPanel = new JPanel();
         topPanel.setBackground(Color.white);
@@ -215,29 +143,42 @@ public class MainMenuGUI {
         return topPanel;
     }
 
-    private void saveTextToFile(String text) {
+    public void saveTextToFile(String text, String fileName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             writer.write(text);
+            System.out.println("Saved to: " + new File(fileName).getAbsolutePath()); // Debugging
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private String loadTextFromFile() {
+    public String loadTextFromFile(String fileName) {
         StringBuilder content = new StringBuilder();
+        File file = new File(fileName);
+        System.out.println("Trying to load from: " + file.getAbsolutePath()); // Debugging
+        if (!file.exists()) {
+            System.out.println("No saved file found: " + file.getAbsolutePath());
+            return "";
+        }
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 content.append(line).append("\n");
             }
         } catch (IOException e) {
-            System.out.println("No saved reminders found.");
+            e.printStackTrace();
         }
         return content.toString();
     }
 
+    public void stylizeButton(JButton button) {
+        button.setFont(new Font("Arial", Font.BOLD, 16));
+        button.setBackground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
 
+    public SQLConnection getSqlConnection() {
+        return sqlConnection;
+    }
 }
-
-
-

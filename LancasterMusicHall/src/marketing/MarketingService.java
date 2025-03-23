@@ -5,6 +5,7 @@ import operations.module.CalendarModule;
 import operations.module.IncomeTracker;
 import operations.module.RoomConfigurationSystem;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public class MarketingService implements MarketingInterface {
 
     // --- 1. Calendar Access ---
     @Override
-    public String viewCalendar(String startDate, String endDate) {
+    public String viewCalendar(LocalDate startDate, LocalDate endDate) {
         // Fetch bookings within the specified date range
         List<Booking> bookings = calendarModule.getBookingsForDate(startDate, endDate);
         StringBuilder calendarData = new StringBuilder();
@@ -45,7 +46,7 @@ public class MarketingService implements MarketingInterface {
 
     // --- 2. Space Availability ---
     @Override
-    public Map<String, String> getSpaceAvailability(String date) {
+    public Map<String, String> getSpaceAvailability(LocalDate date) {
         // Fetch room availability for the specified date
         return roomConfigSystem.getRoomAvailability(date);
     }
@@ -79,7 +80,7 @@ public class MarketingService implements MarketingInterface {
 
     // --- 6. Usage Reports ---
     @Override
-    public String getUsageReports(String startDate, String endDate) {
+    public String getUsageReports(LocalDate startDate, LocalDate endDate) {
         // Fetch usage reports for the specified date range
         return incomeTracker.getUsageReport(startDate, endDate);
     }
@@ -93,14 +94,14 @@ public class MarketingService implements MarketingInterface {
 
     // --- 8. Film Showings ---
     @Override
-    public boolean scheduleFilm(int filmId, String proposedDate) {
+    public boolean scheduleFilm(int filmId, LocalDate proposedDate) {
         // Schedule a film for the proposed date
         return calendarModule.scheduleFilm(filmId, proposedDate);
     }
 
     // --- 9. Daily Sheets ---
     @Override
-    public String getDailySheet(String date) {
+    public String getDailySheet(LocalDate date) {
         // Fetch daily usage sheet for the specified date
         return incomeTracker.getDailySheet(date);
     }
