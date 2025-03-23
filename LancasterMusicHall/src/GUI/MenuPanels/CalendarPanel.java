@@ -175,7 +175,7 @@ public class CalendarPanel extends JPanel {
                             isLeft ? 2 : 0,
                             isBottom ? 2 : 0,
                             isRight ? 2 : 0,
-                            Color.BLUE
+                            Color.black
                     ));
                 }
             }
@@ -217,6 +217,19 @@ public class CalendarPanel extends JPanel {
                 LocalDate.of(2025, 3, 5),
                 LocalTime.of(14,20),
                 LocalTime.of(16,20),
+                movieActivity2,
+                hallVenue,
+                false,
+                null,
+                seats
+        ));
+
+        bookings.add(new Booking(
+                101,
+                LocalDate.of(2025, 3, 4),
+                LocalDate.of(2025, 3, 6),
+                LocalTime.of(17,2),
+                LocalTime.of(20,20),
                 movieActivity2,
                 hallVenue,
                 false,
