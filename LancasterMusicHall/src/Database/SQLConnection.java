@@ -1,5 +1,5 @@
 package Database;
-
+// this supports 3 teams in connecting databases with the interfaces
 import operations.entities.Booking;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -230,10 +230,16 @@ public class SQLConnection implements SQLInterface {
         }
         return success;
     }
+
+    /**
+     * Example read method to retrieve all bookings.
+     * This can be used by the Operations team to refresh their view.
+     */
     public List<Booking> getAllBookings() {
         List<Booking> bookings = new ArrayList<>();
         String query = "SELECT * FROM Booking";
-        // ... run query, build Booking objects, add to list ...
+        // Implementation: run query, build Booking objects, add to list
+        // For brevity, the detailed implementation is omitted.
         return bookings;
     }
 
