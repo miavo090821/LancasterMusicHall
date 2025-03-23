@@ -1,5 +1,6 @@
 package GUI.MenuPanels;
 
+import Database.SQLConnection;
 import GUI.MainMenuGUI;
 import operations.entities.Activity;
 import operations.entities.Booking;
@@ -15,9 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+
+
 public class CalendarPanel extends JPanel {
 
-    public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
+    private SQLConnection sqlConnection;
+
+    public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel,SQLConnection sqlConnection) {
+        this.sqlConnection = sqlConnection;
         setPreferredSize(new Dimension(800, 450)); // More width
         setBackground(Color.WHITE);
 
