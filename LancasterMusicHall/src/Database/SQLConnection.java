@@ -230,6 +230,12 @@ public class SQLConnection implements SQLInterface {
         }
         return success;
     }
+    public List<Booking> getAllBookings() {
+        List<Booking> bookings = new ArrayList<>();
+        String query = "SELECT * FROM Booking";
+        // ... run query, build Booking objects, add to list ...
+        return bookings;
+    }
 
     // Additional methods (e.g., cancelBooking) can follow a similar pattern.
 }

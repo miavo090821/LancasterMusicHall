@@ -1,5 +1,7 @@
 package operations.interfaces;
-
+// this is the interface that boxoffice built for operation team
+// they separated logic into different files which also let to
+// creation of other operation.services files.
 import java.util.Date;
 import java.util.List;
 

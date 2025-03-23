@@ -1,8 +1,10 @@
 package operations.interfaces;
-
+// this is the marketing file for operation team
+// it led to multiple classes created to support this
 import operations.entities.Booking;
 import operations.entities.Seat;
 import operations.module.Event;
+import operations.module.GroupBooking;
 import operations.module.Schedule;
 
 import java.util.List;
