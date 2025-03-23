@@ -118,60 +118,72 @@ public class CalendarPanel extends JPanel {
         add(bottomPanel);
     }
     private void renderBookings(ArrayList<Booking> bookings, JLabel[][] calendarCells, String[] days, String[] times) {
-        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH); // e.g., "Mon 1"
+        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
 
-        for (Booking booking : bookings) {
-            LocalDate startDate = booking.getStartDate(); // Now LocalDate
-            LocalDate endDate = booking.getEndDate();     // Now LocalDate
+        for (int bIndex = 0; bIndex < bookings.size(); bIndex++) {
+            Booking booking = bookings.get(bIndex);
+            LocalDate startDate = booking.getStartDate();
+            LocalDate endDate = booking.getEndDate();
+            LocalTime startTime = booking.getStartTime();
+            LocalTime endTime = booking.getEndTime();
 
-            LocalDate currentDate = startDate;
+            int startHour = startTime.getHour();
+            int endHour = endTime.getHour();
 
-            while (!currentDate.isAfter(endDate)) {
-                String dayLabel = currentDate.format(dayFormatter); // e.g., "Thu 20"
+            String startDayLabel = startDate.format(dayFormatter);
+            String endDayLabel = endDate.format(dayFormatter);
 
-                // === Find matching day column ===
-                int colIndex = -1;
-                for (int i = 0; i < days.length; i++) {
-                    if (days[i].equals(dayLabel)) {
-                        colIndex = i;
-                        break;
+            int startCol = -1, endCol = -1;
+            for (int i = 0; i < days.length; i++) {
+                if (days[i].equals(startDayLabel)) startCol = i;
+                if (days[i].equals(endDayLabel)) endCol = i;
+            }
+
+            if (startCol == -1 || endCol == -1 || startCol > endCol) continue;
+
+            int startRow = -1, endRow = -1;
+            for (int i = 0; i < times.length; i++) {
+                int timeSlotHour = Integer.parseInt(times[i]);
+                if (timeSlotHour == startHour) startRow = i;
+                if (timeSlotHour == endHour) endRow = i;
+            }
+
+            if (startRow == -1 || endRow == -1 || startRow > endRow) continue;
+
+            Color bookingColor = bookingColors[bIndex % bookingColors.length]; // Get color from list
+
+            // === Render booking with merged-cell visual ===
+            for (int row = startRow; row <= endRow; row++) {
+                for (int col = startCol; col <= endCol; col++) {
+                    JLabel cell = calendarCells[row][col];
+                    if (row == startRow && col == startCol) {
+                        cell.setText("<html><center>" + booking.getActivityName() + "<br>" + booking.getVenue().getName() + "</center></html>");
+                    } else {
+                        cell.setText("");  // Empty for merged appearance
                     }
+                    cell.setBackground(bookingColor);
+                    cell.setOpaque(true);
+
+                    // Border control
+                    boolean isTop = (row == startRow);
+                    boolean isBottom = (row == endRow);
+                    boolean isLeft = (col == startCol);
+                    boolean isRight = (col == endCol);
+
+                    cell.setBorder(BorderFactory.createMatteBorder(
+                            isTop ? 2 : 0,
+                            isLeft ? 2 : 0,
+                            isBottom ? 2 : 0,
+                            isRight ? 2 : 0,
+                            Color.black
+                    ));
                 }
-
-                if (colIndex != -1) {
-                    LocalTime startTime = booking.getStartTime();
-                    LocalTime endTime = booking.getEndTime();
-
-                    int startHour = startTime.getHour();
-                    int endHour = endTime.getHour();
-
-                    int startRow = -1;
-                    int endRow = -1;
-
-                    System.out.println("Booking ID: " + booking.getId() + ", Day: " + dayLabel + ", Col: " + colIndex);
-                    System.out.println("StartHour: " + startHour + ", EndHour: " + endHour + ", Rows: " + startRow + " to " + endRow);
-
-                    // === Find matching time rows ===
-                    for (int i = 0; i < times.length; i++) {
-                        int timeSlotHour = Integer.parseInt(times[i]);
-                        if (timeSlotHour == startHour) startRow = i;
-                        if (timeSlotHour == endHour) endRow = i;
-                    }
-
-                    // === Render cells ===
-                    if (startRow != -1 && endRow != -1 && startRow <= endRow) {
-                        for (int row = startRow; row <= endRow; row++) {
-                            JLabel cell = calendarCells[row][colIndex];
-                            cell.setText("<html><center>" + booking.getActivityName() + "<br>" + booking.getVenue().getName() + "</center></html>");
-                            cell.setBackground(new Color(200, 230, 255));
-                            cell.setBorder(BorderFactory.createLineBorder(Color.BLUE, 2));
-                        }
-                    }
-                }
-                currentDate = currentDate.plusDays(1); // Next day
             }
         }
     }
+
+
+
 
     // === Sample bookings for demo ===
     private ArrayList<Booking> getSampleBookings() {
@@ -211,10 +223,34 @@ public class CalendarPanel extends JPanel {
                 null,
                 seats
         ));
+
+        bookings.add(new Booking(
+                101,
+                LocalDate.of(2025, 3, 4),
+                LocalDate.of(2025, 3, 6),
+                LocalTime.of(17,2),
+                LocalTime.of(20,20),
+                movieActivity2,
+                hallVenue,
+                false,
+                null,
+                seats
+        ));
         // Add more bookings as needed
 
         return bookings;
     }
+
+    private final Color[] bookingColors = {
+            new Color(200, 230, 255),
+            new Color(255, 230, 200),
+            new Color(230, 255, 200),
+            new Color(255, 200, 230),
+            new Color(230, 200, 255),
+            new Color(200, 255, 230),
+            new Color(255, 255, 200)
+    };
+
 }
 
 
