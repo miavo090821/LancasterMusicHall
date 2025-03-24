@@ -20,8 +20,8 @@ public class SQLConnection implements SQLInterface {
 
     // Updated connection info: use v501.city.ac.uk as the server address.
     private final String url = "jdbc:mysql://v501.city.ac.uk:3306/in2033t23"; // Replace "xxx" with your actual database name
-    private final String dbUser = "your_db_username";
-    private final String dbPassword = "your_db_password";
+    private final String dbUser = "in2033t23_a";
+    private final String dbPassword = "XUBLJfsYMHY";
 
     // Listeners to notify on any database update
     private final List<DatabaseUpdateListener> listeners = new ArrayList<>();
