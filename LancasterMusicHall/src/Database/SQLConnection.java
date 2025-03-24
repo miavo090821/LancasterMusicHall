@@ -1,5 +1,5 @@
 package Database;
-// this supports 3 teams in connecting databases with the interfaces
+
 import operations.entities.Activity;
 import operations.entities.Booking;
 import operations.entities.Seat;
@@ -18,8 +18,8 @@ import java.util.List;
 
 public class SQLConnection implements SQLInterface {
 
-    // Example: Adjust these to your actual DB connection info
-    private final String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t23";
+    // Updated connection info: use v501.city.ac.uk as the server address.
+    private final String url = "jdbc:mysql://v501.city.ac.uk:3306/in2033t23"; // Replace "xxx" with your actual database name
     private final String dbUser = "your_db_username";
     private final String dbPassword = "your_db_password";
 
@@ -114,6 +114,7 @@ public class SQLConnection implements SQLInterface {
      *
      * Assumptions:
      * - Booking's startDate and endDate are stored as ISO strings ("yyyy-MM-dd").
+     * - start_time and end_time are stored as TIME.
      * - holdExpiryDate is also in ISO format (if provided); otherwise, it is null.
      * - Venue is stored using its venueId.
      *
@@ -158,10 +159,10 @@ public class SQLConnection implements SQLInterface {
                 ps.setNull(7, Types.INTEGER);
             }
 
-            // 8) Held
+            // 8) Held flag.
             ps.setBoolean(8, booking.isHeld());
 
-            // 9) Hold Expiry Date
+            // 9) Hold Expiry Date: if provided, convert to java.sql.Date; else set as NULL.
             if (booking.getHoldExpiryDate() != null && !booking.getHoldExpiryDate().isEmpty()) {
                 ps.setDate(9, java.sql.Date.valueOf(booking.getHoldExpiryDate()));
             } else {
@@ -183,7 +184,6 @@ public class SQLConnection implements SQLInterface {
         return success;
     }
 
-
     /**
      * Example method to update a booking in the DB.
      * This can be called when either team modifies an existing booking.
@@ -196,7 +196,7 @@ public class SQLConnection implements SQLInterface {
              PreparedStatement ps = con.prepareStatement(query)) {
 
             con.setAutoCommit(false);
-            // For simplicity, update both start and end dates to the newDate.
+            // For simplicity, update both start_date and end_date to the newDate.
             ps.setDate(1, java.sql.Date.valueOf(newDate));
             ps.setDate(2, java.sql.Date.valueOf(newDate));
             ps.setInt(3, bookingId);
@@ -240,7 +240,6 @@ public class SQLConnection implements SQLInterface {
             if (rows > 0) {
                 con.commit();
                 success = true;
-                // Notify listeners that a marketing update occurred.
                 notifyUpdateListeners("marketingUpdate", campaignId);
             } else {
                 con.rollback();
@@ -251,7 +250,6 @@ public class SQLConnection implements SQLInterface {
         return success;
     }
 
-//    here is the method to get the bookings on calendar
     /**
      * Example read method to retrieve all bookings.
      * This can be used by the Operations team to refresh their view.
@@ -278,14 +276,14 @@ public class SQLConnection implements SQLInterface {
                 boolean held = rs.getBoolean("held");
                 String holdExpiryDateStr = null;
                 if (rs.getDate("hold_expiry_date") != null) {
-                    holdExpiryDateStr = rs.getDate("hold_expiry_date").toString(); // or convert to a string
+                    holdExpiryDateStr = rs.getDate("hold_expiry_date").toString();
                 }
 
-                // For now, create a placeholder Activity/Venue (or fetch them properly if you have separate tables).
+                // Create placeholder Activity and Venue objects
                 Activity activity = new Activity(activityId, "Activity" + activityId);
                 Venue venue = new Venue(venueId, "Venue" + venueId, "Hall", 300);
 
-                // You can load seats from another table if you store them separately.
+                // For seats, create an empty list (or load from another table if available)
                 List<Seat> seats = new ArrayList<>();
 
                 Booking booking = new Booking(
@@ -307,7 +305,4 @@ public class SQLConnection implements SQLInterface {
         }
         return bookings;
     }
-
-
-    // Additional methods (e.g., cancelBooking) can follow a similar pattern.
 }
