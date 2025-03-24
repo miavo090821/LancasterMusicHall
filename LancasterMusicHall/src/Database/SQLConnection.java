@@ -18,7 +18,7 @@ import java.util.List;
 
 public class SQLConnection implements SQLInterface {
 
-    // Example: Adjust these to your actual DB connection info, api here
+    // Example: Adjust these to your actual DB connection info
     private final String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t23";
     private final String dbUser = "your_db_username";
     private final String dbPassword = "your_db_password";
