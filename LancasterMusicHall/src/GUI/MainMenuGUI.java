@@ -1,5 +1,6 @@
 package GUI;
 
+import Database.SQLConnection;
 import GUI.MenuPanels.*;
 
 import javax.swing.*;
@@ -17,6 +18,7 @@ public class MainMenuGUI {
     private JButton activeButton = null; // Track the currently selected button
     private JPanel cardPanel;
     private CardLayout cardLayout;
+    private SQLConnection sqlConnection = new SQLConnection();
 
     public MainMenuGUI() {
         JFrame frame = new JFrame("Main Menu");
@@ -30,10 +32,11 @@ public class MainMenuGUI {
         // Create main content area using CardLayout
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
+        CalendarPanel calendar = new CalendarPanel(this, cardLayout, cardPanel );
 
         // Add different sections (cards) to the panel
         cardPanel.add(new HomePanel(this), "Home");
-        cardPanel.add(new CalendarPanel(this, cardLayout, cardPanel), "Calendar");
+        cardPanel.add(calendar, "Calendar");
         cardPanel.add(new VenueDetailsPanel(this), "Diary");
         cardPanel.add(new BookingPanel(this), "Booking");
         cardPanel.add(getReportsPanel(), "Reports");
@@ -173,5 +176,9 @@ public class MainMenuGUI {
         button.setBackground(Color.WHITE);
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    public SQLConnection getSqlConnection() {
+        return sqlConnection;
     }
 }

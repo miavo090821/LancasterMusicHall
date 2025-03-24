@@ -1,12 +1,11 @@
 package GUI.MenuPanels;
 
-//import Database.SQLConnection;
+import Database.SQLConnection;
 import GUI.MainMenuGUI;
 import operations.entities.Activity;
 import operations.entities.Booking;
 import operations.entities.Seat;
 import operations.entities.Venue;
-
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
@@ -16,14 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-
-
 public class CalendarPanel extends JPanel {
 
-//    private SQLConnection sqlConnection;
+    private SQLConnection sqlConnection;
 
     public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
-//        this.sqlConnection = sqlConnection;
+        this.sqlConnection = sqlConnection;
         setPreferredSize(new Dimension(800, 450)); // More width
         setBackground(Color.WHITE);
 
@@ -122,13 +119,13 @@ public class CalendarPanel extends JPanel {
         newEventButton.setPreferredSize(new Dimension(120, 30)); // Smaller button
 
         // Click action to switch tabs and highlight the active button
-        newEventButton.addActionListener(e -> {cardLayout.show(cardPanel, "NewEvent");});
+        newEventButton.addActionListener(_ -> {cardLayout.show(cardPanel, "NewEvent");});
 
         bottomPanel.add(newEventButton);
 
         add(bottomPanel);
     }
-    private void renderBookings(ArrayList<Booking> bookings, JLabel[][] calendarCells, String[] days, String[] times) {
+    public void renderBookings(ArrayList<Booking> bookings, JLabel[][] calendarCells, String[] days, String[] times) {
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
 
         for (int bIndex = 0; bIndex < bookings.size(); bIndex++) {
@@ -193,7 +190,9 @@ public class CalendarPanel extends JPanel {
         }
     }
 
-
+    public ArrayList<Booking> getBookings(){
+        return getSampleBookings();
+    }
 
 
     // === Sample bookings for demo ===
