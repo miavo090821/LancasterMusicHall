@@ -11,7 +11,7 @@ public class HomePanel extends JPanel {
 
     public HomePanel(MainMenuGUI mainMenu) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(new EmptyBorder(10, 20, 10, 20));
+        setPreferredSize(new Dimension(600, 350));
         setBackground(Color.WHITE);
 
         // === Section 1: Title ===

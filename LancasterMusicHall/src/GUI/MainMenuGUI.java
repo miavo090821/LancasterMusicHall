@@ -2,6 +2,7 @@ package GUI;
 
 import Database.SQLConnection;
 import GUI.MenuPanels.*;
+import GUI.MenuPanels.Reports.ReportPanel;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -32,16 +33,24 @@ public class MainMenuGUI {
         // Create main content area using CardLayout
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
-        CalendarPanel calendar = new CalendarPanel(this, cardLayout, cardPanel );
+
+        CalendarPanel calendar = new CalendarPanel(cardLayout, cardPanel );
+        EventPanel event = new EventPanel(this, cardLayout, cardPanel , calendar);
+        ReportPanel report = new ReportPanel(this, cardLayout, cardPanel);
+        HomePanel home = new HomePanel(this);
+        BookingPanel booking = new BookingPanel(this);
+        VenueDetailsPanel VenueDetails = new VenueDetailsPanel(this);
+        DiaryPanel diary = new DiaryPanel(this);
+        SettingsPanel settings = new SettingsPanel(this);
 
         // Add different sections (cards) to the panel
-        cardPanel.add(new HomePanel(this), "Home");
+        cardPanel.add(home, "Home");
         cardPanel.add(calendar, "Calendar");
-        cardPanel.add(new VenueDetailsPanel(this), "Diary");
-        cardPanel.add(new BookingPanel(this), "Booking");
-        cardPanel.add(getReportsPanel(), "Reports");
-        cardPanel.add(new SettingsPanel(this), "Settings");
-        cardPanel.add(new EventPanel(this), "NewEvent");
+        cardPanel.add(VenueDetails, "Diary");
+        cardPanel.add(booking, "Booking");
+        cardPanel.add(report, "Reports");
+        cardPanel.add(settings, "Settings");
+        cardPanel.add(event, "NewEvent");
 
         // Add components to frame
         frame.add(getTopPanel());

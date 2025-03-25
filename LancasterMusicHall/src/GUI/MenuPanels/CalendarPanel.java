@@ -19,7 +19,7 @@ public class CalendarPanel extends JPanel {
 
     private SQLConnection sqlConnection;
 
-    public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
+    public CalendarPanel(CardLayout cardLayout, JPanel cardPanel) {
         this.sqlConnection = sqlConnection;
         setPreferredSize(new Dimension(800, 450)); // More width
         setBackground(Color.WHITE);

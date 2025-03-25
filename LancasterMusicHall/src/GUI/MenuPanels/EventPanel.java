@@ -8,7 +8,6 @@ import operations.entities.Booking;
 import operations.entities.Venue;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -25,7 +24,7 @@ public class EventPanel extends JPanel {
     private JComboBox<String> startTimeCombo;
     private JComboBox<String> endTimeCombo;
 
-    public EventPanel(MainMenuGUI mainMenu) {
+    public EventPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel, CalendarPanel calendarPanel) {
         this.setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -197,6 +196,7 @@ public class EventPanel extends JPanel {
         cancelButton.addActionListener(ev -> {
             // Clear or close panel/dialog
             JOptionPane.showMessageDialog(this, "Action cancelled.");
+            cardLayout.show(cardPanel, "Calendar");
         });
     }
 
