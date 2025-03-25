@@ -1,7 +1,6 @@
 package GUI.MenuPanels;
 
 import GUI.MainMenuGUI;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -10,41 +9,49 @@ public class VenueDetailsPanel extends JPanel {
     private static final String FILE_NAME = "calender.txt";
 
     public VenueDetailsPanel(MainMenuGUI mainMenu) {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout()); // Changed to BorderLayout for better organization
         setBorder(new EmptyBorder(10, 20, 10, 20));
         setBackground(Color.WHITE);
 
-        // === Section 1: Text Area ===
+        // === Section 1: Title Panel (NORTH) ===
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        titlePanel.setBackground(Color.WHITE);
+
+        JLabel venueDetailsLabel = new JLabel("Venue Details & Calendar:");
+        venueDetailsLabel.setFont(new Font("Arial", Font.BOLD, 25));
+        titlePanel.add(venueDetailsLabel);
+
+        add(titlePanel, BorderLayout.NORTH);
+
+        // === Section 2: Main Content Panel (CENTER) ===
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(Color.WHITE);
+
+        // Text Area with Scroll
         JTextArea textReminder = new JTextArea(mainMenu.loadTextFromFile(FILE_NAME));
         textReminder.setFont(new Font("Arial", Font.PLAIN, 16));
         textReminder.setLineWrap(true);
         textReminder.setWrapStyleWord(true);
-        textReminder.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-        textReminder.setEditable(false);
+        textReminder.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
 
         JScrollPane scrollPane = new JScrollPane(textReminder);
-        scrollPane.setPreferredSize(new Dimension(480, 270));
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setPreferredSize(new Dimension(550, 250));
 
-        JPanel textRemPanel = new JPanel(new BorderLayout());
-        textRemPanel.setBackground(Color.WHITE);
-        textRemPanel.add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        add(contentPanel, BorderLayout.CENTER);
 
-        // === Section 2: Bottom Panel ===
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
-        bottomPanel.setBackground(Color.WHITE);
-
+        // === Section 3: Action Panel (SOUTH) ===
         JPanel actionPanel = createActionPanel(mainMenu, textReminder);
-        bottomPanel.add(actionPanel);
-
-        // === Add to Main Panel ===
-        add(textRemPanel);
-        add(bottomPanel);
+        add(actionPanel, BorderLayout.SOUTH);
     }
 
-    private static JPanel createActionPanel(MainMenuGUI mainMenu, JTextArea textReminder) {
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+    private JPanel createActionPanel(MainMenuGUI mainMenu, JTextArea textReminder) {
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         actionPanel.setBackground(Color.WHITE);
+        actionPanel.setBorder(new EmptyBorder(10, 0, 0, 0)); // Add some top padding
 
         JButton editButton = new JButton("Edit");
         JButton deleteButton = new JButton("Delete");
@@ -52,6 +59,7 @@ public class VenueDetailsPanel extends JPanel {
         JButton undoButton = new JButton("Undo");
         undoButton.setVisible(false);
 
+        // Style buttons
         mainMenu.stylizeButton(editButton);
         mainMenu.stylizeButton(deleteButton);
         mainMenu.stylizeButton(saveButton);
@@ -82,6 +90,7 @@ public class VenueDetailsPanel extends JPanel {
                 mainMenu.saveTextToFile(textReminder.getText(), FILE_NAME);
                 textReminder.setEditable(false);
                 textReminder.setBackground(Color.WHITE);
+                undoButton.setVisible(false);
                 JOptionPane.showMessageDialog(null, "Text saved successfully!");
             }
         });

@@ -57,14 +57,9 @@ public class MainMenuGUI {
         frame.add(navBar);
         frame.add(cardPanel);
 
+        cardLayout.show(cardPanel, "Home");
+
         frame.setVisible(true);
-    }
-
-    private JPanel getReportsPanel() {
-        JPanel navBar = new JPanel();
-        navBar.setLayout(new FlowLayout());
-
-        return navBar;
     }
 
     private JPanel createNavBar() {
