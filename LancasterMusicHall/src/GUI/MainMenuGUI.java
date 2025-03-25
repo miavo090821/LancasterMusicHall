@@ -69,7 +69,7 @@ public class MainMenuGUI {
 
         JPanel navBar = new JPanel();
         navBar.setLayout(new GridLayout(1, 6, 0, 0)); // 1 row, 5 columns
-        navBar.setPreferredSize(new Dimension(550, 60)); // Fixed width and height
+        navBar.setPreferredSize(new Dimension(550, 50)); // Fixed width and height
         navBar.setBackground(new Color(200, 170, 230)); // Purple background
         navBar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Full black border
 
@@ -78,7 +78,7 @@ public class MainMenuGUI {
         for (String tab : tabs) {
             JButton button = new JButton(tab);
             button.setFont(new Font("Arial", Font.BOLD, 16));
-            button.setPreferredSize(new Dimension(100, 60)); // Match navBar height
+            button.setPreferredSize(new Dimension(100, 70)); // Match navBar height
 
             // Default button styling
             button.setBackground(new Color(170, 136, 200));
