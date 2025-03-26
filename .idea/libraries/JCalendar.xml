@@ -2,12 +2,13 @@
   <library name="JCalendar">
     <CLASSES>
 <<<<<<< HEAD
-      <root url="file://$PROJECT_DIR$/../../jcalendar-1.4/lib" />
+<!--      <root url="file://$PROJECT_DIR$/../../jcalendar-1.4/lib" />-->
       <root url="file://$USER_HOME$/Downloads/jcalendar-1.4/lib" />
+
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="file://$PROJECT_DIR$/../../jcalendar-1.4/lib" recursive="false" />
+<!--    <jarDirectory url="file://$PROJECT_DIR$/../../jcalendar-1.4/lib" recursive="false" />-->
     <jarDirectory url="file://$USER_HOME$/Downloads/jcalendar-1.4/lib" recursive="false" />
 =======
       <root url="file://$USER_HOME$/Downloads/lib" />
