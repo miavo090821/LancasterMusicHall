@@ -306,3 +306,7 @@ public class SQLConnection implements SQLInterface {
         return bookings;
     }
 }
+// we will need more queries for the calendar, create event form, display the diary
+// create booking, create the report, on selecting the day.
+// the report will need to be managed carefully and automatically as ut==it require
+// the selection then pass it to insertion , then pass it to sql, then retrieve back.
