@@ -194,7 +194,7 @@ public class DiaryPanel extends JPanel{
             middle.setBackground(Color.white);
             middle.setPreferredSize(new Dimension(240, 100));
 
-            JButton newEventButton = new JButton("New Event");
+            JButton newEventButton = new JButton("New Draft");
             newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
             newEventButton.setBackground(new Color(200, 170, 250));
             newEventButton.setPreferredSize(new Dimension(120, 50));
@@ -397,9 +397,6 @@ public class DiaryPanel extends JPanel{
         }
 
         private final Color[] bookingColors = {
-                new Color(200, 230, 255),
-                new Color(255, 230, 200),
-                new Color(230, 255, 200),
                 new Color(255, 200, 230),
                 new Color(230, 200, 255),
                 new Color(200, 255, 230),

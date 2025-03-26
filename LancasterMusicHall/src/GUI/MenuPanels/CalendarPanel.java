@@ -2,7 +2,6 @@ package GUI.MenuPanels;
 
 import Database.SQLConnection;
 import GUI.MainMenuGUI;
-import GUI.MenuPanels.EventPanels.EventPanel;
 import com.toedter.calendar.JDateChooser;
 import operations.entities.Activity;
 import operations.entities.Booking;
@@ -18,18 +17,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class CalendarPanel extends JPanel {
-    private static final int ROW_HEIGHT = 40; // Fixed height for all rows
-    private static final int HEADER_HEIGHT = 30; // Fixed height for day headers
+public class CalendarPanel extends JPanel{
     private SQLConnection sqlConnection;
     private CardLayout cardLayout;
     private JPanel cardPanel;
 
     public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
-        this.sqlConnection = sqlConnection;
-        this.cardLayout = cardLayout;
         this.cardPanel = cardPanel;
-        setLayout(new BorderLayout()); // Change to BorderLayout
+        this.cardLayout = cardLayout;
+        this.sqlConnection = mainMenu.getSqlConnection();
+
+        setLayout(new BorderLayout());
         setBackground(new Color(200, 170, 230));
 
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
@@ -81,7 +79,6 @@ public class CalendarPanel extends JPanel {
             gbc.gridx = 0;
             gbc.gridy = row + 1;
             gbc.weightx = 0.1;
-            gbc.weighty = 0.5;
             gbc.ipady = 40; // Fixed height in pixels
             JLabel timeLabel = new JLabel(times[row], SwingConstants.CENTER);
             timeLabel.setFont(new Font("Arial", Font.PLAIN, 10));
@@ -267,19 +264,23 @@ public class CalendarPanel extends JPanel {
 
             if (startRow == -1 || endRow == -1 || startRow > endRow) continue;
 
-            Color bookingColor = bookingColors[bIndex % bookingColors.length]; // Get color from list
+            Color bookingColor = bookingColors[bIndex % bookingColors.length];
 
             // === Render booking with merged-cell visual ===
             for (int row = startRow; row <= endRow; row++) {
                 for (int col = startCol; col <= endCol; col++) {
                     JLabel cell = calendarCells[row][col];
+
+                    // Set text only for the first (top-left) cell of the booking
                     if (row == startRow && col == startCol) {
-                        cell.setText("<html><center>" + booking.getActivityName() + "<br>" + booking.getVenue().getName() + "</center></html>");
+                        cell.setText("<html><center>" + booking.getActivityName() + "</center></html>");
                     } else {
-                        cell.setText("");  // Empty for merged appearance
+                        cell.setText(""); // Empty for merged appearance
                     }
+
                     cell.setBackground(bookingColor);
                     cell.setOpaque(true);
+                    cell.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Set hand cursor
 
                     // Border control
                     boolean isTop = (row == startRow);
@@ -313,36 +314,9 @@ public class CalendarPanel extends JPanel {
                         }
                     });
                 }
-
             }
         }
     }
-    private void showBookingDetails(Booking booking) {
-        // Find the EventPanel in the cardPanel
-        EventPanel eventPanel = null;
-        for (Component comp : cardPanel.getComponents()) {
-            if (comp instanceof EventPanel) {
-                eventPanel = (EventPanel) comp;
-                break;
-            }
-        }
-
-        if (eventPanel != null) {
-            eventPanel.setBookingData(booking);
-            cardLayout.show(cardPanel, "VenueDetails");
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "Error: Could not find Event Panel",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    public ArrayList<Booking> getBookings(){
-        return getSampleBookings();
-    }
-
-
 
     // === Sample bookings for demo ===
     private ArrayList<Booking> getSampleBookings() {
@@ -400,6 +374,28 @@ public class CalendarPanel extends JPanel {
         return bookings;
     }
 
+
+    private void showBookingDetails(Booking booking) {
+        // Find the EventPanel in the cardPanel
+        GUI.MenuPanels.EventPanels.EventPanel eventPanel = null;
+        for (Component comp : cardPanel.getComponents()) {
+            if (comp instanceof GUI.MenuPanels.EventPanels.EventPanel) {
+                eventPanel = (GUI.MenuPanels.EventPanels.EventPanel) comp;
+                break;
+            }
+        }
+
+        if (eventPanel != null) {
+            eventPanel.setBookingData(booking);
+            cardLayout.show(cardPanel, "VenueDetails");
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Error: Could not find Event Panel",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private final Color[] bookingColors = {
             new Color(200, 230, 255),
             new Color(255, 230, 200),
@@ -411,5 +407,3 @@ public class CalendarPanel extends JPanel {
     };
 
 }
-
-
