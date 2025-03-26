@@ -1,9 +1,9 @@
 package operations.entities;
 
 public class Seat {
-    public final char row;        // Row letter of the seat
-    public final int number;      // Seat number within the row
-    public final Type type;       // Type of seat (regular, restricted, wheelchair)
+    public char row;        // Row letter of the seat
+    public int number;      // Seat number within the row
+    private Type type;       // Type of seat (regular, restricted, wheelchair)
     private Status status;   // Seat status (available, sold, held)
 
     // Enum for seat types
@@ -50,6 +50,14 @@ public class Seat {
     // Check if the seat is designated for a companion
     public boolean isCompanionSeat() {
         return this.type == Type.COMPANION;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public Status getStatus() {

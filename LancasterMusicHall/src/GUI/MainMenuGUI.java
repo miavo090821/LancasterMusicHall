@@ -2,6 +2,9 @@ package GUI;
 
 import Database.SQLConnection;
 import GUI.MenuPanels.*;
+import GUI.MenuPanels.EventPanels.EventPanel;
+import GUI.MenuPanels.EventPanels.NewEventPanel;
+import GUI.MenuPanels.Reports.ReportPanel;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -32,30 +35,34 @@ public class MainMenuGUI {
         // Create main content area using CardLayout
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
+
         CalendarPanel calendar = new CalendarPanel(this, cardLayout, cardPanel );
+        NewEventPanel  event = new NewEventPanel(this, cardLayout, cardPanel);
+        ReportPanel report = new ReportPanel(this, cardLayout, cardPanel);
+        HomePanel home = new HomePanel(this);
+        BookingPanel booking = new BookingPanel(this);
+        EventPanel VenueDetails = new EventPanel(this, cardLayout, cardPanel);
+        DiaryPanel diary = new DiaryPanel(this, cardLayout, cardPanel);
+        SettingsPanel settings = new SettingsPanel(this);
 
         // Add different sections (cards) to the panel
-        cardPanel.add(new HomePanel(this), "Home");
+        cardPanel.add(home, "Home");
         cardPanel.add(calendar, "Calendar");
-        cardPanel.add(new VenueDetailsPanel(this), "Diary");
-        cardPanel.add(new BookingPanel(this), "Booking");
-        cardPanel.add(getReportsPanel(), "Reports");
-        cardPanel.add(new SettingsPanel(this), "Settings");
-        cardPanel.add(new EventPanel(this), "NewEvent");
+        cardPanel.add(diary, "Diary");
+        cardPanel.add(VenueDetails, "VenueDetails");
+        cardPanel.add(booking, "Booking");
+        cardPanel.add(report, "Reports");
+        cardPanel.add(settings, "Settings");
+        cardPanel.add(event, "NewEvent");
 
         // Add components to frame
         frame.add(getTopPanel());
         frame.add(navBar);
         frame.add(cardPanel);
 
+        cardLayout.show(cardPanel, "Home");
+
         frame.setVisible(true);
-    }
-
-    private JPanel getReportsPanel() {
-        JPanel navBar = new JPanel();
-        navBar.setLayout(new FlowLayout());
-
-        return navBar;
     }
 
     private JPanel createNavBar() {
@@ -65,7 +72,7 @@ public class MainMenuGUI {
 
         JPanel navBar = new JPanel();
         navBar.setLayout(new GridLayout(1, 6, 0, 0)); // 1 row, 5 columns
-        navBar.setPreferredSize(new Dimension(550, 60)); // Fixed width and height
+        navBar.setPreferredSize(new Dimension(550, 50)); // Fixed width and height
         navBar.setBackground(new Color(200, 170, 230)); // Purple background
         navBar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Full black border
 
@@ -74,7 +81,7 @@ public class MainMenuGUI {
         for (String tab : tabs) {
             JButton button = new JButton(tab);
             button.setFont(new Font("Arial", Font.BOLD, 16));
-            button.setPreferredSize(new Dimension(100, 60)); // Match navBar height
+            button.setPreferredSize(new Dimension(100, 70)); // Match navBar height
 
             // Default button styling
             button.setBackground(new Color(170, 136, 200));
@@ -176,6 +183,14 @@ public class MainMenuGUI {
         button.setBackground(Color.WHITE);
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    // Method to stylize dropdown menus
+    public void styleDropdown(JComboBox<String> dropdown) {
+        dropdown.setFont(new Font("Arial", Font.PLAIN, 14)); // Set font size
+        dropdown.setBackground(Color.white); // Set background color
+        dropdown.setForeground(Color.BLACK); // Set text color
+        dropdown.setBorder(new LineBorder(Color.BLACK, 1)); // Add border
     }
 
     public SQLConnection getSqlConnection() {

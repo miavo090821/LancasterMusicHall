@@ -1,6 +1,7 @@
 <component name="libraryTable">
   <library name="JCalendar">
     <CLASSES>
+<<<<<<< HEAD
       <root url="file://$PROJECT_DIR$/../../jcalendar-1.4/lib" />
       <root url="file://$USER_HOME$/Downloads/jcalendar-1.4/lib" />
     </CLASSES>
@@ -8,5 +9,12 @@
     <SOURCES />
     <jarDirectory url="file://$PROJECT_DIR$/../../jcalendar-1.4/lib" recursive="false" />
     <jarDirectory url="file://$USER_HOME$/Downloads/jcalendar-1.4/lib" recursive="false" />
+=======
+      <root url="file://$USER_HOME$/Downloads/lib" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$USER_HOME$/Downloads/lib" recursive="false" />
+>>>>>>> 3d77d5e2dd588528641ded8dbd5f4f898f072385
   </library>
 </component>

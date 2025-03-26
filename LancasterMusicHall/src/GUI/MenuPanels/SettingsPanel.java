@@ -56,7 +56,7 @@ public class SettingsPanel extends JPanel {
 
         String[] fontSizes = {"10", "12", "14", "16", "18", "20"};
         JComboBox<String> fontSizeDropdown = new JComboBox<>(fontSizes);
-        styleDropdown(fontSizeDropdown);
+        mainMenu.styleDropdown(fontSizeDropdown);
         fontSizeDropdown.setSelectedItem("12"); // Default selection
         fontPanel.add(fontLabel);
         fontPanel.add(fontSizeDropdown);
@@ -72,7 +72,7 @@ public class SettingsPanel extends JPanel {
         colourLabel.setFont(new Font("Arial", Font.PLAIN, 18));
         String[] colourFilters = {"Off", "Protanopia", "Deuteranopia", "Tritanopia"};
         JComboBox<String> colourDropdown = new JComboBox<>(colourFilters);
-        styleDropdown(colourDropdown);
+        mainMenu.styleDropdown(colourDropdown);
         colourPanel.add(colourLabel);
         colourPanel.add(colourDropdown);
 
@@ -99,7 +99,7 @@ public class SettingsPanel extends JPanel {
         String[] logoutTimes = {"5 minutes", "10 minutes", "30 minutes", "1 hour"};
         JComboBox<String> logoutDropdown = new JComboBox<>(logoutTimes);
         logoutDropdown.setSelectedItem("10 minutes");
-        styleDropdown(logoutDropdown);
+        mainMenu.styleDropdown(logoutDropdown);
         logoutPanel.add(logoutLabel);
         logoutPanel.add(logoutDropdown);
 
@@ -126,11 +126,5 @@ public class SettingsPanel extends JPanel {
         mainPanel.add(bottomPanel);
     }
 
-    // Method to stylize dropdown menus
-    private void styleDropdown(JComboBox<String> dropdown) {
-        dropdown.setFont(new Font("Arial", Font.PLAIN, 16)); // Set font size
-        dropdown.setBackground(Color.white); // Set background color
-        dropdown.setForeground(Color.BLACK); // Set text color
-        dropdown.setBorder(new LineBorder(Color.BLACK, 1)); // Add border
-    }
+
 }

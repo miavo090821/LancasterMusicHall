@@ -1,7 +1,6 @@
 package GUI.MenuPanels;
 
 import GUI.MainMenuGUI;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -10,63 +9,64 @@ public class HomePanel extends JPanel {
     private static final String FILE_NAME = "reminders.txt";
 
     public HomePanel(MainMenuGUI mainMenu) {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(new EmptyBorder(10, 20, 10, 20));
+        setLayout(new BorderLayout()); // Changed to BorderLayout for better control
+        setPreferredSize(new Dimension(600, 350));
         setBackground(Color.WHITE);
 
-        // === Section 1: Title ===
+        // === Section 1: Title Panel (NORTH) ===
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        titlePanel.setBackground(Color.WHITE);
+
         JLabel remindersLabel = new JLabel("Important Reminders:");
-        remindersLabel.setFont(new Font("Arial", Font.BOLD, 27));
+        remindersLabel.setFont(new Font("Arial", Font.BOLD, 25));
+        titlePanel.add(remindersLabel);
 
-        JPanel remindersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 10));
-        remindersPanel.setBackground(Color.WHITE);
-        remindersPanel.add(remindersLabel);
+        add(titlePanel, BorderLayout.NORTH);
 
-        // === Section 2: Text Area ===
+        // === Section 2: Main Content Panel (CENTER) ===
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBorder(new EmptyBorder(10, 20, 10, 20)); // Add some padding
+
+        // Text Area with Scroll
         JTextArea textReminder = new JTextArea(mainMenu.loadTextFromFile(FILE_NAME));
-        textReminder.setPreferredSize(new Dimension(550, 280));
         textReminder.setFont(new Font("Arial", Font.PLAIN, 16));
         textReminder.setLineWrap(true);
         textReminder.setWrapStyleWord(true);
-        textReminder.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-        textReminder.setEditable(false);
+        textReminder.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.BLACK),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
 
         JScrollPane scrollPane = new JScrollPane(textReminder);
-        scrollPane.setPreferredSize(new Dimension(350, 300));
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setPreferredSize(new Dimension(550, 200));
 
-        JPanel textRemPanel = new JPanel(new BorderLayout());
-        textRemPanel.setBackground(Color.WHITE);
-        textRemPanel.add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        add(contentPanel, BorderLayout.CENTER);
 
-        // === Section 3: Action Panel ===
+        // === Section 3: Action Panel (SOUTH) ===
         JPanel actionPanel = createActionPanel(mainMenu, textReminder);
-
-        // === Add Sections ===
-        add(remindersPanel);
-        add(textRemPanel);
-        add(actionPanel);
+        add(actionPanel, BorderLayout.SOUTH);
     }
 
     private JPanel createActionPanel(MainMenuGUI mainMenu, JTextArea textReminder) {
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 20));
-        actionPanel.setPreferredSize(new Dimension(600, 60));
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         actionPanel.setBackground(Color.WHITE);
+        actionPanel.setBorder(new EmptyBorder(0, 20, 10, 20)); // Add some padding
 
         JButton editButton = new JButton("Edit");
         JButton deleteButton = new JButton("Delete");
         JButton saveButton = new JButton("Save");
         JButton undoButton = new JButton("Undo");
-        undoButton.setVisible(false); // Hidden by default
+        undoButton.setVisible(false);
 
-        // === Edit Action ===
+        // Button actions (same as before)
         editButton.addActionListener(e -> {
             textReminder.setEditable(true);
             textReminder.setBackground(Color.YELLOW);
             undoButton.setVisible(true);
         });
 
-        // === Delete Action ===
         deleteButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(null,
                     "Are you sure you want to delete this text?",
@@ -76,7 +76,6 @@ public class HomePanel extends JPanel {
             }
         });
 
-        // === Save Action ===
         saveButton.addActionListener(e -> {
             if (textReminder.isEditable()) {
                 mainMenu.saveTextToFile(textReminder.getText(), FILE_NAME);
@@ -86,13 +85,14 @@ public class HomePanel extends JPanel {
             }
         });
 
-        // === Undo Action ===
         undoButton.addActionListener(e -> {
             textReminder.setText(mainMenu.loadTextFromFile(FILE_NAME));
             textReminder.setEditable(false);
-            textReminder.setBackground(Color.white);
-
+            textReminder.setBackground(Color.WHITE);
+            undoButton.setVisible(false);
         });
+
+        // Style buttons
         mainMenu.stylizeButton(editButton);
         mainMenu.stylizeButton(deleteButton);
         mainMenu.stylizeButton(saveButton);
@@ -104,7 +104,9 @@ public class HomePanel extends JPanel {
         actionPanel.add(saveButton);
         actionPanel.add(undoButton);
 
-        actionPanel.add(Box.createHorizontalStrut(180));
+        // Add some space before logout button
+        actionPanel.add(Box.createHorizontalStrut(100));
+
         JButton logoutButton = new JButton("Log Out");
         mainMenu.stylizeButton(logoutButton);
         actionPanel.add(logoutButton);
