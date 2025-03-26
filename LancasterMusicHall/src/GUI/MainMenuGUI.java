@@ -34,7 +34,7 @@ public class MainMenuGUI {
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
 
-        CalendarPanel calendar = new CalendarPanel(cardLayout, cardPanel );
+        CalendarPanel calendar = new CalendarPanel(this, cardLayout, cardPanel );
         EventPanel event = new EventPanel(this, cardLayout, cardPanel , calendar);
         ReportPanel report = new ReportPanel(this, cardLayout, cardPanel);
         HomePanel home = new HomePanel(this);
@@ -180,6 +180,14 @@ public class MainMenuGUI {
         button.setBackground(Color.WHITE);
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    // Method to stylize dropdown menus
+    public void styleDropdown(JComboBox<String> dropdown) {
+        dropdown.setFont(new Font("Arial", Font.PLAIN, 14)); // Set font size
+        dropdown.setBackground(Color.white); // Set background color
+        dropdown.setForeground(Color.BLACK); // Set text color
+        dropdown.setBorder(new LineBorder(Color.BLACK, 1)); // Add border
     }
 
     public SQLConnection getSqlConnection() {

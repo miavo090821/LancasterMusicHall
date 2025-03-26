@@ -2,6 +2,7 @@ package GUI.MenuPanels;
 
 import Database.SQLConnection;
 import GUI.MainMenuGUI;
+import com.toedter.calendar.JDateChooser;
 import operations.entities.Activity;
 import operations.entities.Booking;
 import operations.entities.Seat;
@@ -12,17 +13,19 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class CalendarPanel extends JPanel {
-
+    private static final int ROW_HEIGHT = 40; // Fixed height for all rows
+    private static final int HEADER_HEIGHT = 30; // Fixed height for day headers
     private SQLConnection sqlConnection;
 
-    public CalendarPanel(CardLayout cardLayout, JPanel cardPanel) {
+    public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         this.sqlConnection = sqlConnection;
-        setPreferredSize(new Dimension(800, 450)); // More width
-        setBackground(Color.WHITE);
+        setLayout(new BorderLayout()); // Change to BorderLayout
+        setBackground(new Color(200, 170, 230));
 
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
         LocalDate weekStart = LocalDate.of(2025, 3, 1); // Start of calendar week
@@ -35,6 +38,7 @@ public class CalendarPanel extends JPanel {
         String[] times = {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"};
 
         JPanel calendarPanel = new JPanel(new GridBagLayout());
+        calendarPanel.setPreferredSize(new Dimension(550, 400));
         calendarPanel.setBackground(Color.WHITE);
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -73,6 +77,7 @@ public class CalendarPanel extends JPanel {
             gbc.gridy = row + 1;
             gbc.weightx = 0.1;
             gbc.weighty = 0.5;
+            gbc.ipady = 40; // Fixed height in pixels
             JLabel timeLabel = new JLabel(times[row], SwingConstants.CENTER);
             timeLabel.setFont(new Font("Arial", Font.PLAIN, 10));
             timeLabel.setOpaque(true);
@@ -87,6 +92,7 @@ public class CalendarPanel extends JPanel {
                 gbc.gridy = row + 1;
                 gbc.weightx = 0.5;
                 gbc.weighty = 0.5;
+                gbc.ipady = 40; // Fixed height in pixels
                 JLabel cell = new JLabel("", SwingConstants.CENTER);
                 cell.setPreferredSize(new Dimension(40, 30));
                 cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
@@ -108,22 +114,120 @@ public class CalendarPanel extends JPanel {
 
         add(scrollPane);
 
+        // Create a container panel for centering
+        JPanel centerContainer = new JPanel(new GridBagLayout());
+        centerContainer.setBackground(Color.white);
+        centerContainer.add(scrollPane);
+
+        add(centerContainer, BorderLayout.CENTER); // Add to center
+
         // === Bottom Panel ===
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        bottomPanel.setPreferredSize(new Dimension(600, 50));
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
         bottomPanel.setBackground(Color.WHITE);
 
+        // Add glue to both sides for centering
+        bottomPanel.add(Box.createHorizontalGlue());
+
+        // Left column
+        JPanel leftColumn = new JPanel();
+        leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
+        leftColumn.setBackground(Color.WHITE);
+
+        JPanel left1 = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        left1.setBackground(Color.WHITE);
+        left1.setPreferredSize(new Dimension(180, 50));
+
+        JPanel left2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        left2.setBackground(Color.white);
+        left2.setPreferredSize(new Dimension(180, 50));
+
+        // Create view dropdown components
+        JLabel viewLabel = new JLabel("View:");
+        viewLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        String[] calendarViews = {"Day View", "Week View", "Month View", "Overview"};
+        JComboBox<String> viewDropdown = new JComboBox<>(calendarViews);
+        mainMenu.styleDropdown(viewDropdown);
+        viewDropdown.setSelectedItem("Week View"); // Default to Week View
+
+        viewDropdown.addActionListener(e -> {
+            String selected = (String)viewDropdown.getSelectedItem();
+            switch(selected) {
+                case "Day View":
+                    // Show daily calendar
+                    break;
+                case "Week View":
+                    // Show weekly calendar (current implementation)
+                    break;
+                case "Month View":
+                    // Show monthly calendar
+                    break;
+                case "Overview":
+                    // Show overview/summary
+                    break;
+            }
+        });
+
+        // Calendar Type Dropdown (display mode)
+        JLabel typeLabel = new JLabel("Type:");
+        typeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        String[] displayModes = {"Standard", "Compact", "Detailed", "Planning"};
+        JComboBox<String> displayModeDropdown = new JComboBox<>(displayModes);
+        mainMenu.styleDropdown(displayModeDropdown);
+        displayModeDropdown.setSelectedItem("Standard");
+
+        // Add components to left1 panel PROPERLY
+        left1.add(viewLabel);
+        left1.add(viewDropdown);
+
+        left2.add(typeLabel);
+        left2.add(displayModeDropdown);
+
+        leftColumn.add(left1);
+        leftColumn.add(left2);
+        bottomPanel.add(leftColumn);
+
+        // Middle column
+        JPanel middle = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 25));
+        middle.setBackground(Color.white);
+        middle.setPreferredSize(new Dimension(240, 100));
+
         JButton newEventButton = new JButton("New Event");
-        newEventButton.setFont(new Font("Arial", Font.BOLD, 12));
+        newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
         newEventButton.setBackground(new Color(200, 170, 250));
-        newEventButton.setPreferredSize(new Dimension(120, 30)); // Smaller button
-
-        // Click action to switch tabs and highlight the active button
+        newEventButton.setPreferredSize(new Dimension(120, 50));
         newEventButton.addActionListener(_ -> {cardLayout.show(cardPanel, "NewEvent");});
+        middle.add(newEventButton);
 
-        bottomPanel.add(newEventButton);
+        bottomPanel.add(middle);
 
-        add(bottomPanel);
+// Right column
+        JPanel rightColumn = new JPanel();
+        rightColumn.setLayout(new BoxLayout(rightColumn, BoxLayout.Y_AXIS));
+        rightColumn.setBackground(Color.WHITE);
+
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 35 ));
+        right.setBackground(Color.white);
+        right.setPreferredSize(new Dimension(180, 50));
+
+        // Calendar Type Dropdown (display mode)
+        JLabel dateLabel = new JLabel("Date:");
+        dateLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        JDateChooser datePicker = new JDateChooser();
+        datePicker.setDateFormatString("dd-MM-yyyy");
+        datePicker.setPreferredSize(new Dimension(100, 25));
+        datePicker.setDate(new Date()); // default to today
+
+        // Add components to right panel PROPERLY
+        right.add(dateLabel);
+        right.add(datePicker);
+
+        rightColumn.add(right);
+        bottomPanel.add(rightColumn);
+
+        bottomPanel.add(Box.createHorizontalGlue()); // Add glue to the other side
+
+        add(bottomPanel, BorderLayout.SOUTH);
     }
     public void renderBookings(ArrayList<Booking> bookings, JLabel[][] calendarCells, String[] days, String[] times) {
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);

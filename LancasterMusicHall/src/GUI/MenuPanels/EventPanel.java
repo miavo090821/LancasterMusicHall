@@ -121,17 +121,12 @@ public class EventPanel extends JPanel {
         JPanel heldPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         heldPanel.setPreferredSize(new Dimension(600, 30));
         heldPanel.setBackground(Color.white);
-        JLabel heldLabel = createStyledLabel("Held?");
+        JLabel heldLabel = createStyledLabel("Confirmed?");
         JCheckBox heldCheck = new JCheckBox();
         heldCheck.setBackground(Color.white);
         heldPanel.add(heldLabel);
         heldPanel.add(heldCheck);
         mainPanel.add(heldPanel);
-
-        // Hold Expiry Panel
-        JPanel holdExpiryPanel = createInputPanel("Hold Expiry (yyyy-MM-dd):", 15);
-        JTextField holdExpiryField = (JTextField) holdExpiryPanel.getComponent(1);
-        mainPanel.add(holdExpiryPanel);
 
         // Bottom Panel (Save / Cancel)
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
@@ -167,8 +162,6 @@ public class EventPanel extends JPanel {
                 int activityId = Integer.parseInt(activityIdField.getText().trim());
                 int venueId = Integer.parseInt(venueIdField.getText().trim());
                 boolean isHeld = heldCheck.isSelected();
-                String holdExpiryStr = holdExpiryField.getText().trim();
-                if (holdExpiryStr.isEmpty()) holdExpiryStr = null;
 
                 // Minimal placeholders
                 Activity activity = new Activity(activityId, "Activity " + activityId);
@@ -176,7 +169,7 @@ public class EventPanel extends JPanel {
 
                 Booking newBooking = new Booking(
                         bookingId, sDate, eDate, sTime, eTime,
-                        activity, venue, isHeld, holdExpiryStr, new ArrayList<>()
+                        activity, venue, isHeld, "", new ArrayList<>()
                 );
 
                 boolean success = sqlConnection.createBooking(newBooking);

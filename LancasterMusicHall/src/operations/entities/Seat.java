@@ -1,8 +1,8 @@
 package operations.entities;
 
 public class Seat {
-    private char row;        // Row letter of the seat
-    private int number;      // Seat number within the row
+    public char row;        // Row letter of the seat
+    public int number;      // Seat number within the row
     private Type type;       // Type of seat (regular, restricted, wheelchair)
     private Status status;   // Seat status (available, sold, held)
 
@@ -58,22 +58,6 @@ public class Seat {
 
     public void setType(Type type) {
         this.type = type;
-    }
-
-    public char getRow() {
-        return row;
-    }
-
-    public void setRow(char row) {
-        this.row = row;
-    }
-
-    public void setNumber(char number) {
-        this.number = number;
-    }
-
-    public int getNumber() {
-        return number;
     }
 
     public Status getStatus() {
