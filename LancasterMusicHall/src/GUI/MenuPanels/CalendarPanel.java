@@ -2,6 +2,7 @@ package GUI.MenuPanels;
 
 import Database.SQLConnection;
 import GUI.MainMenuGUI;
+import GUI.MenuPanels.EventPanels.EventPanel;
 import com.toedter.calendar.JDateChooser;
 import operations.entities.Activity;
 import operations.entities.Booking;
@@ -21,9 +22,13 @@ public class CalendarPanel extends JPanel {
     private static final int ROW_HEIGHT = 40; // Fixed height for all rows
     private static final int HEADER_HEIGHT = 30; // Fixed height for day headers
     private SQLConnection sqlConnection;
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
 
     public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         this.sqlConnection = sqlConnection;
+        this.cardLayout = cardLayout;
+        this.cardPanel = cardPanel;
         setLayout(new BorderLayout()); // Change to BorderLayout
         setBackground(new Color(200, 170, 230));
 
@@ -289,14 +294,54 @@ public class CalendarPanel extends JPanel {
                             isRight ? 2 : 0,
                             Color.black
                     ));
+
+                    // Add click listener to show booking details
+                    cell.addMouseListener(new java.awt.event.MouseAdapter() {
+                        @Override
+                        public void mouseClicked(java.awt.event.MouseEvent e) {
+                            showBookingDetails(booking);
+                        }
+
+                        @Override
+                        public void mouseEntered(java.awt.event.MouseEvent e) {
+                            cell.setBackground(bookingColor.darker()); // Darken on hover
+                        }
+
+                        @Override
+                        public void mouseExited(java.awt.event.MouseEvent e) {
+                            cell.setBackground(bookingColor); // Restore color when mouse leaves
+                        }
+                    });
                 }
+
             }
+        }
+    }
+    private void showBookingDetails(Booking booking) {
+        // Find the EventPanel in the cardPanel
+        EventPanel eventPanel = null;
+        for (Component comp : cardPanel.getComponents()) {
+            if (comp instanceof EventPanel) {
+                eventPanel = (EventPanel) comp;
+                break;
+            }
+        }
+
+        if (eventPanel != null) {
+            eventPanel.setBookingData(booking);
+            cardLayout.show(cardPanel, "VenueDetails");
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Error: Could not find Event Panel",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public ArrayList<Booking> getBookings(){
         return getSampleBookings();
     }
+
 
 
     // === Sample bookings for demo ===

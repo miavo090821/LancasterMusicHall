@@ -2,6 +2,8 @@ package GUI;
 
 import Database.SQLConnection;
 import GUI.MenuPanels.*;
+import GUI.MenuPanels.EventPanels.EventPanel;
+import GUI.MenuPanels.EventPanels.NewEventPanel;
 import GUI.MenuPanels.Reports.ReportPanel;
 
 import javax.swing.*;
@@ -35,18 +37,19 @@ public class MainMenuGUI {
         cardPanel = new JPanel(cardLayout);
 
         CalendarPanel calendar = new CalendarPanel(this, cardLayout, cardPanel );
-        EventPanel event = new EventPanel(this, cardLayout, cardPanel , calendar);
+        NewEventPanel  event = new NewEventPanel(this, cardLayout, cardPanel);
         ReportPanel report = new ReportPanel(this, cardLayout, cardPanel);
         HomePanel home = new HomePanel(this);
         BookingPanel booking = new BookingPanel(this);
-        VenueDetailsPanel VenueDetails = new VenueDetailsPanel(this);
-        DiaryPanel diary = new DiaryPanel(this);
+        EventPanel VenueDetails = new EventPanel(this, cardLayout, cardPanel);
+        DiaryPanel diary = new DiaryPanel(this, cardLayout, cardPanel);
         SettingsPanel settings = new SettingsPanel(this);
 
         // Add different sections (cards) to the panel
         cardPanel.add(home, "Home");
         cardPanel.add(calendar, "Calendar");
-        cardPanel.add(VenueDetails, "Diary");
+        cardPanel.add(diary, "Diary");
+        cardPanel.add(VenueDetails, "VenueDetails");
         cardPanel.add(booking, "Booking");
         cardPanel.add(report, "Reports");
         cardPanel.add(settings, "Settings");
