@@ -1,10 +1,6 @@
 package operations;
 
-import operations.entities.Activity;
-import operations.entities.Booking;
-import operations.entities.Seat;
-import operations.entities.Venue;
-import operations.entities.User;
+import operations.entities.*;
 import operations.module.CalendarModule;
 import operations.module.IncomeTracker;
 import operations.module.ReviewManager;
@@ -38,6 +34,16 @@ public class LancasterMusicHallApp {
                 new Seat('A', 3, Seat.Type.WHEELCHAIR, Seat.Status.AVAILABLE)
         );
 
+        // Create Booking object
+        String bookedBy = "Operations";
+        String primaryContact = "phone";
+        String telephone = "073323523"; //random number
+        String email = "CinemaLtd@gmail.com";
+        String room = "Hall";
+        String companyName = "Cinema Ltd";
+
+        ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
+
         // Create a new Booking using the updated constructor (8 parameters)
         Booking newBooking = new Booking(
                 101,
@@ -48,8 +54,11 @@ public class LancasterMusicHallApp {
                 rockConcert,
                 mainHall,
                 false,
-                null,
-                seats
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         );
 
         // Simulate adding the booking

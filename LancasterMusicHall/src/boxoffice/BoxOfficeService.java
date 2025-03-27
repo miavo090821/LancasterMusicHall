@@ -1,11 +1,6 @@
 package boxoffice;
 
-import operations.entities.Activity;
-import operations.entities.Booking;
-import operations.entities.FinancialRecord;
-import operations.entities.Seat;
-import operations.entities.Venue;
-
+import operations.entities.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -13,53 +8,73 @@ import java.util.stream.Collectors;
 
 public class BoxOfficeService implements BoxOfficeInterface {
 
-    private final Map<Integer, Booking> bookings = new HashMap<>(); // Store bookings in memory
-    private final FinancialRecord financialRecord;
+    private final Map<Integer, Booking> bookings = new HashMap<>();
+    private static int filmId = 1; // Added filmId as it was being used but not declared
 
     public BoxOfficeService() {
-        // Populate some sample data
+        // Sample contact details
+        String bookedBy = "Operations";
+        String primaryContact = "John Smith";
+        String telephone = "073323523";
+        String email = "CinemaLtd@gmail.com";
+        String room = "Hall";
+        String companyName = "Cinema Ltd";
+        ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
+
+        // Sample seats
         List<Seat> seats = List.of(
                 new Seat('A', 1, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
                 new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
                 new Seat('A', 3, Seat.Type.WHEELCHAIR, Seat.Status.AVAILABLE)
         );
 
-        // Create sample bookings using the new Booking constructor:
-        // Booking(int id, String startDate, String endDate, Activity activity, Venue venue, boolean held, String holdExpiryDate, List<Seat> seats)
+        // Sample activities
+        Activity filmActivity = new Activity(filmId, "Film Screening");
+        Activity concertActivity = new Activity(2, "Concert A");
+        Activity theatreActivity = new Activity(3, "Theatre B");
+
+        // Sample venues
+        Venue mainHall = new Venue(1, "Main Hall", "Hall", 300);
+        Venue theatre1 = new Venue(2, "Theatre 1", "Theatre", 200);
+
+        // Create sample bookings using the updated Booking constructor
         Booking booking1 = new Booking(
                 1,
                 LocalDate.of(2025, 3, 1),
                 LocalDate.of(2025, 3, 1),
-                LocalTime.of(10,20),
-                LocalTime.of(5,20),
-                new Activity(1, "Concert A"),
-                new Venue(1, "Main Hall", "Hall", 300),
-                false,
-                null,
-                seats
+                LocalTime.of(10, 20),
+                LocalTime.of(17, 20), // Fixed end time (was 5:20 which is earlier than start)
+                concertActivity,
+                mainHall,
+                true, // confirmed
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         );
+
         Booking booking2 = new Booking(
                 2,
                 LocalDate.of(2025, 3, 2),
                 LocalDate.of(2025, 3, 2),
-                LocalTime.of(10,20),
-                LocalTime.of(5,20),
-                new Activity(2, "Theatre B"),
-                new Venue(2, "Theatre 1", "Theatre", 200),
-                false,
-                null,
-                seats
+                LocalTime.of(14, 0),
+                LocalTime.of(16, 0),
+                theatreActivity,
+                theatre1,
+                true, // confirmed
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         );
+
         bookings.put(1, booking1);
         bookings.put(2, booking2);
 
-        // Initialize financialRecord using the updated FinancialRecord constructor:
-        // FinancialRecord(int financialRecordId, Booking booking, double revenue, double cost, String date)
-        // We'll use booking1 as our sample booking.
-        financialRecord = new FinancialRecord(1, booking1, 1000.0, 500.0, booking1.getStartDate());
     }
 
-    // --- Calendar Access ---
     @Override
     public List<Booking> getBookingsByDateRange(LocalDate startDate, LocalDate endDate) {
         return bookings.values().stream()
@@ -81,10 +96,11 @@ public class BoxOfficeService implements BoxOfficeInterface {
         return true;
     }
 
-    // --- Seating Plans ---
     @Override
     public List<Seat> getSeatingPlanForBooking(int bookingId) {
-        return bookings.containsKey(bookingId) ? bookings.get(bookingId).getSeats() : Collections.emptyList();
+        return bookings.containsKey(bookingId) ?
+                bookings.get(bookingId).getSeats() :
+                Collections.emptyList();
     }
 
     @Override
@@ -100,16 +116,14 @@ public class BoxOfficeService implements BoxOfficeInterface {
 
     @Override
     public List<Seat> getHeldAccessibleSeats(int bookingId) {
-        // Fetch the seating plan for the given booking
         List<Seat> seatingPlan = getSeatingPlanForBooking(bookingId);
-
-        // Filter the seats to return only those designated as wheelchair accessible or companion seats
-        List<Seat> filteredSeats = new ArrayList<>();
-        for (Seat seat : seatingPlan) {
-            if (seat.isWheelchairAccessible() || seat.isCompanionSeat()) {
-                filteredSeats.add(seat);
-            }
+        if (seatingPlan == null) {
+            return Collections.emptyList();
         }
-        return filteredSeats;
+
+        return seatingPlan.stream()
+                .filter(seat -> seat.getType() == Seat.Type.WHEELCHAIR ||
+                        seat.getType() == Seat.Type.COMPANION)
+                .collect(Collectors.toList());
     }
 }

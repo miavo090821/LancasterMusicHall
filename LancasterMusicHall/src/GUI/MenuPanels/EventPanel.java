@@ -1,6 +1,5 @@
-package GUI.MenuPanels.EventPanels;
+package GUI.MenuPanels;
 
-import Database.SQLConnection;
 import GUI.MainMenuGUI;
 import com.toedter.calendar.JDateChooser;
 import operations.entities.Activity;
@@ -8,16 +7,16 @@ import operations.entities.Booking;
 import operations.entities.Venue;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+        import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.text.SimpleDateFormat;
+        import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class NewEventPanel extends JPanel {
+public class EventPanel extends JPanel {
 
     private JDateChooser startDatePicker;
     private JDateChooser endDatePicker;
@@ -28,7 +27,7 @@ public class NewEventPanel extends JPanel {
     private JTextField venueIdField;
     private JCheckBox heldCheck;
 
-    public NewEventPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
+    public EventPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         this.setBackground(Color.white);
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(15, 30, 15, 15)); // Left indent increased to 30
@@ -36,7 +35,7 @@ public class NewEventPanel extends JPanel {
         // Title Panel
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         titlePanel.setBackground(Color.white);
-        JLabel titleLabel = new JLabel("New Event");
+        JLabel titleLabel = new JLabel("Event Details");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 22));
         titlePanel.add(titleLabel);
         add(titlePanel, BorderLayout.NORTH);
@@ -56,6 +55,7 @@ public class NewEventPanel extends JPanel {
         // Booking ID Panel
         JPanel bookingPanel = createInputPanel("Booking ID:");
         bookingIdField = (JTextField) bookingPanel.getComponent(1);
+        bookingIdField.setEditable(false);
         mainPanel.add(bookingPanel);
         mainPanel.add(verticalStrut);
 
@@ -106,14 +106,14 @@ public class NewEventPanel extends JPanel {
         // Activity ID Panel
         JPanel activityIdPanel = createInputPanel("Activity ID:");
         activityIdField = (JTextField) activityIdPanel.getComponent(1);
-        activityIdField.setText("1");
+        activityIdField.setEditable(false);
         mainPanel.add(activityIdPanel);
         mainPanel.add(verticalStrut);
 
         // Venue ID Panel
         JPanel venueIdPanel = createInputPanel("Venue ID:");
         venueIdField = (JTextField) venueIdPanel.getComponent(1);
-        venueIdField.setText("1");
+        venueIdField.setEditable(false);
         mainPanel.add(venueIdPanel);
         mainPanel.add(verticalStrut);
 
@@ -157,22 +157,8 @@ public class NewEventPanel extends JPanel {
                 int venueId = Integer.parseInt(venueIdField.getText().trim());
                 boolean isHeld = heldCheck.isSelected();
 
-                Booking newBooking = new Booking(
-                        bookingId, sDate, eDate, sTime, eTime,
-                        new Activity(activityId, "Activity " + activityId),
-                        new Venue(venueId, "Venue " + venueId, "Hall", 300),
-                        isHeld, "", new ArrayList<>()
-                );
 
-                SQLConnection sqlConnection = mainMenu.getSqlConnection();
-                boolean success = sqlConnection.createBooking(newBooking);
-                if (success) {
-                    JOptionPane.showMessageDialog(this, "Event created successfully!");
-                    cardLayout.show(cardPanel, "Calendar");
-                } else {
-                    JOptionPane.showMessageDialog(this, "Failed to create event.",
-                            "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                // Save logic here
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Invalid input: " + ex.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -201,6 +187,13 @@ public class NewEventPanel extends JPanel {
         return panel;
     }
 
+    private JLabel createStyledLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Arial", Font.PLAIN, 16));
+        label.setPreferredSize(new Dimension(100, 25)); // Fixed width for alignment
+        return label;
+    }
+
     private JPanel createComboPanel(String labelText) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         panel.setBackground(Color.white);
@@ -209,10 +202,12 @@ public class NewEventPanel extends JPanel {
         return panel;
     }
 
-    private JLabel createStyledLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setFont(new Font("Arial", Font.PLAIN, 16));
-        label.setPreferredSize(new Dimension(100, 25)); // Fixed width for alignment
-        return label;
+
+    private Booking collectFormData() {
+        // Validate required fields
+        return null;
+    }
+
+    public void setBookingData(Booking booking) {
     }
 }

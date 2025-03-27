@@ -2,9 +2,9 @@ package GUI;
 
 import Database.SQLConnection;
 import GUI.MenuPanels.*;
-import GUI.MenuPanels.EventPanels.EventPanel;
-import GUI.MenuPanels.EventPanels.NewEventPanel;
+import GUI.MenuPanels.EventPanel;
 import GUI.MenuPanels.Reports.ReportPanel;
+import operations.entities.ContactDetails;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -22,6 +22,8 @@ public class MainMenuGUI {
     private JPanel cardPanel;
     private CardLayout cardLayout;
     private SQLConnection sqlConnection = new SQLConnection();
+    private  ContactDetails contactDetails = new ContactDetails();
+
 
     public MainMenuGUI() {
         JFrame frame = new JFrame("Main Menu");
@@ -37,11 +39,10 @@ public class MainMenuGUI {
         cardPanel = new JPanel(cardLayout);
 
         CalendarPanel calendar = new CalendarPanel(this, cardLayout, cardPanel );
-        NewEventPanel  event = new NewEventPanel(this, cardLayout, cardPanel);
+        EventPanel event = new EventPanel(this, cardLayout, cardPanel);
         ReportPanel report = new ReportPanel(this, cardLayout, cardPanel);
         HomePanel home = new HomePanel(this);
         BookingPanel booking = new BookingPanel(this);
-        EventPanel VenueDetails = new EventPanel(this, cardLayout, cardPanel);
         DiaryPanel diary = new DiaryPanel(this, cardLayout, cardPanel);
         SettingsPanel settings = new SettingsPanel(this);
 
@@ -49,11 +50,10 @@ public class MainMenuGUI {
         cardPanel.add(home, "Home");
         cardPanel.add(calendar, "Calendar");
         cardPanel.add(diary, "Diary");
-        cardPanel.add(VenueDetails, "VenueDetails");
+        cardPanel.add(event, "VenueDetails");
         cardPanel.add(booking, "Booking");
         cardPanel.add(report, "Reports");
         cardPanel.add(settings, "Settings");
-        cardPanel.add(event, "NewEvent");
 
         // Add components to frame
         frame.add(getTopPanel());

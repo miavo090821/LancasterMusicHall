@@ -5,20 +5,21 @@ import java.time.LocalTime;
 import java.util.List;
 
 public class Booking {
-    private int id;                    // Unique booking identifier
-    private LocalDate startDate;          // Start LocalDate as a String (e.g., "2025-03-01")
-    private LocalDate endDate;            // End LocalDate as a String
-    private LocalTime startTime;          // Start time as a String (e.g., "2:20")
-    private LocalTime endTime;            // End time as a String
-    private Activity activity;         // Associated Activity object
-    private Venue venue;               // Associated Venue object
-    private boolean held;              // Indicates if the booking is on hold
-    private String holdExpiryDate;     // Expiry LocalDate for the hold (or null if not applicable)
-    private List<Seat> seats;          // List of seats associated with the booking
+    private int id;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private Activity activity;
+    private Venue venue;
+    private boolean confirmed;
+    private String holdExpiryDate;
+    private List<Seat> seats;
+    private String room;
+    private String bookedBy;
+    private String companyName;
+    private ContactDetails contactDetails;
 
-    // Default constructor
-    public Booking() {
-    }
 
     /**
      * Parameterized constructor with all fields.
@@ -27,12 +28,14 @@ public class Booking {
      * @param endDate End LocalDate as a String.
      * @param activity The associated Activity.
      * @param venue The associated Venue.
-     * @param held Whether the booking is on hold.
-     * @param holdExpiryDate The hold expiry LocalDate (or null).
+     * @param confirmed Whether the booking is on hold.
      * @param seats List of seats for the booking.
      */
-    public Booking(int id, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime,
-                   Activity activity, Venue venue, boolean held, String holdExpiryDate, List<Seat> seats) {
+    public Booking(int id, LocalDate startDate, LocalDate endDate,
+                   LocalTime startTime, LocalTime endTime,
+                   Activity activity, Venue venue, boolean confirmed,
+                   List<Seat> seats, String bookedBy, String room, String companyName,
+                   ContactDetails contactDetails) {  // Changed to use ContactDetails
         this.id = id;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -40,13 +43,15 @@ public class Booking {
         this.endTime = endTime;
         this.activity = activity;
         this.venue = venue;
-        this.held = held;
-        this.holdExpiryDate = holdExpiryDate;
+        this.confirmed = confirmed;
         this.seats = seats;
+        this.bookedBy = bookedBy;
+        this.room = room;
+        this.companyName = companyName;
+        this.contactDetails = contactDetails;  // Set the ContactDetails object
     }
 
-    // Getters and Setters
-
+    // Complete getters and setters
     public int getId() {
         return id;
     }
@@ -71,26 +76,28 @@ public class Booking {
         this.endDate = endDate;
     }
 
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
     public Activity getActivity() {
         return activity;
     }
 
     public void setActivity(Activity activity) {
         this.activity = activity;
-    }
-
-    /**
-     * Returns the name of the associated Activity.
-     */
-    public String getActivityName() {
-        return (activity != null) ? activity.getName() : "N/A";
-    }
-
-    /**
-     * Returns the ID of the associated Activity.
-     */
-    public int getActivityID() {
-        return (activity != null) ? activity.getActivityId() : -1;
     }
 
     public Venue getVenue() {
@@ -101,20 +108,12 @@ public class Booking {
         this.venue = venue;
     }
 
-    public boolean isHeld() {
-        return held;
+    public boolean isConfirmed() {
+        return confirmed;
     }
 
-    public void setHeld(boolean held) {
-        this.held = held;
-    }
-
-    public String getHoldExpiryDate() {
-        return holdExpiryDate;
-    }
-
-    public void setHoldExpiryDate(String holdExpiryDate) {
-        this.holdExpiryDate = holdExpiryDate;
+    public void setConfirmed(boolean confirmed) {
+        this.confirmed = confirmed;
     }
 
     public List<Seat> getSeats() {
@@ -125,32 +124,82 @@ public class Booking {
         this.seats = seats;
     }
 
-    public LocalTime getStartTime() {
-        return startTime;
+    public String getRoom() {
+        return room;
     }
 
-    public LocalTime getEndTime() {
-        return endTime;
+    public void setRoom(String room) {
+        this.room = room;
+    }
+
+    public String getBookedBy() {
+        return bookedBy;
+    }
+
+    public void setBookedBy(String bookedBy) {
+        this.bookedBy = bookedBy;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public ContactDetails getContactDetails() {
+        return contactDetails;
+    }
+
+    public void setContactDetails(ContactDetails contactDetails) {
+        this.contactDetails = contactDetails;
+    }
+
+    // Additional helper methods
+    public String getActivityName() {
+        return (activity != null) ? activity.getName() : "N/A";
+    }
+
+    public int getActivityId() {
+        return (activity != null) ? activity.getActivityId() : -1;
     }
 
     @Override
     public String toString() {
-        StringBuilder seatingPlanStr = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Booking ID: ").append(id).append("\n");
+        sb.append("Start Date: ").append(startDate).append("\n");
+        sb.append("End Date: ").append(endDate).append("\n");
+        sb.append("Start Time: ").append(startTime).append("\n");
+        sb.append("End Time: ").append(endTime).append("\n");
+        sb.append("Booked By: ").append(bookedBy).append("\n");
+        sb.append("Room: ").append(room).append("\n");
+        sb.append("Company Name: ").append(companyName).append("\n");
 
-        for (Seat seat : seats) {
-            seatingPlanStr.append(seat.toString()); // Appends each seat on a new line
+        if (contactDetails != null) {
+            sb.append("Contact Details:\n");
+            sb.append("  Primary Contact: ").append(contactDetails.getPrimaryContact()).append("\n");
+            sb.append("  Telephone: ").append(contactDetails.getTelephone()).append("\n");
+            sb.append("  Email: ").append(contactDetails.getEmail()).append("\n");
         }
 
-        return "Booking: \n" +
-                "id=" + id +
-                ", startDate='" + startDate + '\'' +
-                ", endDate='" + endDate + '\'' +
-                ", startTime='" + startTime + '\'' +
-                ", endTime='" + endTime + '\'' +
-                ", activity=" + (activity != null ? activity.getName() : "N/A") +
-                ", venue=" + (venue != null ? venue.getName() : "N/A") +
-                ", held=" + held +
-                ", holdExpiryDate='" + holdExpiryDate + '\n' +
-                "Seating plan:\n" + seatingPlanStr.toString();
+        sb.append("Activity: ").append(getActivityName()).append("\n");
+        sb.append("Venue: ").append(venue != null ? venue.getName() : "N/A").append("\n");
+        sb.append("Confirmed: ").append(confirmed).append("\n");
+        sb.append("Hold Expiry Date: ").append(holdExpiryDate).append("\n");
+
+        if (seats != null && !seats.isEmpty()) {
+            sb.append("Seats:\n");
+            for (Seat seat : seats) {
+                sb.append("  ").append(seat).append("\n");
+            }
+        }
+
+        return sb.toString();
+    }
+
+    public int getActivityID() {
+        return activity.getActivityId();
     }
 }

@@ -1,8 +1,6 @@
 package operations.module;
 
-import operations.entities.Booking;
-import operations.entities.Activity;
-import operations.entities.Venue;
+import operations.entities.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,7 +14,25 @@ public class CalendarModule {
 
     public CalendarModule() {
         bookings = new ArrayList<>();
-        // Sample data
+        // Sample Activity and Venue (replace with your real objects)
+        Activity movieActivity1 = new Activity(1, "Movie A");
+        Activity movieActivity2 = new Activity(1, "Movie B");
+
+        Venue hallVenue = new Venue(1, "Main Hall", "Hall", 300);
+        java.util.List<Seat> seats = List.of(
+                new Seat('A', 1, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
+                new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
+        );
+
+        // Create Booking object
+        String bookedBy = "Operations";
+        String primaryContact = "phone";
+        String telephone = "073323523"; //random number
+        String email = "CinemaLtd@gmail.com";
+        ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
+
+        String room = "Hall";
+        String companyName = "Cinema Ltd";
 
         // Create an Activity and a Venue with all required fields
         Activity activity1 = new Activity(1, "Concert");
@@ -27,12 +43,15 @@ public class CalendarModule {
                 LocalDate.of(2025, 3, 1),
                 LocalDate.of(2025, 3, 3),
                 LocalTime.of(10,20),
-                LocalTime.of(5,20),
-                activity1,
-                venue1,
-                false,
-                null,
-                Collections.emptyList()
+                LocalTime.of(12,20),
+                movieActivity1,
+                hallVenue,
+                true,
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         );
         bookings.add(booking1);
 
@@ -44,11 +63,14 @@ public class CalendarModule {
                 LocalDate.of(2025, 3, 3),
                 LocalTime.of(10,20),
                 LocalTime.of(5,20),
-                activity2,
-                venue2,
+                movieActivity2,
+                hallVenue,
                 true,
-                "2025-03-29",
-                Collections.emptyList()
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         );
         bookings.add(booking2);
     }
@@ -95,6 +117,19 @@ public class CalendarModule {
         Activity filmActivity = new Activity(filmId, "Film Screening");
         // Use Main Hall as default for film screenings
         Venue mainHall = new Venue(1, "Main Hall", "Hall", 300);
+        List<Seat> seats = List.of(
+                new Seat('A', 1, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
+                new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
+        );
+        // Create Booking object
+        String bookedBy = "Operations";
+        String primaryContact = "phone";
+        String telephone = "073323523"; //random number
+        String email = "CinemaLtd@gmail.com";
+        String room = "Hall";
+        String companyName = "Cinema Ltd";
+        ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
+
         Booking newBooking = new Booking(
                 200 + filmId,
                 proposedDate,
@@ -104,8 +139,11 @@ public class CalendarModule {
                 filmActivity,
                 mainHall,
                 false,
-                null,
-                Collections.emptyList()
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         );
         bookings.add(newBooking);
         System.out.println("Scheduled film booking: " + newBooking.getId());
