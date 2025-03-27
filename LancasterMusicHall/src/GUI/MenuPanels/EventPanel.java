@@ -2,9 +2,7 @@ package GUI.MenuPanels;
 
 import GUI.MainMenuGUI;
 import com.toedter.calendar.JDateChooser;
-import operations.entities.Activity;
 import operations.entities.Booking;
-import operations.entities.Venue;
 
 import javax.swing.*;
         import javax.swing.border.EmptyBorder;
@@ -13,11 +11,9 @@ import java.awt.*;
         import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Date;
 
 public class EventPanel extends JPanel {
-
     private JDateChooser startDatePicker;
     private JDateChooser endDatePicker;
     private JComboBox<String> startTimeCombo;
@@ -25,7 +21,13 @@ public class EventPanel extends JPanel {
     private JTextField bookingIdField;
     private JTextField activityIdField;
     private JTextField venueIdField;
-    private JCheckBox heldCheck;
+    private JCheckBox confirmedCheck;
+    private JTextField bookedByField;
+    private JTextField roomField;
+    private JTextField companyNameField;
+    private JTextField primaryContactField;
+    private JTextField contactPhoneField;
+    private JTextField contactEmailField;
 
     public EventPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         this.setBackground(Color.white);
@@ -62,7 +64,7 @@ public class EventPanel extends JPanel {
         // Start Date Picker Panel
         JPanel startDatePanel = createDatePanel("Start Date:");
         startDatePicker = new JDateChooser();
-        startDatePicker.setDateFormatString("yyyy-MM-dd");
+        startDatePicker.setDateFormatString("dd-MM-yyyy");
         startDatePicker.setPreferredSize(new Dimension(150, 25));
         startDatePicker.setDate(new Date());
         startDatePanel.add(startDatePicker);
@@ -72,7 +74,7 @@ public class EventPanel extends JPanel {
         // End Date Picker Panel
         JPanel endDatePanel = createDatePanel("End Date:");
         endDatePicker = new JDateChooser();
-        endDatePicker.setDateFormatString("yyyy-MM-dd");
+        endDatePicker.setDateFormatString("dd-MM-yyyy");
         endDatePicker.setPreferredSize(new Dimension(150, 25));
         endDatePicker.setDate(new Date());
         endDatePanel.add(endDatePicker);
@@ -106,33 +108,79 @@ public class EventPanel extends JPanel {
         // Activity ID Panel
         JPanel activityIdPanel = createInputPanel("Activity ID:");
         activityIdField = (JTextField) activityIdPanel.getComponent(1);
-        activityIdField.setEditable(false);
         mainPanel.add(activityIdPanel);
         mainPanel.add(verticalStrut);
 
         // Venue ID Panel
         JPanel venueIdPanel = createInputPanel("Venue ID:");
         venueIdField = (JTextField) venueIdPanel.getComponent(1);
-        venueIdField.setEditable(false);
         mainPanel.add(venueIdPanel);
         mainPanel.add(verticalStrut);
 
-        // Held Checkbox Panel
-        JPanel heldPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        heldPanel.setBackground(Color.white);
-        heldPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel heldLabel = createStyledLabel("Confirmed?");
-        heldCheck = new JCheckBox();
-        heldCheck.setBackground(Color.white);
-        heldPanel.add(heldLabel);
-        heldPanel.add(heldCheck);
-        mainPanel.add(heldPanel);
+        // Booked By Panel
+        JPanel bookedByPanel = createInputPanel("Booked By:");
+        bookedByField = (JTextField) bookedByPanel.getComponent(1);
+        mainPanel.add(bookedByPanel);
+        mainPanel.add(verticalStrut);
+
+        // Room Panel
+        JPanel roomPanel = createInputPanel("Room:");
+        roomField = (JTextField) roomPanel.getComponent(1);
+        mainPanel.add(roomPanel);
+        mainPanel.add(verticalStrut);
+
+        // Company Name Panel
+        JPanel companyPanel = createInputPanel("Company Name:");
+        companyNameField = (JTextField) companyPanel.getComponent(1);
+        mainPanel.add(companyPanel);
+        mainPanel.add(verticalStrut);
+
+        // Contact Details Section Label
+        JPanel contactHeaderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        contactHeaderPanel.setBackground(Color.white);
+        JLabel contactHeader = new JLabel("Contact Details");
+        contactHeader.setFont(new Font("Arial", Font.BOLD, 16));
+        contactHeaderPanel.add(contactHeader);
+        mainPanel.add(contactHeaderPanel);
+        mainPanel.add(verticalStrut);
+
+        // Primary Contact Panel
+        JPanel primaryContactPanel = createInputPanel("Primary Contact:");
+        primaryContactField = (JTextField) primaryContactPanel.getComponent(1);
+        mainPanel.add(primaryContactPanel);
+        mainPanel.add(verticalStrut);
+
+        // Contact Phone Panel
+        JPanel phonePanel = createInputPanel("Contact Phone:");
+        contactPhoneField = (JTextField) phonePanel.getComponent(1);
+        mainPanel.add(phonePanel);
+        mainPanel.add(verticalStrut);
+
+        // Contact Email Panel
+        JPanel emailPanel = createInputPanel("Contact Email:");
+        contactEmailField = (JTextField) emailPanel.getComponent(1);
+        mainPanel.add(emailPanel);
+        mainPanel.add(verticalStrut);
+
+        // Confirmed Checkbox Panel - MOVED HERE to be with contact details
+        JPanel confirmedPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduced hgap from 30 to 10
+        confirmedPanel.setBackground(Color.white);
+        JLabel confirmedLabel = createStyledLabel("Confirmed?");
+        confirmedLabel.setPreferredSize(new Dimension(120, 25)); // Match other labels
+        confirmedCheck = new JCheckBox();
+        confirmedCheck.setBackground(Color.white);
+        confirmedPanel.add(confirmedLabel);
+        confirmedPanel.add(confirmedCheck);
+        mainPanel.add(confirmedPanel);
+        mainPanel.add(verticalStrut);
+
+        mainPanel.add(confirmedPanel);
 
         // Add main panel to center
         add(mainPanel, BorderLayout.CENTER);
 
         // Bottom Panel (Save / Cancel)
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         bottomPanel.setBackground(Color.white);
 
         JButton saveButton = new JButton("Save");
@@ -155,7 +203,7 @@ public class EventPanel extends JPanel {
                 LocalTime eTime = LocalTime.parse((String) endTimeCombo.getSelectedItem());
                 int activityId = Integer.parseInt(activityIdField.getText().trim());
                 int venueId = Integer.parseInt(venueIdField.getText().trim());
-                boolean isHeld = heldCheck.isSelected();
+                boolean isConfirmed = confirmedCheck.isSelected();
 
 
                 // Save logic here
@@ -168,40 +216,42 @@ public class EventPanel extends JPanel {
         cancelButton.addActionListener(ev -> cardLayout.show(cardPanel, "Calendar"));
     }
 
-    // Helper methods for consistent panel creation
     private JPanel createInputPanel(String labelText) {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduced hgap from 30 to 10
         panel.setBackground(Color.white);
-        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(createStyledLabel(labelText));
+        JLabel label = createStyledLabel(labelText);
+        label.setPreferredSize(new Dimension(120, 25)); // Fixed width for all labels
+        panel.add(label);
         JTextField textField = new JTextField(15);
+        textField.setPreferredSize(new Dimension(200, 25)); // Fixed width for text fields
         panel.add(textField);
         return panel;
     }
 
     private JPanel createDatePanel(String labelText) {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduced hgap
         panel.setBackground(Color.white);
-        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(createStyledLabel(labelText));
+        JLabel label = createStyledLabel(labelText);
+        label.setPreferredSize(new Dimension(120, 25)); // Same width as other labels
+        panel.add(label);
+        return panel;
+    }
+
+    private JPanel createComboPanel(String labelText) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduced hgap
+        panel.setBackground(Color.white);
+        JLabel label = createStyledLabel(labelText);
+        label.setPreferredSize(new Dimension(120, 25)); // Same width as other labels
+        panel.add(label);
         return panel;
     }
 
     private JLabel createStyledLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("Arial", Font.PLAIN, 16));
-        label.setPreferredSize(new Dimension(100, 25)); // Fixed width for alignment
+        // Removed the preferred size setting here since we're setting it in the panel methods
         return label;
     }
-
-    private JPanel createComboPanel(String labelText) {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        panel.setBackground(Color.white);
-        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(createStyledLabel(labelText));
-        return panel;
-    }
-
 
     private Booking collectFormData() {
         // Validate required fields

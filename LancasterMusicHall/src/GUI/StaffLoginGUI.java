@@ -139,7 +139,7 @@ public class StaffLoginGUI {
         });
 
         // Action listener for login validation using SQL query.
-        enterButton.addActionListener(e -> {
+        enterButton.addActionListener(_ -> {
             String staffId = getStaffID();
             String password = getPassword();
             if (staffId.isEmpty() || password.isEmpty()) {
@@ -175,7 +175,7 @@ public class StaffLoginGUI {
         forgotPasswordButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         // Action listener to open the Password Reset dialog.
-        forgotPasswordButton.addActionListener(e -> showResetPasswordDialog());
+        forgotPasswordButton.addActionListener(_ -> showResetPasswordDialog());
 
         bottomPanel.add(forgotPasswordButton);
         return bottomPanel;
@@ -225,7 +225,7 @@ public class StaffLoginGUI {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton resetButton = new JButton("Reset Password");
-        resetButton.addActionListener(e -> {
+        resetButton.addActionListener(_ -> {
             String staffId = idField.getText().trim();
             String email = emailField.getText().trim();
             String newPassword = new String(newPassField.getPassword());

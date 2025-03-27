@@ -413,10 +413,9 @@ public class DiaryPanel extends JPanel{
         }
 
         private final Color[] bookingColors = {
-                new Color(255, 200, 230),
-                new Color(230, 200, 255),
-                new Color(200, 255, 230),
-                new Color(255, 255, 200)
+                new Color(255, 255, 200),
+                new Color(237, 180, 255),
+                new Color(255, 200, 230)
         };
 
     }

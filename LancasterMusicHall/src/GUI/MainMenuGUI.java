@@ -4,7 +4,6 @@ import Database.SQLConnection;
 import GUI.MenuPanels.*;
 import GUI.MenuPanels.EventPanel;
 import GUI.MenuPanels.Reports.ReportPanel;
-import operations.entities.ContactDetails;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -22,13 +21,12 @@ public class MainMenuGUI {
     private JPanel cardPanel;
     private CardLayout cardLayout;
     private SQLConnection sqlConnection = new SQLConnection();
-    private  ContactDetails contactDetails = new ContactDetails();
 
 
     public MainMenuGUI() {
         JFrame frame = new JFrame("Main Menu");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 600);
+        frame.setSize(700, 700);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
         // Create navigation bar
@@ -115,7 +113,7 @@ public class MainMenuGUI {
             });
 
             // Click action to switch tabs and highlight the active button
-            button.addActionListener(e -> {
+            button.addActionListener(_ -> {
                 if (activeButton != null) {
                     // Reset previous active button
                     activeButton.setBackground(defaultColor);

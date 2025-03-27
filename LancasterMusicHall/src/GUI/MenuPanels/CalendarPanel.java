@@ -138,6 +138,7 @@ public class CalendarPanel extends JPanel{
         left1.setBackground(Color.WHITE);
         left1.setPreferredSize(new Dimension(180, 50));
 
+
         JPanel left2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         left2.setBackground(Color.white);
         left2.setPreferredSize(new Dimension(180, 50));
@@ -196,7 +197,7 @@ public class CalendarPanel extends JPanel{
         newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
         newEventButton.setBackground(new Color(200, 170, 250));
         newEventButton.setPreferredSize(new Dimension(120, 50));
-        newEventButton.addActionListener(_ -> {cardLayout.show(cardPanel, "NewEvent");});
+        newEventButton.addActionListener(_ -> {cardLayout.show(cardPanel, "VenueDetails");});
         middle.add(newEventButton);
 
         bottomPanel.add(middle);
