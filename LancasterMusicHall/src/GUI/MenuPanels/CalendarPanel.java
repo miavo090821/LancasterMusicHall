@@ -3,10 +3,8 @@ package GUI.MenuPanels;
 import Database.SQLConnection;
 import GUI.MainMenuGUI;
 import com.toedter.calendar.JDateChooser;
-import operations.entities.Activity;
-import operations.entities.Booking;
-import operations.entities.Seat;
-import operations.entities.Venue;
+import operations.entities.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
@@ -140,6 +138,7 @@ public class CalendarPanel extends JPanel{
         left1.setBackground(Color.WHITE);
         left1.setPreferredSize(new Dimension(180, 50));
 
+
         JPanel left2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         left2.setBackground(Color.white);
         left2.setPreferredSize(new Dimension(180, 50));
@@ -198,7 +197,7 @@ public class CalendarPanel extends JPanel{
         newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
         newEventButton.setBackground(new Color(200, 170, 250));
         newEventButton.setPreferredSize(new Dimension(120, 50));
-        newEventButton.addActionListener(_ -> {cardLayout.show(cardPanel, "NewEvent");});
+        newEventButton.addActionListener(_ -> {cardLayout.show(cardPanel, "VenueDetails");});
         middle.add(newEventButton);
 
         bottomPanel.add(middle);
@@ -320,19 +319,28 @@ public class CalendarPanel extends JPanel{
 
     // === Sample bookings for demo ===
     private ArrayList<Booking> getSampleBookings() {
-        ArrayList<Booking> bookings = new ArrayList<Booking>();
+        ArrayList<Booking> bookings = new ArrayList<>();
 
         // Sample Activity and Venue (replace with your real objects)
         Activity movieActivity1 = new Activity(1, "Movie A");
         Activity movieActivity2 = new Activity(1, "Movie B");
 
         Venue hallVenue = new Venue(1, "Main Hall", "Hall", 300);
-        java.util.List<Seat> seats = List.of(
+        List<Seat> seats = List.of(
                 new Seat('A', 1, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
                 new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
         );
 
-        bookings.add(new Booking(
+        // Create Booking object
+        String bookedBy = "Operations";
+        String primaryContact = "phone";
+        String telephone = "073323523"; //random number
+        String email = "CinemaLtd@gmail.com";
+        ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
+
+        String room = "Hall";
+        String companyName = "Cinema Ltd";
+        bookings.add (new Booking(
                 101,
                 LocalDate.of(2025, 3, 1),
                 LocalDate.of(2025, 3, 3),
@@ -340,9 +348,12 @@ public class CalendarPanel extends JPanel{
                 LocalTime.of(12,20),
                 movieActivity1,
                 hallVenue,
-                false,
-                null,
-                seats
+                true,
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         ));
         bookings.add(new Booking(
                 101,
@@ -352,9 +363,12 @@ public class CalendarPanel extends JPanel{
                 LocalTime.of(16,20),
                 movieActivity2,
                 hallVenue,
-                false,
-                null,
-                seats
+                true,
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         ));
 
         bookings.add(new Booking(
@@ -365,11 +379,13 @@ public class CalendarPanel extends JPanel{
                 LocalTime.of(20,20),
                 movieActivity2,
                 hallVenue,
-                false,
-                null,
-                seats
+                true,
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         ));
-        // Add more bookings as needed
 
         return bookings;
     }
@@ -377,10 +393,10 @@ public class CalendarPanel extends JPanel{
 
     private void showBookingDetails(Booking booking) {
         // Find the EventPanel in the cardPanel
-        GUI.MenuPanels.EventPanels.EventPanel eventPanel = null;
+        EventPanel eventPanel = null;
         for (Component comp : cardPanel.getComponents()) {
-            if (comp instanceof GUI.MenuPanels.EventPanels.EventPanel) {
-                eventPanel = (GUI.MenuPanels.EventPanels.EventPanel) comp;
+            if (comp instanceof EventPanel) {
+                eventPanel = (EventPanel) comp;
                 break;
             }
         }

@@ -1,16 +1,12 @@
 package Database;
 
-import operations.entities.Activity;
-import operations.entities.Booking;
-import operations.entities.Seat;
-import operations.entities.Venue;
+import operations.entities.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -111,7 +107,7 @@ public class SQLConnection implements SQLInterface {
     /**
      * Creates a new booking record in the database.
      * Both the Operations and Box Office teams can call this method.
-     *
+     * <p>
      * Assumptions:
      * - Booking's startDate and endDate are stored as ISO strings ("yyyy-MM-dd").
      * - start_time and end_time are stored as TIME.
@@ -122,66 +118,7 @@ public class SQLConnection implements SQLInterface {
      * @return true if insertion was successful, false otherwise.
      */
     public boolean createBooking(Booking booking) {
-        boolean success = false;
-        // Include start_time and end_time columns
-        String query = "INSERT INTO Booking "
-                + "(booking_id, start_date, end_date, start_time, end_time, "
-                + " activity_id, venue_id, held, hold_expiry_date) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (Connection con = DriverManager.getConnection(url, dbUser, dbPassword);
-             PreparedStatement ps = con.prepareStatement(query)) {
-
-            con.setAutoCommit(false);
-
-            // 1) Booking ID
-            ps.setInt(1, booking.getId());
-
-            // 2) Start Date (LocalDate -> java.sql.Date)
-            ps.setDate(2, java.sql.Date.valueOf(booking.getStartDate()));
-
-            // 3) End Date (LocalDate -> java.sql.Date)
-            ps.setDate(3, java.sql.Date.valueOf(booking.getEndDate()));
-
-            // 4) Start Time (LocalTime -> java.sql.Time)
-            ps.setTime(4, java.sql.Time.valueOf(booking.getStartTime()));
-
-            // 5) End Time (LocalTime -> java.sql.Time)
-            ps.setTime(5, java.sql.Time.valueOf(booking.getEndTime()));
-
-            // 6) Activity ID
-            ps.setInt(6, booking.getActivityID());
-
-            // 7) Venue ID
-            if (booking.getVenue() != null) {
-                ps.setInt(7, booking.getVenue().getVenueId());
-            } else {
-                ps.setNull(7, Types.INTEGER);
-            }
-
-            // 8) Held flag.
-            ps.setBoolean(8, booking.isHeld());
-
-            // 9) Hold Expiry Date: if provided, convert to java.sql.Date; else set as NULL.
-            if (booking.getHoldExpiryDate() != null && !booking.getHoldExpiryDate().isEmpty()) {
-                ps.setDate(9, java.sql.Date.valueOf(booking.getHoldExpiryDate()));
-            } else {
-                ps.setNull(9, Types.DATE);
-            }
-
-            int rows = ps.executeUpdate();
-            if (rows > 0) {
-                con.commit();
-                success = true;
-                notifyUpdateListeners("bookingCreated", booking.getId());
-            } else {
-                con.rollback();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return success;
+        return false;
     }
 
     /**
@@ -256,36 +193,53 @@ public class SQLConnection implements SQLInterface {
      */
     public List<Booking> getAllBookings() {
         List<Booking> bookings = new ArrayList<>();
-        String query = "SELECT booking_id, start_date, end_date, start_time, end_time, "
-                + "activity_id, venue_id, held, hold_expiry_date "
-                + "FROM Booking";
+        String query = "SELECT b.booking_id, b.start_date, b.end_date, b.start_time, b.end_time, " +
+                "b.activity_id, b.venue_id, b.held, b.hold_expiry_date, " +
+                "b.booked_by, b.room, b.company_name, " +
+                "c.primary_contact, c.telephone, c.email " + // Contact details fields
+                "FROM Booking b " +
+                "LEFT JOIN ContactDetails c ON b.booking_id = c.booking_id"; // Join with contact table
 
         try (Connection con = DriverManager.getConnection(url, dbUser, dbPassword);
              PreparedStatement ps = con.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
+                // Extract basic booking info
                 int bookingId = rs.getInt("booking_id");
                 LocalDate startDate = rs.getDate("start_date").toLocalDate();
                 LocalDate endDate = rs.getDate("end_date").toLocalDate();
                 LocalTime startTime = rs.getTime("start_time").toLocalTime();
                 LocalTime endTime = rs.getTime("end_time").toLocalTime();
 
+                // Extract activity and venue info
                 int activityId = rs.getInt("activity_id");
                 int venueId = rs.getInt("venue_id");
-                boolean held = rs.getBoolean("held");
-                String holdExpiryDateStr = null;
-                if (rs.getDate("hold_expiry_date") != null) {
-                    holdExpiryDateStr = rs.getDate("hold_expiry_date").toString();
+                boolean confirm = rs.getBoolean("confirm");
+                String holdExpiryDate = rs.getString("hold_expiry_date");
+
+                // Extract booking info
+                String bookedBy = rs.getString("booked_by");
+                String room = rs.getString("room");
+                String companyName = rs.getString("company_name");
+
+                // Create ContactDetails object
+                ContactDetails contactDetails = null;
+                String primaryContact = rs.getString("primary_contact");
+                if (primaryContact != null) {  // Only create if contact info exists
+                    contactDetails = new ContactDetails(
+                            primaryContact,
+                            rs.getString("telephone"),
+                            rs.getString("email")
+                    );
                 }
 
-                // Create placeholder Activity and Venue objects
-                Activity activity = new Activity(activityId, "Activity" + activityId);
-                Venue venue = new Venue(venueId, "Venue" + venueId, "Hall", 300);
+                // Create objects
+                Activity activity = new Activity(activityId, "Activity" + activityId); // Placeholder
+                Venue venue = new Venue(venueId, "Venue" + venueId, "Hall", 300); // Placeholder
+                List<Seat> seats = new ArrayList<>(); // Empty list - load separately if needed
 
-                // For seats, create an empty list (or load from another table if available)
-                List<Seat> seats = new ArrayList<>();
-
+                // Create Booking object
                 Booking booking = new Booking(
                         bookingId,
                         startDate,
@@ -294,9 +248,12 @@ public class SQLConnection implements SQLInterface {
                         endTime,
                         activity,
                         venue,
-                        held,
-                        holdExpiryDateStr,
-                        seats
+                        confirm,
+                        seats,
+                        bookedBy,
+                        room,
+                        companyName,
+                        contactDetails
                 );
                 bookings.add(booking);
             }
@@ -304,6 +261,16 @@ public class SQLConnection implements SQLInterface {
             e.printStackTrace();
         }
         return bookings;
+    }
+
+    public List<Venue> getAllVenues() {
+        return null;
+    }
+
+    public void updateBooking(Booking booking) {
+    }
+
+    public void deleteBooking(int id) {
     }
 }
 // we will need more queries for the calendar, create event form, display the diary

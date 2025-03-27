@@ -3,10 +3,8 @@ package GUI.MenuPanels;
 import Database.SQLConnection;
 import GUI.MainMenuGUI;
 import com.toedter.calendar.JDateChooser;
-import operations.entities.Activity;
-import operations.entities.Booking;
-import operations.entities.Seat;
-import operations.entities.Venue;
+import operations.entities.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
@@ -332,7 +330,16 @@ public class DiaryPanel extends JPanel{
                     new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
             );
 
-            bookings.add(new Booking(
+            // Create Booking object
+            String bookedBy = "Operations";
+            String primaryContact = "phone";
+            String telephone = "073323523"; //random number
+            String email = "CinemaLtd@gmail.com";
+            ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
+
+            String room = "Hall";
+            String companyName = "Cinema Ltd";
+            bookings.add (new Booking(
                     101,
                     LocalDate.of(2025, 3, 1),
                     LocalDate.of(2025, 3, 3),
@@ -340,9 +347,12 @@ public class DiaryPanel extends JPanel{
                     LocalTime.of(12,20),
                     movieActivity1,
                     hallVenue,
-                    false,
-                    null,
-                    seats
+                    true,
+                    seats,
+                    bookedBy,
+                    room,
+                    companyName,
+                    contactDetails
             ));
             bookings.add(new Booking(
                     101,
@@ -352,9 +362,12 @@ public class DiaryPanel extends JPanel{
                     LocalTime.of(16,20),
                     movieActivity2,
                     hallVenue,
-                    false,
-                    null,
-                    seats
+                    true,
+                    seats,
+                    bookedBy,
+                    room,
+                    companyName,
+                    contactDetails
             ));
 
             bookings.add(new Booking(
@@ -365,9 +378,12 @@ public class DiaryPanel extends JPanel{
                     LocalTime.of(20,20),
                     movieActivity2,
                     hallVenue,
-                    false,
-                    null,
-                    seats
+                    true,
+                    seats,
+                    bookedBy,
+                    room,
+                    companyName,
+                    contactDetails
             ));
             // Add more bookings as needed
 
@@ -377,10 +393,10 @@ public class DiaryPanel extends JPanel{
 
         private void showBookingDetails(Booking booking) {
             // Find the EventPanel in the cardPanel
-            GUI.MenuPanels.EventPanels.EventPanel eventPanel = null;
+            EventPanel eventPanel = null;
             for (Component comp : cardPanel.getComponents()) {
-                if (comp instanceof GUI.MenuPanels.EventPanels.EventPanel) {
-                    eventPanel = (GUI.MenuPanels.EventPanels.EventPanel) comp;
+                if (comp instanceof EventPanel) {
+                    eventPanel = (EventPanel) comp;
                     break;
                 }
             }
@@ -397,10 +413,9 @@ public class DiaryPanel extends JPanel{
         }
 
         private final Color[] bookingColors = {
-                new Color(255, 200, 230),
-                new Color(230, 200, 255),
-                new Color(200, 255, 230),
-                new Color(255, 255, 200)
+                new Color(255, 255, 200),
+                new Color(237, 180, 255),
+                new Color(255, 200, 230)
         };
 
     }

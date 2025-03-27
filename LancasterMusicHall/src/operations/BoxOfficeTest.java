@@ -1,10 +1,7 @@
 package operations;
 
 import boxoffice.BoxOfficeService;
-import operations.entities.Activity;
-import operations.entities.Booking;
-import operations.entities.Seat;
-import operations.entities.Venue;
+import operations.entities.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -37,6 +34,18 @@ public class BoxOfficeTest {
                 new Seat('A', 1, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
                 new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
         );
+        // Create Booking object
+        String bookedBy = "Operations";
+        String primaryContact = "phone";
+        String telephone = "073323523"; //random number
+        String email = "CinemaLtd@gmail.com";
+        ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
+        List<Seat> seats = List.of(
+                new Seat('A', 1, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
+                new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
+        );
+        String room = "Hall";
+        String companyName = "Cinema Ltd";
         // Create updated booking using the correct constructor with 8 parameters:
         Booking updatedBooking = new Booking(
                 101,
@@ -46,9 +55,12 @@ public class BoxOfficeTest {
                 LocalTime.of(5,20),
                 updatedActivity,
                 updatedVenue,
-                false,
-                null,
-                updatedSeats
+                true,
+                seats,
+                bookedBy,
+                room,
+                companyName,
+                contactDetails
         );
         System.out.println("\n--- Updating Booking ID 1 ---");
         boolean updated = boxOffice.notifyBookingChanges(1, updatedBooking);
@@ -56,7 +68,6 @@ public class BoxOfficeTest {
 
         // Test getSeatingPlanForBooking
         System.out.println("\n--- Seating Plan for Booking ID 1 ---");
-        List<Seat> seats = boxOffice.getSeatingPlanForBooking(1);
         System.out.println("Seats: " + seats);
 
         // Test updateSeatingPlan

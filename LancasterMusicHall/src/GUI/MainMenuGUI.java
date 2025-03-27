@@ -2,8 +2,7 @@ package GUI;
 
 import Database.SQLConnection;
 import GUI.MenuPanels.*;
-import GUI.MenuPanels.EventPanels.EventPanel;
-import GUI.MenuPanels.EventPanels.NewEventPanel;
+import GUI.MenuPanels.EventPanel;
 import GUI.MenuPanels.Reports.ReportPanel;
 
 import javax.swing.*;
@@ -23,10 +22,11 @@ public class MainMenuGUI {
     private CardLayout cardLayout;
     private SQLConnection sqlConnection = new SQLConnection();
 
+
     public MainMenuGUI() {
         JFrame frame = new JFrame("Main Menu");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 600);
+        frame.setSize(700, 700);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
         // Create navigation bar
@@ -37,11 +37,10 @@ public class MainMenuGUI {
         cardPanel = new JPanel(cardLayout);
 
         CalendarPanel calendar = new CalendarPanel(this, cardLayout, cardPanel );
-        NewEventPanel  event = new NewEventPanel(this, cardLayout, cardPanel);
+        EventPanel event = new EventPanel(this, cardLayout, cardPanel);
         ReportPanel report = new ReportPanel(this, cardLayout, cardPanel);
         HomePanel home = new HomePanel(this);
         BookingPanel booking = new BookingPanel(this);
-        EventPanel VenueDetails = new EventPanel(this, cardLayout, cardPanel);
         DiaryPanel diary = new DiaryPanel(this, cardLayout, cardPanel);
         SettingsPanel settings = new SettingsPanel(this);
 
@@ -49,11 +48,10 @@ public class MainMenuGUI {
         cardPanel.add(home, "Home");
         cardPanel.add(calendar, "Calendar");
         cardPanel.add(diary, "Diary");
-        cardPanel.add(VenueDetails, "VenueDetails");
+        cardPanel.add(event, "VenueDetails");
         cardPanel.add(booking, "Booking");
         cardPanel.add(report, "Reports");
         cardPanel.add(settings, "Settings");
-        cardPanel.add(event, "NewEvent");
 
         // Add components to frame
         frame.add(getTopPanel());
@@ -115,7 +113,7 @@ public class MainMenuGUI {
             });
 
             // Click action to switch tabs and highlight the active button
-            button.addActionListener(e -> {
+            button.addActionListener(_ -> {
                 if (activeButton != null) {
                     // Reset previous active button
                     activeButton.setBackground(defaultColor);
