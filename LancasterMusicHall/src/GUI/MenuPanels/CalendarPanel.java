@@ -331,6 +331,9 @@ public class CalendarPanel extends JPanel{
                 new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
         );
 
+        // This is the sample of database added in the calendar for the demo,
+        // this will be removed when the databases fetched into the frame
+
         // Create Booking object
         String bookedBy = "Operations";
         String primaryContact = "phone";
