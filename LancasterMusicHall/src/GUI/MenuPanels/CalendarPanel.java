@@ -105,11 +105,11 @@ public class CalendarPanel extends JPanel{
 
         // === Booking Display Section ===
         ArrayList<Booking> bookings = getSampleBookings(); // Fetch or generate bookings
-        renderBookings(bookings, calendarCells, days, times); // Apply bookings to calendar
+        renderBookings(bookings, calendarCells, days, times, calendarPanel); // Apply bookings to calendar
 
         // Scroll if needed
         JScrollPane scrollPane = new JScrollPane(calendarPanel);
-        scrollPane.setPreferredSize(new Dimension(580, 360)); // Smaller scroll area
+        scrollPane.setPreferredSize(new Dimension(740, 520)); // Smaller scroll area
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         add(scrollPane);
@@ -230,11 +230,19 @@ public class CalendarPanel extends JPanel{
 
         add(bottomPanel, BorderLayout.SOUTH);
     }
-    public void renderBookings(ArrayList<Booking> bookings, JLabel[][] calendarCells, String[] days, String[] times) {
+    public void renderBookings(ArrayList<Booking> bookings, JLabel[][] calendarCells, String[] days, String[] times, JPanel calendarPanel) {
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
 
-        for (int bIndex = 0; bIndex < bookings.size(); bIndex++) {
-            Booking booking = bookings.get(bIndex);
+        // First clear all cells
+        for (int row = 0; row < times.length; row++) {
+            for (int col = 0; col < days.length; col++) {
+                calendarCells[row][col].setText("");
+                calendarCells[row][col].setBackground(Color.WHITE);
+                calendarCells[row][col].setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+            }
+        }
+
+        for (Booking booking : bookings) {
             LocalDate startDate = booking.getStartDate();
             LocalDate endDate = booking.getEndDate();
             LocalTime startTime = booking.getStartTime();
@@ -263,57 +271,53 @@ public class CalendarPanel extends JPanel{
 
             if (startRow == -1 || endRow == -1 || startRow > endRow) continue;
 
-            Color bookingColor = bookingColors[bIndex % bookingColors.length];
+            Color bookingColor = bookingColors[bookings.indexOf(booking) % bookingColors.length];
 
-            // === Render booking with merged-cell visual ===
-            for (int row = startRow; row <= endRow; row++) {
-                for (int col = startCol; col <= endCol; col++) {
-                    JLabel cell = calendarCells[row][col];
+            // Create a single JPanel that spans all the cells
+            JPanel bookingPanel = new JPanel(new BorderLayout());
+            bookingPanel.setBackground(bookingColor);
+            bookingPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
-                    // Set text only for the first (top-left) cell of the booking
-                    if (row == startRow && col == startCol) {
-                        cell.setText("<html><center>" + booking.getActivityName() + "</center></html>");
-                    } else {
-                        cell.setText(""); // Empty for merged appearance
-                    }
+            JLabel bookingLabel = new JLabel("<html><center>" + booking.getActivityName() + "</center></html>", SwingConstants.CENTER);
+            bookingPanel.add(bookingLabel, BorderLayout.CENTER);
 
-                    cell.setBackground(bookingColor);
-                    cell.setOpaque(true);
-                    cell.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Set hand cursor
+            // Make it transparent to see grid lines behind
+            bookingPanel.setOpaque(false);
+            bookingLabel.setOpaque(true);
+            bookingLabel.setBackground(bookingColor);
 
-                    // Border control
-                    boolean isTop = (row == startRow);
-                    boolean isBottom = (row == endRow);
-                    boolean isLeft = (col == startCol);
-                    boolean isRight = (col == endCol);
+            // Set position and size
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = startCol + 1; // +1 because column 0 is time labels
+            gbc.gridy = startRow + 1; // +1 because row 0 is day headers
+            gbc.gridwidth = endCol - startCol + 1;
+            gbc.gridheight = endRow - startRow + 1;
+            gbc.fill = GridBagConstraints.BOTH;
 
-                    cell.setBorder(BorderFactory.createMatteBorder(
-                            isTop ? 2 : 0,
-                            isLeft ? 2 : 0,
-                            isBottom ? 2 : 0,
-                            isRight ? 2 : 0,
-                            Color.black
-                    ));
+            // Add to calendar panel
+            calendarPanel.add(bookingPanel, gbc, 0); // Add at index 0 to be behind grid
 
-                    // Add click listener to show booking details
-                    cell.addMouseListener(new java.awt.event.MouseAdapter() {
-                        @Override
-                        public void mouseClicked(java.awt.event.MouseEvent e) {
-                            showBookingDetails(booking);
-                        }
-
-                        @Override
-                        public void mouseEntered(java.awt.event.MouseEvent e) {
-                            cell.setBackground(bookingColor.darker()); // Darken on hover
-                        }
-
-                        @Override
-                        public void mouseExited(java.awt.event.MouseEvent e) {
-                            cell.setBackground(bookingColor); // Restore color when mouse leaves
-                        }
-                    });
+            // Add mouse listener
+            bookingPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseClicked(java.awt.event.MouseEvent e) {
+                    showBookingDetails(booking);
                 }
-            }
+
+                @Override
+                public void mouseEntered(java.awt.event.MouseEvent e) {
+                    bookingLabel.setBackground(bookingColor.darker());
+                }
+
+                @Override
+                public void mouseExited(java.awt.event.MouseEvent e) {
+                    bookingLabel.setBackground(bookingColor);
+                }
+            });
+
+            // Force repaint
+            calendarPanel.revalidate();
+            calendarPanel.repaint();
         }
     }
 

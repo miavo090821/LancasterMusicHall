@@ -22,7 +22,7 @@ public class ReportPanel extends JPanel {
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
         textPanel.setBorder(new LineBorder(Color.black));
-        textPanel.setPreferredSize(new Dimension(550, 400));
+        textPanel.setPreferredSize(new Dimension(750, 600));
         textPanel.setBackground(Color.white); // Changed to white
         mainPanel.add(textPanel);
 
