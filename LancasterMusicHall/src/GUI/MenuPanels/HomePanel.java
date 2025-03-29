@@ -33,6 +33,7 @@ public class HomePanel extends JPanel {
         textReminder.setFont(new Font("Arial", Font.PLAIN, 16));
         textReminder.setLineWrap(true);
         textReminder.setWrapStyleWord(true);
+        textReminder.setEditable(false);
         textReminder.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.BLACK),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
@@ -104,7 +105,7 @@ public class HomePanel extends JPanel {
         actionPanel.add(saveButton);
         actionPanel.add(undoButton);
 
-        // Add some space before logout button
+        // Add some space
         actionPanel.add(Box.createHorizontalStrut(100));
 
         JButton logoutButton = new JButton("Log Out");
