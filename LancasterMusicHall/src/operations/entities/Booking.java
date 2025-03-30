@@ -12,30 +12,37 @@ public class Booking {
     private LocalTime endTime;
     private Activity activity;
     private Venue venue;
-    private boolean confirmed;
+    private boolean held;             // True if booking status is "held", false if confirmed
     private String holdExpiryDate;
     private List<Seat> seats;
-    private String room;
-    private String bookedBy;
-    private String companyName;
+    private String bookedBy;          // Staff ID (or name) who booked the event
+    private String room;              // Room name (from Venue)
+    private String companyName;       // Company name (from Client)
     private ContactDetails contactDetails;
-
 
     /**
      * Parameterized constructor with all fields.
+     *
      * @param id Unique booking ID.
-     * @param startDate Start LocalDate as a String.
-     * @param endDate End LocalDate as a String.
-     * @param activity The associated Activity.
-     * @param venue The associated Venue.
-     * @param confirmed Whether the booking is on hold.
+     * @param startDate Start date.
+     * @param endDate End date.
+     * @param startTime Start time.
+     * @param endTime End time.
+     * @param activity Associated Activity.
+     * @param venue Associated Venue.
+     * @param held True if the booking is on hold; false if confirmed.
+     * @param holdExpiryDate Hold expiry date (empty string if not used).
      * @param seats List of seats for the booking.
+     * @param bookedBy Staff ID (as String) who booked it.
+     * @param room Room name (from Venue).
+     * @param companyName Company name (from Client).
+     * @param contactDetails Contact details (from Client).
      */
     public Booking(int id, LocalDate startDate, LocalDate endDate,
                    LocalTime startTime, LocalTime endTime,
-                   Activity activity, Venue venue, boolean confirmed,
-                   List<Seat> seats, String bookedBy, String room, String companyName,
-                   ContactDetails contactDetails) {  // Changed to use ContactDetails
+                   Activity activity, Venue venue, boolean held,
+                   String holdExpiryDate, List<Seat> seats, String bookedBy,
+                   String room, String companyName, ContactDetails contactDetails) {
         this.id = id;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -43,15 +50,17 @@ public class Booking {
         this.endTime = endTime;
         this.activity = activity;
         this.venue = venue;
-        this.confirmed = confirmed;
+        this.held = held;
+        this.holdExpiryDate = holdExpiryDate;
         this.seats = seats;
         this.bookedBy = bookedBy;
         this.room = room;
         this.companyName = companyName;
-        this.contactDetails = contactDetails;  // Set the ContactDetails object
+        this.contactDetails = contactDetails;
     }
 
-    // Complete getters and setters
+    // Getters and setters
+
     public int getId() {
         return id;
     }
@@ -108,12 +117,20 @@ public class Booking {
         this.venue = venue;
     }
 
-    public boolean isConfirmed() {
-        return confirmed;
+    public boolean isHeld() {
+        return held;
     }
 
-    public void setConfirmed(boolean confirmed) {
-        this.confirmed = confirmed;
+    public void setHeld(boolean held) {
+        this.held = held;
+    }
+
+    public String getHoldExpiryDate() {
+        return holdExpiryDate;
+    }
+
+    public void setHoldExpiryDate(String holdExpiryDate) {
+        this.holdExpiryDate = holdExpiryDate;
     }
 
     public List<Seat> getSeats() {
@@ -124,20 +141,20 @@ public class Booking {
         this.seats = seats;
     }
 
-    public String getRoom() {
-        return room;
-    }
-
-    public void setRoom(String room) {
-        this.room = room;
-    }
-
     public String getBookedBy() {
         return bookedBy;
     }
 
     public void setBookedBy(String bookedBy) {
         this.bookedBy = bookedBy;
+    }
+
+    public String getRoom() {
+        return room;
+    }
+
+    public void setRoom(String room) {
+        this.room = room;
     }
 
     public String getCompanyName() {
@@ -157,6 +174,7 @@ public class Booking {
     }
 
     // Additional helper methods
+
     public String getActivityName() {
         return (activity != null) ? activity.getName() : "N/A";
     }
@@ -173,33 +191,25 @@ public class Booking {
         sb.append("End Date: ").append(endDate).append("\n");
         sb.append("Start Time: ").append(startTime).append("\n");
         sb.append("End Time: ").append(endTime).append("\n");
-        sb.append("Booked By: ").append(bookedBy).append("\n");
+        sb.append("Booked By (Staff ID): ").append(bookedBy).append("\n");
         sb.append("Room: ").append(room).append("\n");
         sb.append("Company Name: ").append(companyName).append("\n");
-
         if (contactDetails != null) {
             sb.append("Contact Details:\n");
             sb.append("  Primary Contact: ").append(contactDetails.getPrimaryContact()).append("\n");
             sb.append("  Telephone: ").append(contactDetails.getTelephone()).append("\n");
             sb.append("  Email: ").append(contactDetails.getEmail()).append("\n");
         }
-
         sb.append("Activity: ").append(getActivityName()).append("\n");
         sb.append("Venue: ").append(venue != null ? venue.getName() : "N/A").append("\n");
-        sb.append("Confirmed: ").append(confirmed).append("\n");
+        sb.append("Held: ").append(held).append("\n");
         sb.append("Hold Expiry Date: ").append(holdExpiryDate).append("\n");
-
         if (seats != null && !seats.isEmpty()) {
             sb.append("Seats:\n");
             for (Seat seat : seats) {
-                sb.append("  ").append(seat).append("\n");
+                sb.append("  ").append(seat.toString()).append("\n");
             }
         }
-
         return sb.toString();
-    }
-
-    public int getActivityID() {
-        return activity.getActivityId();
     }
 }

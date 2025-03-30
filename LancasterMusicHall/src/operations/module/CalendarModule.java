@@ -9,11 +9,15 @@ import java.util.Collections;
 import java.util.List;
 
 public class CalendarModule {
-    // In-memory list of bookings (for demo purposes)
+    // In-memory list of bookings.
+    // In the final system, this list should be populated from SQL rather than hard-coded.
     private List<Booking> bookings;
 
     public CalendarModule() {
         bookings = new ArrayList<>();
+
+        // --- Sample Data for Testing (commented out) ---
+        /*
         // Sample Activity and Venue (replace with your real objects)
         Activity movieActivity1 = new Activity(1, "Movie A");
         Activity movieActivity2 = new Activity(1, "Movie B");
@@ -24,29 +28,27 @@ public class CalendarModule {
                 new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
         );
 
-        // Create Booking object
+        // Create Booking object sample data
         String bookedBy = "Operations";
         String primaryContact = "phone";
-        String telephone = "073323523"; //random number
+        String telephone = "073323523"; // random number
         String email = "CinemaLtd@gmail.com";
         ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
 
         String room = "Hall";
         String companyName = "Cinema Ltd";
 
-        // Create an Activity and a Venue with all required fields
-        Activity activity1 = new Activity(1, "Concert");
-        Venue venue1 = new Venue(1, "Main Hall", "Hall", 300);
-        // Use an empty list (or a sample seat list) for seats
+        // Create a sample booking and add to the list
         Booking booking1 = new Booking(
                 101,
                 LocalDate.of(2025, 3, 1),
                 LocalDate.of(2025, 3, 3),
-                LocalTime.of(10,20),
-                LocalTime.of(12,20),
+                LocalTime.of(10, 20),
+                LocalTime.of(12, 20),
                 movieActivity1,
                 hallVenue,
-                true,
+                true,   // held (or confirmed) flag
+                "",     // holdExpiryDate empty if not used
                 seats,
                 bookedBy,
                 room,
@@ -61,11 +63,12 @@ public class CalendarModule {
                 102,
                 LocalDate.of(2025, 3, 1),
                 LocalDate.of(2025, 3, 3),
-                LocalTime.of(10,20),
-                LocalTime.of(5,20),
+                LocalTime.of(10, 20),
+                LocalTime.of(17, 20), // Adjusted end time
                 movieActivity2,
                 hallVenue,
                 true,
+                "",     // holdExpiryDate empty
                 seats,
                 bookedBy,
                 room,
@@ -73,6 +76,7 @@ public class CalendarModule {
                 contactDetails
         );
         bookings.add(booking2);
+        */
     }
 
     // Returns all bookings whose start and end dates fall within the specified range.
@@ -112,19 +116,20 @@ public class CalendarModule {
     }
 
     // Simulate scheduling a film by creating a new booking.
+    // In the final version, new bookings will be inserted via SQL.
     public boolean scheduleFilm(int filmId, LocalDate proposedDate) {
         // For simplicity, simulate by creating a new booking with a Film activity.
+        // In production, this data would be inserted into the database.
+        /*
         Activity filmActivity = new Activity(filmId, "Film Screening");
-        // Use Main Hall as default for film screenings
         Venue mainHall = new Venue(1, "Main Hall", "Hall", 300);
         List<Seat> seats = List.of(
                 new Seat('A', 1, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
                 new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
         );
-        // Create Booking object
         String bookedBy = "Operations";
         String primaryContact = "phone";
-        String telephone = "073323523"; //random number
+        String telephone = "073323523";
         String email = "CinemaLtd@gmail.com";
         String room = "Hall";
         String companyName = "Cinema Ltd";
@@ -134,11 +139,12 @@ public class CalendarModule {
                 200 + filmId,
                 proposedDate,
                 proposedDate,
-                LocalTime.of(10,20),
-                LocalTime.of(5,20),
+                LocalTime.of(10, 20),
+                LocalTime.of(17, 20),
                 filmActivity,
                 mainHall,
                 false,
+                "",
                 seats,
                 bookedBy,
                 room,
@@ -148,9 +154,11 @@ public class CalendarModule {
         bookings.add(newBooking);
         System.out.println("Scheduled film booking: " + newBooking.getId());
         return true;
+        */
+        return false;
     }
 
-    // Adds a new booking to the calendar
+    // Adds a new booking to the calendar.
     public void addBooking(Booking booking) {
         bookings.add(booking);
     }

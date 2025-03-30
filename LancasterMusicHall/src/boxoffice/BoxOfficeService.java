@@ -12,6 +12,9 @@ public class BoxOfficeService implements BoxOfficeInterface {
     private static int filmId = 1; // Added filmId as it was being used but not declared
 
     public BoxOfficeService() {
+        // The following sample data is for testing purposes.
+        // Once SQL integration is in place, you can comment out (or remove) these lines.
+        /*
         // Sample contact details
         String bookedBy = "Operations";
         String primaryContact = "John Smith";
@@ -47,7 +50,7 @@ public class BoxOfficeService implements BoxOfficeInterface {
                 concertActivity,
                 mainHall,
                 true, // confirmed
-                seats,
+                new ArrayList<>(), // Sample seats list
                 bookedBy,
                 room,
                 companyName,
@@ -63,7 +66,7 @@ public class BoxOfficeService implements BoxOfficeInterface {
                 theatreActivity,
                 theatre1,
                 true, // confirmed
-                seats,
+                new ArrayList<>(), // Sample seats list
                 bookedBy,
                 room,
                 companyName,
@@ -72,7 +75,7 @@ public class BoxOfficeService implements BoxOfficeInterface {
 
         bookings.put(1, booking1);
         bookings.put(2, booking2);
-
+        */
     }
 
     @Override
@@ -120,7 +123,6 @@ public class BoxOfficeService implements BoxOfficeInterface {
         if (seatingPlan == null) {
             return Collections.emptyList();
         }
-
         return seatingPlan.stream()
                 .filter(seat -> seat.getType() == Seat.Type.WHEELCHAIR ||
                         seat.getType() == Seat.Type.COMPANION)

@@ -3,10 +3,15 @@ package GUI.MenuPanels;
 import Database.SQLConnection;
 import GUI.MainMenuGUI;
 import com.toedter.calendar.JDateChooser;
-import operations.entities.*;
+import operations.entities.Activity;
+import operations.entities.Booking;
+import operations.entities.ContactDetails;
+import operations.entities.Seat;
+import operations.entities.Venue;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -15,10 +20,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class CalendarPanel extends JPanel{
+public class CalendarPanel extends JPanel {
     private SQLConnection sqlConnection;
     private CardLayout cardLayout;
     private JPanel cardPanel;
+
+    // Calendar grid components
+    private JLabel[][] calendarCells;
+    private String[] days;
+    private String[] times;
+
+    // Define the diary/calendar view date range (one week view)
+    private final LocalDate weekStart = LocalDate.of(2025, 3, 1);
+    private final LocalDate weekEnd = weekStart.plusDays(6);
 
     public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         this.cardPanel = cardPanel;
@@ -28,36 +42,34 @@ public class CalendarPanel extends JPanel{
         setLayout(new BorderLayout());
         setBackground(new Color(200, 170, 230));
 
+        // Prepare day headers
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
-        LocalDate weekStart = LocalDate.of(2025, 3, 1); // Start of calendar week
-        String[] days = new String[7];
-
+        days = new String[7];
         for (int i = 0; i < 7; i++) {
             days[i] = weekStart.plusDays(i).format(dayFormatter); // e.g., "Sat 1"
         }
+        times = new String[]{"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"};
 
-        String[] times = {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"};
-
+        // Build calendar grid using GridBagLayout
         JPanel calendarPanel = new JPanel(new GridBagLayout());
         calendarPanel.setPreferredSize(new Dimension(550, 400));
         calendarPanel.setBackground(Color.WHITE);
-
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
 
-        // === Top-left corner (empty)
+        // Top-left corner (empty)
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0.1;
         gbc.weighty = 0;
         JLabel cornerLabel = new JLabel("");
-        cornerLabel.setPreferredSize(new Dimension(30, 30)); // Small corner
+        cornerLabel.setPreferredSize(new Dimension(30, 30));
         cornerLabel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
         calendarPanel.add(cornerLabel, gbc);
 
-        JLabel[][] calendarCells = new JLabel[times.length][days.length]; // rows x columns
+        calendarCells = new JLabel[times.length][days.length];
 
-        // === Day headers ===
+        // Day headers
         for (int i = 0; i < days.length; i++) {
             gbc.gridx = i + 1;
             gbc.gridy = 0;
@@ -65,193 +77,132 @@ public class CalendarPanel extends JPanel{
             JLabel dayLabel = new JLabel(days[i], SwingConstants.CENTER);
             dayLabel.setFont(new Font("Arial", Font.PLAIN, 10));
             dayLabel.setOpaque(true);
-            dayLabel.setPreferredSize(new Dimension(40, 30)); // Smaller header
+            dayLabel.setPreferredSize(new Dimension(40, 30));
             dayLabel.setBackground(new Color(220, 200, 255));
             dayLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
             calendarPanel.add(dayLabel, gbc);
         }
 
-        // === Time labels and calendar cells ===
+        // Time labels and calendar cells
         for (int row = 0; row < times.length; row++) {
-            // Time label (small column)
             gbc.gridx = 0;
             gbc.gridy = row + 1;
             gbc.weightx = 0.1;
-            gbc.ipady = 40; // Fixed height in pixels
+            gbc.ipady = 40;
             JLabel timeLabel = new JLabel(times[row], SwingConstants.CENTER);
             timeLabel.setFont(new Font("Arial", Font.PLAIN, 10));
             timeLabel.setOpaque(true);
-            timeLabel.setPreferredSize(new Dimension(30, 60)); // Small time labels
+            timeLabel.setPreferredSize(new Dimension(30, 60));
             timeLabel.setBackground(Color.WHITE);
             timeLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
             calendarPanel.add(timeLabel, gbc);
 
-            // Calendar cells
             for (int col = 0; col < days.length; col++) {
                 gbc.gridx = col + 1;
                 gbc.gridy = row + 1;
                 gbc.weightx = 0.5;
                 gbc.weighty = 0.5;
-                gbc.ipady = 40; // Fixed height in pixels
+                gbc.ipady = 40;
                 JLabel cell = new JLabel("", SwingConstants.CENTER);
                 cell.setPreferredSize(new Dimension(40, 30));
                 cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
                 cell.setOpaque(true);
                 cell.setBackground(Color.WHITE);
-                calendarCells[row][col] = cell; // Store it!
+                calendarCells[row][col] = cell;
                 calendarPanel.add(cell, gbc);
             }
         }
 
-        // === Booking Display Section ===
-        ArrayList<Booking> bookings = getSampleBookings(); // Fetch or generate bookings
-        renderBookings(bookings, calendarCells, days, times); // Apply bookings to calendar
+        // Load bookings from SQL and render them into the calendar grid.
+        refreshCalendar();
 
-        // Scroll if needed
+        // Wrap calendarPanel in a scroll pane and add to center.
         JScrollPane scrollPane = new JScrollPane(calendarPanel);
-        scrollPane.setPreferredSize(new Dimension(580, 360)); // Smaller scroll area
+        scrollPane.setPreferredSize(new Dimension(580, 360));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
-
-        add(scrollPane);
-
-        // Create a container panel for centering
         JPanel centerContainer = new JPanel(new GridBagLayout());
-        centerContainer.setBackground(Color.white);
+        centerContainer.setBackground(Color.WHITE);
         centerContainer.add(scrollPane);
+        add(centerContainer, BorderLayout.CENTER);
 
-        add(centerContainer, BorderLayout.CENTER); // Add to center
-
-        // === Bottom Panel ===
+        // Bottom Panel with controls.
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
         bottomPanel.setBackground(Color.WHITE);
-
-        // Add glue to both sides for centering
         bottomPanel.add(Box.createHorizontalGlue());
 
-        // Left column
-        JPanel leftColumn = new JPanel();
-        leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
-        leftColumn.setBackground(Color.WHITE);
-
-        JPanel left1 = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        left1.setBackground(Color.WHITE);
-        left1.setPreferredSize(new Dimension(180, 50));
-
-
-        JPanel left2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        left2.setBackground(Color.white);
-        left2.setPreferredSize(new Dimension(180, 50));
-
-        // Create view dropdown components
-        JLabel viewLabel = new JLabel("View:");
-        viewLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        String[] calendarViews = {"Day View", "Week View", "Month View", "Overview"};
-        JComboBox<String> viewDropdown = new JComboBox<>(calendarViews);
-        mainMenu.styleDropdown(viewDropdown);
-        viewDropdown.setSelectedItem("Week View"); // Default to Week View
-
-        viewDropdown.addActionListener(e -> {
-            String selected = (String)viewDropdown.getSelectedItem();
-            switch(selected) {
-                case "Day View":
-                    // Show daily calendar
-                    break;
-                case "Week View":
-                    // Show weekly calendar (current implementation)
-                    break;
-                case "Month View":
-                    // Show monthly calendar
-                    break;
-                case "Overview":
-                    // Show overview/summary
-                    break;
-            }
-        });
-
-        // Calendar Type Dropdown (display mode)
-        JLabel typeLabel = new JLabel("Type:");
-        typeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        String[] displayModes = {"Standard", "Compact", "Detailed", "Planning"};
-        JComboBox<String> displayModeDropdown = new JComboBox<>(displayModes);
-        mainMenu.styleDropdown(displayModeDropdown);
-        displayModeDropdown.setSelectedItem("Standard");
-
-        // Add components to left1 panel PROPERLY
-        left1.add(viewLabel);
-        left1.add(viewDropdown);
-
-        left2.add(typeLabel);
-        left2.add(displayModeDropdown);
-
-        leftColumn.add(left1);
-        leftColumn.add(left2);
-        bottomPanel.add(leftColumn);
-
-        // Middle column
+        // Middle column: New Event button.
         JPanel middle = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 25));
-        middle.setBackground(Color.white);
+        middle.setBackground(Color.WHITE);
         middle.setPreferredSize(new Dimension(240, 100));
-
         JButton newEventButton = new JButton("New Event");
         newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
         newEventButton.setBackground(new Color(200, 170, 250));
         newEventButton.setPreferredSize(new Dimension(120, 50));
-        newEventButton.addActionListener(_ -> {cardLayout.show(cardPanel, "VenueDetails");});
+        newEventButton.addActionListener(e -> showNewEventForm());
         middle.add(newEventButton);
-
         bottomPanel.add(middle);
 
-// Right column
+        // Right column: Date Picker (for selecting a calendar date if needed).
         JPanel rightColumn = new JPanel();
         rightColumn.setLayout(new BoxLayout(rightColumn, BoxLayout.Y_AXIS));
         rightColumn.setBackground(Color.WHITE);
-
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 35 ));
-        right.setBackground(Color.white);
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 35));
+        right.setBackground(Color.WHITE);
         right.setPreferredSize(new Dimension(180, 50));
-
-        // Calendar Type Dropdown (display mode)
         JLabel dateLabel = new JLabel("Date:");
         dateLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         JDateChooser datePicker = new JDateChooser();
         datePicker.setDateFormatString("dd-MM-yyyy");
         datePicker.setPreferredSize(new Dimension(100, 25));
-        datePicker.setDate(new Date()); // default to today
-
-        // Add components to right panel PROPERLY
+        datePicker.setDate(new Date());
         right.add(dateLabel);
         right.add(datePicker);
-
         rightColumn.add(right);
         bottomPanel.add(rightColumn);
-
-        bottomPanel.add(Box.createHorizontalGlue()); // Add glue to the other side
-
+        bottomPanel.add(Box.createHorizontalGlue());
         add(bottomPanel, BorderLayout.SOUTH);
     }
+
+    // Refresh the calendar view by fetching bookings from SQL for the week.
+    public void refreshCalendar() {
+        ArrayList<Booking> bookings = new ArrayList<>(sqlConnection.fetchDiaryBookings(weekStart, weekEnd));
+        renderBookings(bookings, calendarCells, days, times);
+        revalidate();
+        repaint();
+    }
+
+    // Renders the list of bookings into the calendar grid.
     public void renderBookings(ArrayList<Booking> bookings, JLabel[][] calendarCells, String[] days, String[] times) {
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
 
+        // Clear previous content.
+        for (int row = 0; row < times.length; row++) {
+            for (int col = 0; col < days.length; col++) {
+                calendarCells[row][col].setText("");
+                calendarCells[row][col].setBackground(Color.WHITE);
+                calendarCells[row][col].setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+            }
+        }
+
         for (int bIndex = 0; bIndex < bookings.size(); bIndex++) {
             Booking booking = bookings.get(bIndex);
-            LocalDate startDate = booking.getStartDate();
-            LocalDate endDate = booking.getEndDate();
-            LocalTime startTime = booking.getStartTime();
-            LocalTime endTime = booking.getEndTime();
+            LocalDate bStartDate = booking.getStartDate();
+            LocalDate bEndDate = booking.getEndDate();
+            LocalTime bStartTime = booking.getStartTime();
+            LocalTime bEndTime = booking.getEndTime();
 
-            int startHour = startTime.getHour();
-            int endHour = endTime.getHour();
+            int startHour = bStartTime.getHour();
+            int endHour = bEndTime.getHour();
 
-            String startDayLabel = startDate.format(dayFormatter);
-            String endDayLabel = endDate.format(dayFormatter);
+            String startDayLabel = bStartDate.format(dayFormatter);
+            String endDayLabel = bEndDate.format(dayFormatter);
 
             int startCol = -1, endCol = -1;
             for (int i = 0; i < days.length; i++) {
                 if (days[i].equals(startDayLabel)) startCol = i;
                 if (days[i].equals(endDayLabel)) endCol = i;
             }
-
             if (startCol == -1 || endCol == -1 || startCol > endCol) continue;
 
             int startRow = -1, endRow = -1;
@@ -260,33 +211,27 @@ public class CalendarPanel extends JPanel{
                 if (timeSlotHour == startHour) startRow = i;
                 if (timeSlotHour == endHour) endRow = i;
             }
-
             if (startRow == -1 || endRow == -1 || startRow > endRow) continue;
 
             Color bookingColor = bookingColors[bIndex % bookingColors.length];
 
-            // === Render booking with merged-cell visual ===
+            // Render booking in merged cells.
             for (int row = startRow; row <= endRow; row++) {
                 for (int col = startCol; col <= endCol; col++) {
                     JLabel cell = calendarCells[row][col];
-
-                    // Set text only for the first (top-left) cell of the booking
                     if (row == startRow && col == startCol) {
                         cell.setText("<html><center>" + booking.getActivityName() + "</center></html>");
                     } else {
-                        cell.setText(""); // Empty for merged appearance
+                        cell.setText("");
                     }
-
                     cell.setBackground(bookingColor);
                     cell.setOpaque(true);
-                    cell.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Set hand cursor
+                    cell.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-                    // Border control
                     boolean isTop = (row == startRow);
                     boolean isBottom = (row == endRow);
                     boolean isLeft = (col == startCol);
                     boolean isRight = (col == endCol);
-
                     cell.setBorder(BorderFactory.createMatteBorder(
                             isTop ? 2 : 0,
                             isLeft ? 2 : 0,
@@ -295,21 +240,24 @@ public class CalendarPanel extends JPanel{
                             Color.black
                     ));
 
-                    // Add click listener to show booking details
-                    cell.addMouseListener(new java.awt.event.MouseAdapter() {
+                    cell.addMouseListener(new MouseAdapter() {
                         @Override
-                        public void mouseClicked(java.awt.event.MouseEvent e) {
-                            showBookingDetails(booking);
+                        public void mouseClicked(MouseEvent e) {
+                            // When clicked, fetch full event details from SQL and show them.
+                            Booking fullBooking = sqlConnection.fetchEventDetails(booking.getId());
+                            if (fullBooking != null) {
+                                JOptionPane.showMessageDialog(CalendarPanel.this, "Event Details:\n" + fullBooking.toString());
+                            } else {
+                                JOptionPane.showMessageDialog(CalendarPanel.this, "Event details not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
                         }
-
                         @Override
-                        public void mouseEntered(java.awt.event.MouseEvent e) {
-                            cell.setBackground(bookingColor.darker()); // Darken on hover
+                        public void mouseEntered(MouseEvent e) {
+                            cell.setBackground(bookingColor.darker());
                         }
-
                         @Override
-                        public void mouseExited(java.awt.event.MouseEvent e) {
-                            cell.setBackground(bookingColor); // Restore color when mouse leaves
+                        public void mouseExited(MouseEvent e) {
+                            cell.setBackground(bookingColor);
                         }
                     });
                 }
@@ -317,102 +265,108 @@ public class CalendarPanel extends JPanel{
         }
     }
 
-    // === Sample bookings for demo ===
-    private ArrayList<Booking> getSampleBookings() {
-        ArrayList<Booking> bookings = new ArrayList<>();
+    // Method to display the New Event form, capture details, insert into SQL, and refresh the calendar.
+    private void showNewEventForm() {
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Create New Event", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setSize(400, 450);
+        dialog.setLayout(new GridLayout(0, 2, 10, 10));
 
-        // Sample Activity and Venue (replace with your real objects)
-        Activity movieActivity1 = new Activity(1, "Movie A");
-        Activity movieActivity2 = new Activity(1, "Movie B");
+        // Fields to collect event information
+        JTextField bookingIdField = new JTextField();
+        JTextField startDateField = new JTextField("2025-03-01");  // yyyy-MM-dd
+        JTextField endDateField = new JTextField("2025-03-01");
+        JTextField startTimeField = new JTextField("10:00");       // HH:mm
+        JTextField endTimeField = new JTextField("12:00");
+        JTextField activityIdField = new JTextField("1");          // Activity ID
+        JTextField venueIdField = new JTextField("1");             // Venue ID (to get room)
+        JTextField staffIdField = new JTextField("1001");          // Staff ID (bookedBy)
+        JTextField clientIdField = new JTextField("2001");         // Client ID (to get company name)
+        JCheckBox heldCheck = new JCheckBox("Held");
 
-        Venue hallVenue = new Venue(1, "Main Hall", "Hall", 300);
-        List<Seat> seats = List.of(
-                new Seat('A', 1, Seat.Type.REGULAR, Seat.Status.AVAILABLE),
-                new Seat('A', 2, Seat.Type.REGULAR, Seat.Status.AVAILABLE)
-        );
+        dialog.add(new JLabel("Booking ID:"));
+        dialog.add(bookingIdField);
+        dialog.add(new JLabel("Start Date (yyyy-MM-dd):"));
+        dialog.add(startDateField);
+        dialog.add(new JLabel("End Date (yyyy-MM-dd):"));
+        dialog.add(endDateField);
+        dialog.add(new JLabel("Start Time (HH:mm):"));
+        dialog.add(startTimeField);
+        dialog.add(new JLabel("End Time (HH:mm):"));
+        dialog.add(endTimeField);
+        dialog.add(new JLabel("Activity ID:"));
+        dialog.add(activityIdField);
+        dialog.add(new JLabel("Venue ID:"));
+        dialog.add(venueIdField);
+        dialog.add(new JLabel("Staff ID:"));
+        dialog.add(staffIdField);
+        dialog.add(new JLabel("Client ID:"));
+        dialog.add(clientIdField);
+        dialog.add(new JLabel("Held:"));
+        dialog.add(heldCheck);
 
-        // This is the sample of database added in the calendar for the demo,
-        // this will be removed when the databases fetched into the frame
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(ev -> {
+            try {
+                int bookingId = Integer.parseInt(bookingIdField.getText().trim());
+                LocalDate sDate = LocalDate.parse(startDateField.getText().trim());
+                LocalDate eDate = LocalDate.parse(endDateField.getText().trim());
+                LocalTime sTime = LocalTime.parse(startTimeField.getText().trim());
+                LocalTime eTime = LocalTime.parse(endTimeField.getText().trim());
+                int activityId = Integer.parseInt(activityIdField.getText().trim());
+                int venueId = Integer.parseInt(venueIdField.getText().trim());
+                int staffId = Integer.parseInt(staffIdField.getText().trim());
+                int clientId = Integer.parseInt(clientIdField.getText().trim());
+                boolean isHeld = heldCheck.isSelected();
 
-        // Create Booking object
-        String bookedBy = "Operations";
-        String primaryContact = "phone";
-        String telephone = "073323523"; //random number
-        String email = "CinemaLtd@gmail.com";
-        ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
+                // Create placeholder Activity and Venue objects.
+                Activity act = new Activity(activityId, "Activity " + activityId);
+                Venue ven = new Venue(venueId, "Room " + venueId, "Hall", 300);
+                // For simplicity, we use an empty list for seats.
+                List<Seat> seats = new ArrayList<>();
 
-        String room = "Hall";
-        String companyName = "Cinema Ltd";
-        bookings.add (new Booking(
-                101,
-                LocalDate.of(2025, 3, 1),
-                LocalDate.of(2025, 3, 3),
-                LocalTime.of(10,20),
-                LocalTime.of(12,20),
-                movieActivity1,
-                hallVenue,
-                true,
-                seats,
-                bookedBy,
-                room,
-                companyName,
-                contactDetails
-        ));
-        bookings.add(new Booking(
-                101,
-                LocalDate.of(2025, 3, 2),
-                LocalDate.of(2025, 3, 5),
-                LocalTime.of(14,20),
-                LocalTime.of(16,20),
-                movieActivity2,
-                hallVenue,
-                true,
-                seats,
-                bookedBy,
-                room,
-                companyName,
-                contactDetails
-        ));
+                // In this example, we assume that:
+                // - bookedBy is the staffId converted to string,
+                // - room is obtained from the Venue (ven.getName()),
+                // - companyName is obtained from the Client (here we use clientId as placeholder).
+                // - holdExpiryDate is empty if not used.
+                Booking newBooking = new Booking(
+                        bookingId,
+                        sDate,
+                        eDate,
+                        sTime,
+                        eTime,
+                        act,
+                        ven,
+                        isHeld,
+                        "", // holdExpiryDate empty if not used
+                        seats,
+                        String.valueOf(staffId),
+                        ven.getName(),
+                        String.valueOf(clientId),
+                        null  // contactDetails; will be joined when fetching details
+                );
 
-        bookings.add(new Booking(
-                101,
-                LocalDate.of(2025, 3, 4),
-                LocalDate.of(2025, 3, 6),
-                LocalTime.of(17,2),
-                LocalTime.of(20,20),
-                movieActivity2,
-                hallVenue,
-                true,
-                seats,
-                bookedBy,
-                room,
-                companyName,
-                contactDetails
-        ));
-
-        return bookings;
-    }
-
-
-    private void showBookingDetails(Booking booking) {
-        // Find the EventPanel in the cardPanel
-        EventPanel eventPanel = null;
-        for (Component comp : cardPanel.getComponents()) {
-            if (comp instanceof EventPanel) {
-                eventPanel = (EventPanel) comp;
-                break;
+                boolean inserted = sqlConnection.insertBooking(newBooking);
+                if (inserted) {
+                    JOptionPane.showMessageDialog(dialog, "Event created successfully!");
+                    dialog.dispose();
+                    refreshCalendar();
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Failed to create event.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
-        }
+        });
+        dialog.add(saveButton);
 
-        if (eventPanel != null) {
-            eventPanel.setBookingData(booking);
-            cardLayout.show(cardPanel, "VenueDetails");
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "Error: Could not find Event Panel",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(ev -> dialog.dispose());
+        dialog.add(cancelButton);
+
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private final Color[] bookingColors = {
@@ -424,5 +378,4 @@ public class CalendarPanel extends JPanel{
             new Color(200, 255, 230),
             new Color(255, 255, 200)
     };
-
 }

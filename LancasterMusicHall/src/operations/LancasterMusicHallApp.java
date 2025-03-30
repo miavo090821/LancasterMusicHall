@@ -20,7 +20,9 @@ public class LancasterMusicHallApp {
         IncomeTracker incomeTracker = new IncomeTracker();
         ReviewManager reviewManager = new ReviewManager();
 
-        // Example: Create a new booking and add it to the calendar
+        // The following sample data is now commented out because event data will be retrieved from SQL.
+        /*
+        // Create a new user (staff) - sample test data.
         User staff = new User(1, "Alice Johnson", "alice@lancasterhall.com", "Operations", "pass123");
 
         // Create an Activity and a Venue for the booking
@@ -34,26 +36,26 @@ public class LancasterMusicHallApp {
                 new Seat('A', 3, Seat.Type.WHEELCHAIR, Seat.Status.AVAILABLE)
         );
 
-        // Create Booking object
-        String bookedBy = "Operations";
+        // Create sample booking details
+        String bookedBy = "Operations"; // staff ID or name
         String primaryContact = "phone";
-        String telephone = "073323523"; //random number
+        String telephone = "073323523"; // random number
         String email = "CinemaLtd@gmail.com";
         String room = "Hall";
         String companyName = "Cinema Ltd";
-
         ContactDetails contactDetails = new ContactDetails(primaryContact, telephone, email);
 
-        // Create a new Booking using the updated constructor (8 parameters)
+        // Create a new Booking using the updated constructor
         Booking newBooking = new Booking(
                 101,
                 LocalDate.of(2025, 3, 1),
                 LocalDate.of(2025, 3, 3),
-                LocalTime.of(10,20),
-                LocalTime.of(5,20),
+                LocalTime.of(10, 20),
+                LocalTime.of(17, 20),
                 rockConcert,
                 mainHall,
                 false,
+                "",          // holdExpiryDate (empty if not used)
                 seats,
                 bookedBy,
                 room,
@@ -61,10 +63,13 @@ public class LancasterMusicHallApp {
                 contactDetails
         );
 
-        // Simulate adding the booking
+        // Simulate adding the booking to the calendar module.
         calendarModule.addBooking(newBooking);
 
-        // Print out the booking details to verify
+        // Print out the booking details for verification.
         System.out.println("New Booking Created: " + newBooking);
+        */
+
+        // In the final integrated system, the CalendarModule will fetch event data from the SQL database.
     }
 }
