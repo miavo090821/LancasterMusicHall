@@ -1,5 +1,5 @@
 <component name="libraryTable">
-  <library name="lib">
+  <library name="JCalendar">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/../../jcalendar-1.4/lib" />
     </CLASSES>

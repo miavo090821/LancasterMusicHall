@@ -12,6 +12,11 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+    </properties>
 </project>

@@ -5,7 +5,6 @@ import GUI.MainMenuGUI;
 import com.toedter.calendar.JDateChooser;
 import operations.entities.Activity;
 import operations.entities.Booking;
-import operations.entities.ContactDetails;
 import operations.entities.Seat;
 import operations.entities.Venue;
 
@@ -33,6 +32,16 @@ public class CalendarPanel extends JPanel {
     // Define the diary/calendar view date range (one week view)
     private final LocalDate weekStart = LocalDate.of(2025, 3, 1);
     private final LocalDate weekEnd = weekStart.plusDays(6);
+
+    private final Color[] bookingColors = {
+            new Color(200, 230, 255),
+            new Color(255, 230, 200),
+            new Color(230, 255, 200),
+            new Color(255, 200, 230),
+            new Color(230, 200, 255),
+            new Color(200, 255, 230),
+            new Color(255, 255, 200)
+    };
 
     public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         this.cardPanel = cardPanel;
@@ -113,35 +122,25 @@ public class CalendarPanel extends JPanel {
             }
         }
 
-<<<<<<< HEAD
-        // Load bookings from SQL and render them into the calendar grid.
+        // Load bookings from SQL and render them into the calendar grid
         refreshCalendar();
-=======
-        // === Booking Display Section ===
-        ArrayList<Booking> bookings = getSampleBookings(); // Fetch or generate bookings
-        renderBookings(bookings, calendarCells, days, times, calendarPanel); // Apply bookings to calendar
->>>>>>> 626ec9fd5f741a91a1682e4f91c1c22c0f0fac7e
 
-        // Wrap calendarPanel in a scroll pane and add to center.
+        // Wrap calendarPanel in a scroll pane and add to center
         JScrollPane scrollPane = new JScrollPane(calendarPanel);
-<<<<<<< HEAD
-        scrollPane.setPreferredSize(new Dimension(580, 360));
-=======
-        scrollPane.setPreferredSize(new Dimension(740, 520)); // Smaller scroll area
->>>>>>> 626ec9fd5f741a91a1682e4f91c1c22c0f0fac7e
+        scrollPane.setPreferredSize(new Dimension(740, 520));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         JPanel centerContainer = new JPanel(new GridBagLayout());
         centerContainer.setBackground(Color.WHITE);
         centerContainer.add(scrollPane);
         add(centerContainer, BorderLayout.CENTER);
 
-        // Bottom Panel with controls.
+        // Bottom Panel with controls
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.add(Box.createHorizontalGlue());
 
-        // Middle column: New Event button.
+        // Middle column: New Event button
         JPanel middle = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 25));
         middle.setBackground(Color.WHITE);
         middle.setPreferredSize(new Dimension(240, 100));
@@ -153,7 +152,7 @@ public class CalendarPanel extends JPanel {
         middle.add(newEventButton);
         bottomPanel.add(middle);
 
-        // Right column: Date Picker (for selecting a calendar date if needed).
+        // Right column: Date Picker
         JPanel rightColumn = new JPanel();
         rightColumn.setLayout(new BoxLayout(rightColumn, BoxLayout.Y_AXIS));
         rightColumn.setBackground(Color.WHITE);
@@ -173,27 +172,20 @@ public class CalendarPanel extends JPanel {
         bottomPanel.add(Box.createHorizontalGlue());
         add(bottomPanel, BorderLayout.SOUTH);
     }
-<<<<<<< HEAD
 
-    // Refresh the calendar view by fetching bookings from SQL for the week.
+    // Refresh the calendar view by fetching bookings from SQL for the week
     public void refreshCalendar() {
         ArrayList<Booking> bookings = new ArrayList<>(sqlConnection.fetchDiaryBookings(weekStart, weekEnd));
-        renderBookings(bookings, calendarCells, days, times);
+        renderBookings(bookings);
         revalidate();
         repaint();
     }
 
-    // Renders the list of bookings into the calendar grid.
-    public void renderBookings(ArrayList<Booking> bookings, JLabel[][] calendarCells, String[] days, String[] times) {
+    // Renders the list of bookings into the calendar grid
+    private void renderBookings(ArrayList<Booking> bookings) {
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
 
-        // Clear previous content.
-=======
-    public void renderBookings(ArrayList<Booking> bookings, JLabel[][] calendarCells, String[] days, String[] times, JPanel calendarPanel) {
-        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
-
-        // First clear all cells
->>>>>>> 626ec9fd5f741a91a1682e4f91c1c22c0f0fac7e
+        // Clear previous content
         for (int row = 0; row < times.length; row++) {
             for (int col = 0; col < days.length; col++) {
                 calendarCells[row][col].setText("");
@@ -202,20 +194,11 @@ public class CalendarPanel extends JPanel {
             }
         }
 
-<<<<<<< HEAD
-        for (int bIndex = 0; bIndex < bookings.size(); bIndex++) {
-            Booking booking = bookings.get(bIndex);
+        for (Booking booking : bookings) {
             LocalDate bStartDate = booking.getStartDate();
             LocalDate bEndDate = booking.getEndDate();
             LocalTime bStartTime = booking.getStartTime();
             LocalTime bEndTime = booking.getEndTime();
-=======
-        for (Booking booking : bookings) {
-            LocalDate startDate = booking.getStartDate();
-            LocalDate endDate = booking.getEndDate();
-            LocalTime startTime = booking.getStartTime();
-            LocalTime endTime = booking.getEndTime();
->>>>>>> 626ec9fd5f741a91a1682e4f91c1c22c0f0fac7e
 
             int startHour = bStartTime.getHour();
             int endHour = bEndTime.getHour();
@@ -240,8 +223,7 @@ public class CalendarPanel extends JPanel {
 
             Color bookingColor = bookingColors[bookings.indexOf(booking) % bookingColors.length];
 
-<<<<<<< HEAD
-            // Render booking in merged cells.
+            // Render booking in merged cells
             for (int row = startRow; row <= endRow; row++) {
                 for (int col = startCol; col <= endCol; col++) {
                     JLabel cell = calendarCells[row][col];
@@ -269,74 +251,45 @@ public class CalendarPanel extends JPanel {
                     cell.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
-                            // When clicked, fetch full event details from SQL and show them.
-                            Booking fullBooking = sqlConnection.fetchEventDetails(booking.getId());
-                            if (fullBooking != null) {
-                                JOptionPane.showMessageDialog(CalendarPanel.this, "Event Details:\n" + fullBooking.toString());
-                            } else {
-                                JOptionPane.showMessageDialog(CalendarPanel.this, "Event details not found.", "Error", JOptionPane.ERROR_MESSAGE);
-                            }
+                            showBookingDetails(booking);
                         }
+
                         @Override
                         public void mouseEntered(MouseEvent e) {
                             cell.setBackground(bookingColor.darker());
                         }
+
                         @Override
                         public void mouseExited(MouseEvent e) {
                             cell.setBackground(bookingColor);
                         }
                     });
-=======
-            // Create a single JPanel that spans all the cells
-            JPanel bookingPanel = new JPanel(new BorderLayout());
-            bookingPanel.setBackground(bookingColor);
-            bookingPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
-
-            JLabel bookingLabel = new JLabel("<html><center>" + booking.getActivityName() + "</center></html>", SwingConstants.CENTER);
-            bookingPanel.add(bookingLabel, BorderLayout.CENTER);
-
-            // Make it transparent to see grid lines behind
-            bookingPanel.setOpaque(false);
-            bookingLabel.setOpaque(true);
-            bookingLabel.setBackground(bookingColor);
-
-            // Set position and size
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = startCol + 1; // +1 because column 0 is time labels
-            gbc.gridy = startRow + 1; // +1 because row 0 is day headers
-            gbc.gridwidth = endCol - startCol + 1;
-            gbc.gridheight = endRow - startRow + 1;
-            gbc.fill = GridBagConstraints.BOTH;
-
-            // Add to calendar panel
-            calendarPanel.add(bookingPanel, gbc, 0); // Add at index 0 to be behind grid
-
-            // Add mouse listener
-            bookingPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override
-                public void mouseClicked(java.awt.event.MouseEvent e) {
-                    showBookingDetails(booking);
->>>>>>> 626ec9fd5f741a91a1682e4f91c1c22c0f0fac7e
                 }
-
-                @Override
-                public void mouseEntered(java.awt.event.MouseEvent e) {
-                    bookingLabel.setBackground(bookingColor.darker());
-                }
-
-                @Override
-                public void mouseExited(java.awt.event.MouseEvent e) {
-                    bookingLabel.setBackground(bookingColor);
-                }
-            });
-
-            // Force repaint
-            calendarPanel.revalidate();
-            calendarPanel.repaint();
+            }
         }
     }
 
-    // Method to display the New Event form, capture details, insert into SQL, and refresh the calendar.
+    private void showBookingDetails(Booking booking) {
+        // When clicked, fetch full event details from SQL and show them
+        Booking fullBooking = sqlConnection.fetchEventDetails(booking.getId());
+        if (fullBooking != null) {
+            JOptionPane.showMessageDialog(this,
+                    "Event Details:\n" +
+                            "Activity: " + fullBooking.getActivityName() + "\n" +
+                            "Date: " + fullBooking.getStartDate() + " to " + fullBooking.getEndDate() + "\n" +
+                            "Time: " + fullBooking.getStartTime() + " - " + fullBooking.getEndTime() + "\n" +
+                            "Venue: " + fullBooking.getRoom(),
+                    "Event Details",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Event details not found.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Method to display the New Event form
     private void showNewEventForm() {
         JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Create New Event", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setSize(400, 450);
@@ -389,17 +342,11 @@ public class CalendarPanel extends JPanel {
                 int clientId = Integer.parseInt(clientIdField.getText().trim());
                 boolean isHeld = heldCheck.isSelected();
 
-                // Create placeholder Activity and Venue objects.
+                // Create placeholder Activity and Venue objects
                 Activity act = new Activity(activityId, "Activity " + activityId);
                 Venue ven = new Venue(venueId, "Room " + venueId, "Hall", 300);
-                // For simplicity, we use an empty list for seats.
                 List<Seat> seats = new ArrayList<>();
 
-                // In this example, we assume that:
-                // - bookedBy is the staffId converted to string,
-                // - room is obtained from the Venue (ven.getName()),
-                // - companyName is obtained from the Client (here we use clientId as placeholder).
-                // - holdExpiryDate is empty if not used.
                 Booking newBooking = new Booking(
                         bookingId,
                         sDate,
@@ -414,7 +361,7 @@ public class CalendarPanel extends JPanel {
                         String.valueOf(staffId),
                         ven.getName(),
                         String.valueOf(clientId),
-                        null  // contactDetails; will be joined when fetching details
+                        null  // contactDetails
                 );
 
                 boolean inserted = sqlConnection.insertEvent(newBooking);
@@ -439,14 +386,4 @@ public class CalendarPanel extends JPanel {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
-
-    private final Color[] bookingColors = {
-            new Color(200, 230, 255),
-            new Color(255, 230, 200),
-            new Color(230, 255, 200),
-            new Color(255, 200, 230),
-            new Color(230, 200, 255),
-            new Color(200, 255, 230),
-            new Color(255, 255, 200)
-    };
 }
