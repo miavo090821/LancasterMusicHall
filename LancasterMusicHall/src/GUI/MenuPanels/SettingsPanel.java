@@ -9,34 +9,34 @@ import java.awt.*;
 
 public class SettingsPanel extends JPanel {
     public SettingsPanel(MainMenuGUI mainMenu) {
-        setPreferredSize(new Dimension(600, 350));
+        setPreferredSize(new Dimension(700, 350));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         // Main container panel
-        JPanel mainPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 20));
-        mainPanel.setPreferredSize(new Dimension(600, 350));
-        mainPanel.setBackground(Color.white); // Changed to white
+        JPanel mainPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        mainPanel.setPreferredSize(new Dimension(700, 500));
+        mainPanel.setBackground(Color.white);
         add(mainPanel);
 
         // Panel for text elements
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
         textPanel.setBorder(new LineBorder(Color.black));
-        textPanel.setPreferredSize(new Dimension(550, 360));
-        textPanel.setBackground(Color.white); // Changed to white
+        textPanel.setPreferredSize(new Dimension(750, 550));
+        textPanel.setBackground(Color.white);
         mainPanel.add(textPanel);
 
         // Accessibility title panel
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        titlePanel.setPreferredSize(new Dimension(600, 30));
-        titlePanel.setBackground(Color.white); // Changed to white
+        titlePanel.setPreferredSize(new Dimension(700, 30));
+        titlePanel.setBackground(Color.white);
         textPanel.add(titlePanel);
 
         JLabel titleLabel = new JLabel("Accessibility");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titlePanel.add(titleLabel);
 
-        titlePanel.add(Box.createHorizontalStrut(280));
+        titlePanel.add(Box.createHorizontalStrut(480));
         JButton logoutButton = new JButton("Log Out");
         logoutButton.setFont(new Font("Arial", Font.BOLD, 16));
         logoutButton.setBackground(Color.WHITE);
@@ -46,9 +46,9 @@ public class SettingsPanel extends JPanel {
 
         // Font size panel
         JPanel fontPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10,0));
-        fontPanel.setPreferredSize(new Dimension(600, 30));
+        fontPanel.setPreferredSize(new Dimension(700, 30));
         fontPanel.add(Box.createHorizontalStrut(10));
-        fontPanel.setBackground(Color.white); // Changed to white
+        fontPanel.setBackground(Color.white);
         textPanel.add(fontPanel);
 
         JLabel fontLabel = new JLabel("Font Size:");
@@ -57,15 +57,15 @@ public class SettingsPanel extends JPanel {
         String[] fontSizes = {"10", "12", "14", "16", "18", "20"};
         JComboBox<String> fontSizeDropdown = new JComboBox<>(fontSizes);
         mainMenu.styleDropdown(fontSizeDropdown);
-        fontSizeDropdown.setSelectedItem("12"); // Default selection
+        fontSizeDropdown.setSelectedItem("12");
         fontPanel.add(fontLabel);
         fontPanel.add(fontSizeDropdown);
 
         // Colour blind filter panel
         JPanel colourPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,10,0));
         colourPanel.add(Box.createHorizontalStrut(10));
-        colourPanel.setPreferredSize(new Dimension(600, 30));
-        colourPanel.setBackground(Color.white); // Changed to white
+        colourPanel.setPreferredSize(new Dimension(700, 30));
+        colourPanel.setBackground(Color.white);
         textPanel.add(colourPanel);
 
         JLabel colourLabel = new JLabel("Colour Blind Filters:");
@@ -78,8 +78,8 @@ public class SettingsPanel extends JPanel {
 
         // General section panel
         JPanel generalPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        generalPanel.setPreferredSize(new Dimension(600, 30));
-        generalPanel.setBackground(Color.white); // Changed to white
+        generalPanel.setPreferredSize(new Dimension(700, 30));
+        generalPanel.setBackground(Color.white);
         textPanel.add(generalPanel);
 
         JLabel generalLabel = new JLabel("General");
@@ -89,8 +89,8 @@ public class SettingsPanel extends JPanel {
 
         // Auto logout panel
         JPanel logoutPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10,0));
-        logoutPanel.setPreferredSize(new Dimension(600, 30));
-        logoutPanel.setBackground(Color.white); // Changed to white
+        logoutPanel.setPreferredSize(new Dimension(700, 30));
+        logoutPanel.setBackground(Color.white);
         logoutPanel.add(Box.createHorizontalStrut(10));
         textPanel.add(logoutPanel);
 
@@ -103,28 +103,62 @@ public class SettingsPanel extends JPanel {
         logoutPanel.add(logoutLabel);
         logoutPanel.add(logoutDropdown);
 
-        // Bottom panel for buttons or additional elements
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 25, 0));
-        bottomPanel.setPreferredSize(new Dimension(600, 50));
-        bottomPanel.setBackground(Color.white); // Changed to white
-        add(bottomPanel);
+        //empty panel
+        JPanel panel = new JPanel();
+        panel.setPreferredSize(new Dimension(700, 260));
+        panel.setBackground(Color.white);
+        textPanel.add(panel);
 
-        String[] actions = {"Revert", "Save Changes"};
 
-        for (String action : actions) {
-            JButton button = new JButton(action);
-            mainMenu.stylizeButton(button);
+        // === Bottom Panel ===
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+        bottomPanel.setBackground(Color.WHITE);
 
-            bottomPanel.add(button);
+        // Add glue to both sides for centering
+        bottomPanel.add(Box.createHorizontalGlue());
 
-//            if (action.equals("Revert")) {
-//            } else if (action.equals("Save Changes")) {
-//
-//                });
-//            }
-        }
+        // Left column
+        JPanel leftColumn = new JPanel();
+        leftColumn.setLayout(new FlowLayout(FlowLayout.CENTER));
+        leftColumn.setBackground(Color.WHITE);
+        leftColumn.setPreferredSize(new Dimension(260, 100));
+
+        bottomPanel.add(leftColumn);
+
+        // Middle column
+        JPanel middle = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 40));
+        middle.setBackground(Color.white);
+        middle.setPreferredSize(new Dimension(260, 100));
+
+        JButton saveButton = new JButton("Save Changes");
+        mainMenu.stylizeButton(saveButton);
+        middle.add(saveButton);
+        bottomPanel.add(middle);
+
+        // Right column
+        JPanel rightColumn = new JPanel();
+        rightColumn.setLayout(new FlowLayout(FlowLayout.RIGHT, 60, 40));
+        rightColumn.setBackground(Color.white);
+        rightColumn.setPreferredSize(new Dimension(260, 100));
+
+        JButton revertButton = new JButton("Revert");
+        mainMenu.stylizeButton(revertButton);
+        rightColumn.add(revertButton);
+        bottomPanel.add(rightColumn);
+
+        bottomPanel.add(Box.createHorizontalGlue()); // Add glue to the other side
+
+
         mainPanel.add(bottomPanel);
+
+
     }
 
-
+    private JPanel createFixedHeightPanel(int height) {
+        JPanel panel = new JPanel();
+        panel.setPreferredSize(new Dimension(700, height));
+        panel.setMaximumSize(new Dimension(700, height));
+        return panel;
+    }
 }
