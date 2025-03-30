@@ -346,7 +346,7 @@ public class CalendarPanel extends JPanel {
                         null  // contactDetails; will be joined when fetching details
                 );
 
-                boolean inserted = sqlConnection.insertBooking(newBooking);
+                boolean inserted = sqlConnection.insertEvent(newBooking);
                 if (inserted) {
                     JOptionPane.showMessageDialog(dialog, "Event created successfully!");
                     dialog.dispose();
