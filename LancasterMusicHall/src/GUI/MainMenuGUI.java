@@ -194,4 +194,7 @@ public class MainMenuGUI {
     public SQLConnection getSqlConnection() {
         return sqlConnection;
     }
+
+    public void logout() {
+    }
 }
