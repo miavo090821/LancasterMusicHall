@@ -30,13 +30,13 @@ public class ReportPanel extends JPanel {
         // Main panel 1
         JPanel panel1 = new JPanel();
         panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));
-        panel1.setPreferredSize(new Dimension(600, 170));
+        panel1.setPreferredSize(new Dimension(600, 120));
         panel1.setBackground(Color.white); // Changed to white
         textPanel.add(panel1);
 
         // Main panel 2
         JPanel panel2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 50,0));
-        panel2.setPreferredSize(new Dimension(600, 170));
+        panel2.setPreferredSize(new Dimension(600, 200));
         panel2.setBackground(Color.white); // Changed to white
         textPanel.add(panel2);
 
@@ -71,7 +71,7 @@ public class ReportPanel extends JPanel {
 
         //action listeners
         cardPanel.add(new NewReportPanel(), "Generate New Report");
-        cardPanel.add(new PastReportPanel(), "Preview Past Report");
+        cardPanel.add(new PastReportPanel(mainMenu), "Preview Past Report");
 
         pastReportButton.addActionListener(_ -> {cardLayout.show(cardPanel, "Preview Past Report");});
         newReportButton.addActionListener(_ -> {cardLayout.show(cardPanel, "Generate New Report");});
