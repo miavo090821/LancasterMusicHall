@@ -70,7 +70,7 @@ public class ReportPanel extends JPanel {
         mainMenu.stylizeButton(newReportButton);
 
         //action listeners
-        cardPanel.add(new NewReportPanel(), "Generate New Report");
+        cardPanel.add(new NewReportPanel(mainMenu), "Generate New Report");
         cardPanel.add(new PastReportPanel(mainMenu), "Preview Past Report");
 
         pastReportButton.addActionListener(_ -> {cardLayout.show(cardPanel, "Preview Past Report");});
