@@ -71,6 +71,8 @@ public class MarketingService implements MarketingInterface {
         return "Configuration details for booking ID " + bookingId + ":\n" + configuration;
     }
 
+
+
     // --- 5. Revenue Information ---
     @Override
     public String getRevenueInfo(int activityId) {

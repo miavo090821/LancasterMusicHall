@@ -18,6 +18,7 @@ public class Event {
         bookings = new ArrayList<>();
     }
 
+
     public Event(String room, LocalDate date, LocalTime time, String typeOfEvent, String showing) {
         this.room = room;
         this.date = date;

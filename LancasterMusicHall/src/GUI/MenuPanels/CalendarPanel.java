@@ -177,6 +177,8 @@ public class CalendarPanel extends JPanel {
     public void refreshCalendar() {
         ArrayList<Booking> bookings = new ArrayList<>(sqlConnection.fetchDiaryBookings(weekStart, weekEnd));
         renderBookings(bookings);
+
+
         revalidate();
         repaint();
     }
