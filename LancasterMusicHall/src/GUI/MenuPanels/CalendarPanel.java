@@ -367,6 +367,23 @@ public class CalendarPanel extends JPanel {
                 "Arts Council",
                 emptyContact
         ));
+
+        events.add(new Event(
+                3,
+                "Batman",
+                LocalDate.of(2025, 3, 15),
+                LocalDate.of(2025, 3, 15),
+                LocalTime.of(11, 0),
+                LocalTime.of(13, 0),
+                false,
+                "",
+                auditorium,
+                emptySeats,
+                "event_coord",
+                auditorium.getName(),
+                "Arts Council",
+                emptyContact
+        ));
     }
 
     // Refresh the calendar view with local events
@@ -387,6 +404,27 @@ public class CalendarPanel extends JPanel {
     // Renders the list of events into the calendar grid
     private void renderEvents(ArrayList<Event> events) {
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.ENGLISH);
+
+        // Clear all of last week's events
+        for (int row = 0; row < times.length; row++) {
+            for (int col = 0; col < days.length; col++) {
+                JLabel cell = calendarCells[row][col];
+                cell.setText("");
+                cell.setBackground(Color.WHITE);
+                cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+                cell.setCursor(Cursor.getDefaultCursor());
+
+                // Remove all mouse listeners
+                for (MouseListener listener : cell.getMouseListeners()) {
+                    cell.removeMouseListener(listener);
+                }
+            }
+        }
+
+        // Only proceed if there are events to render
+        if (events.isEmpty()) {
+            return;
+        }
 
         for (int row = 0; row < times.length; row++) {
             for (int col = 0; col < days.length; col++) {
