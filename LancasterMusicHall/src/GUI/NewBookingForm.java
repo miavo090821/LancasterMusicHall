@@ -328,9 +328,125 @@ public class NewBookingForm extends JDialog {
             }
         }
 
+        private RoomRate getRoomRate(String roomName) {
+            // Return the correct RoomRate based on roomName.
+            switch (roomName) {
+                case "The Green Room":
+                    return new RoomRate(25, 75, 130, 600);
+                case "Brontë Boardroom":
+                    return new RoomRate(120, 200, 650, 900);
+                case "Dickens Den":
+                    return new RoomRate(40, 75, 130, 500);
+                case "Poe Parlor":
+                    return new RoomRate(50, 100, 150, 700);
+                case "Globe Room":
+                    return new RoomRate(150, 250, 800, 1200);
+                case "Chekhov Chamber":
+                    return new RoomRate(38, 110, 160, 850);
+                default:
+                    // You might throw an exception or return a default rate if room is not found.
+                    return new RoomRate(0, 0, 0, 0);
+            }
+        }
 
+        private double calculateEventPrice() {
+            double price = 0.0;
+            try {
+                LocalDate startDate = LocalDate.parse(eventStartDateField.getText().trim(), DATE_FORMATTER);
+                LocalDate endDate = LocalDate.parse(eventEndDateField.getText().trim(), DATE_FORMATTER);
+                LocalTime startTime = LocalTime.parse(eventStartTimeField.getText().trim());
+                LocalTime endTime = LocalTime.parse(eventEndTimeField.getText().trim());
 
+                long daysDiff = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
+                int totalDays = (daysDiff == 0) ? 1 : (int) daysDiff + 1;
+                long hours = java.time.Duration.between(startTime, endTime).toHours();
 
+                String locationRaw = (String) locationCombo.getSelectedItem();
+                String location = locationRaw.replace("Room ", "").trim();
+                int venueId = mapLocationToVenueId(locationRaw);
+                java.sql.Date sqlDate = java.sql.Date.valueOf(startDate);
+
+                switch (location) {
+                    case "Main_Hall":
+                        if (totalDays == 1) {
+                            if (startTime.getHour() >= 17) {
+                                price = sqlCon.calculateMainHallCost(sqlDate, "evening", 0);
+                            } else {
+                                price = sqlCon.calculateMainHallCost(sqlDate, "hourly", (int) Math.max(hours, 3));
+                            }
+                        } else {
+                            price = sqlCon.calculateMainHallCost(sqlDate, "daily", 0) * totalDays;
+                        }
+                        break;
+
+                    case "Small_Hall":
+                        if (totalDays == 1) {
+                            if (startTime.getHour() >= 17) {
+                                price = sqlCon.calculateSmallHallCost(sqlDate, "evening", 0);
+                            } else {
+                                price = sqlCon.calculateSmallHallCost(sqlDate, "hourly", (int) Math.max(hours, 3));
+                            }
+                        } else {
+                            price = sqlCon.calculateSmallHallCost(sqlDate, "daily", 0) * totalDays;
+                        }
+                        break;
+
+                    case "Rehearsal_Space":
+                        if (totalDays == 1) {
+                            price = sqlCon.calculateRehearsalCost(sqlDate, "hourly", (int) Math.max(hours, 3));
+                        } else if (totalDays == 7) {
+                            price = sqlCon.calculateRehearsalCost(sqlDate, "weekly_long", 0);
+                        } else {
+                            price = sqlCon.calculateRehearsalCost(sqlDate, "daily_long", 0) * totalDays;
+                        }
+                        break;
+
+                    case "Venue":
+                        if (totalDays == 1) {
+                            if (startTime.getHour() >= 17) {
+                                price = sqlCon.calculateVenueCost(sqlDate, "evening");
+                            } else {
+                                price = sqlCon.calculateVenueCost(sqlDate, "full_day");
+                            }
+                        } else {
+                            price = sqlCon.calculateVenueCost(sqlDate, "full_day") * totalDays;
+                        }
+                        break;
+
+                    case "The Green Room":
+                    case "Brontë Boardroom":
+                    case "Dickens Den":
+                    case "Poe Parlor":
+                    case "Globe Room":
+                    case "Chekhov Chamber":
+                        if (totalDays == 1) {
+                            String duration;
+                            if (hours <= 1) {
+                                duration = "1 Hour";
+                            } else if (hours <= 4) {
+                                duration = "Morning/Afternoon";
+                            } else {
+                                duration = "All Day";
+                            }
+                            price = sqlCon.calculateRoomCost(venueId, location, duration);
+                        } else if (totalDays == 7) {
+                            price = sqlCon.calculateRoomCost(venueId, location, "Week");
+                        } else {
+                            price = sqlCon.calculateRoomCost(venueId, location, "All Day") * totalDays;
+                        }
+                        break;
+
+                    default:
+                        // Fallback to main hall hourly
+                        price = sqlCon.calculateMainHallCost(sqlDate, "hourly", (int) Math.max(hours, 3));
+                        break;
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error calculating event price: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            return price;
+        }
+        
         private void updateCustomerBillTotal() {
             double totalBill = 0.0;
             for (EventDetailPanel panel : eventPanels) {
