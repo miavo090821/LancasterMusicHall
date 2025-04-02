@@ -548,13 +548,16 @@ public class SQLConnection implements SQLInterface {
                                      double customerBillTotal,
                                      double ticketPrice,
                                      String customerAccount,
+                                     String customerSortCode,
                                      LocalDate paymentDueDate,
                                      String paymentStatus,
                                      File contractFile) {
         // Queries for Booking, Event, Client, and Contract (adjust these if needed)
         String insertBooking = "INSERT INTO Booking (booking_DateStart, booking_DateEnd, booking_status, venue_id, location, company_name, ticket_price) VALUES (?, ?, ?, ?, ?, ?, ?)";
         String insertEvent = "INSERT INTO Event (name, start_date, end_date, start_time, end_time, event_type, venue_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        String insertClient = "INSERT INTO Clients (`Company Name`, `Contact Name`, `Phone Number`, `Contact Email`, `Customer Account Number`, `Payment Due Date`, `payment_status`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String insertClient = "INSERT INTO Clients (`Company Name`, `Contact Name`, `Phone Number`, `Contact Email`,`Customer Account Number`,`Customer Sort Code`, `Payment Due Date`, `payment_status`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+
         String insertContract = "INSERT INTO Contract (contract_file) VALUES (?)";
 
         try (Connection con = getConnection()) {
@@ -567,8 +570,9 @@ public class SQLConnection implements SQLInterface {
                 psClient.setString(3, telephone);
                 psClient.setString(4, email);
                 psClient.setString(5, customerAccount);
-                psClient.setDate(6, java.sql.Date.valueOf(paymentDueDate));
-                psClient.setString(7, paymentStatus);
+                psClient.setString(6, customerSortCode);
+                psClient.setDate(7, java.sql.Date.valueOf(paymentDueDate));
+                psClient.setString(8, paymentStatus);
                 psClient.executeUpdate();
             }
 
@@ -629,8 +633,6 @@ public class SQLConnection implements SQLInterface {
     }
 
     // handle the pricing functions:
-
-    // In SQLConnection.java
 
     /**
      * Calls the MySQL stored function calculateMainHallCost.
@@ -742,21 +744,4 @@ public class SQLConnection implements SQLInterface {
     }
 
 
-
-
-
-
-
-    public List<Venue> getAllVenues() {
-        // Implement as needed.
-        return null;
-    }
-
-    public void updateBooking(Booking booking) {
-        // Implement update logic as needed.
-    }
-
-    public void deleteBooking(int id) {
-        // Implement delete logic as needed.
-    }
 }

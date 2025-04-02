@@ -45,6 +45,7 @@ public class NewBookingForm extends JDialog {
     private JLabel customerBillTotalLabel;   // automatically calculated total
     private JTextField ticketPriceField;
     private JTextField customerAccountField;
+    private JTextField customerSortCodeField;
     private JTextField paymentDueDateField;  // dd/MM/yyyy
     private JComboBox<String> paymentStatusCombo; // Paid, Pending, Overdue
 
@@ -124,11 +125,14 @@ public class NewBookingForm extends JDialog {
         });
 
         // --- Pricing Panel ---
-        JPanel pricingPanel = new JPanel(new GridLayout(0, 2, 5, 5));
+        JPanel pricingPanel = new JPanel(new GridLayout(0, 2, 6, 6));
         pricingPanel.setBorder(BorderFactory.createTitledBorder("Pricing"));
         customerBillTotalLabel = new JLabel("Customer Bill Total: £0.00");
         ticketPriceField = new JTextField();
         customerAccountField = new JTextField();
+
+        customerSortCodeField = new JTextField();
+
         paymentDueDateField = new JTextField("10/04/2025");
         String[] paymentStatusOptions = {"Paid", "Pending", "Overdue"};
         paymentStatusCombo = new JComboBox<>(paymentStatusOptions);
@@ -139,6 +143,11 @@ public class NewBookingForm extends JDialog {
         pricingPanel.add(ticketPriceField);
         pricingPanel.add(new JLabel("Customer Account Number:"));
         pricingPanel.add(customerAccountField);
+
+        pricingPanel.add(new JLabel("Customer Sort Code:"));
+
+        pricingPanel.add(customerSortCodeField);
+
         pricingPanel.add(new JLabel("Payment Due Date (dd/MM/yyyy):"));
         pricingPanel.add(paymentDueDateField);
         pricingPanel.add(new JLabel("Payment Status:"));
@@ -226,10 +235,12 @@ public class NewBookingForm extends JDialog {
             // Overall pricing details.
             double ticketPrice = Double.parseDouble(ticketPriceField.getText().trim());
             String customerAccount = customerAccountField.getText().trim();
+            String customerSortCode = customerSortCodeField.getText().trim();
             LocalDate paymentDueDate = LocalDate.parse(paymentDueDateField.getText().trim(), DATE_FORMATTER);
             String paymentStatus = (String) paymentStatusCombo.getSelectedItem();
 
             // Call the SQLConnection.insertFullBooking method (must be implemented in SQLConnection)
+
             boolean success = sqlCon.insertFullBooking(
                     bookingEventName,
                     bookingStartDate,
@@ -243,6 +254,7 @@ public class NewBookingForm extends JDialog {
                     totalBill, // total calculated from events
                     ticketPrice,
                     customerAccount,
+                    customerSortCode,
                     paymentDueDate,
                     paymentStatus,
                     contractFile
@@ -446,7 +458,7 @@ public class NewBookingForm extends JDialog {
             }
             return price;
         }
-        
+
         private void updateCustomerBillTotal() {
             double totalBill = 0.0;
             for (EventDetailPanel panel : eventPanels) {

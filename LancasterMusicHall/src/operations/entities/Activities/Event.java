@@ -25,6 +25,7 @@ public class Event {
     private String companyName;
     private ContactDetails contactDetails;
     private double price;              // Calculated price for the event
+    private String sortCode;
 
     public Event() {
     }
@@ -48,6 +49,7 @@ public class Event {
         this.room = room;
         this.companyName = companyName;
         this.contactDetails = contactDetails;
+        this.sortCode = sortCode;
         this.price = price;
     }
 
@@ -176,6 +178,14 @@ public class Event {
     public void setContactDetails(ContactDetails contactDetails) {
         this.contactDetails = contactDetails;
     }
+    public String getSortCode() {
+        return sortCode;
+    }
+
+    public void setSortCode(String sortCode) {
+        this.sortCode = sortCode;
+    }
+
 
     public void setPrice(double price) {
         this.price = price;
