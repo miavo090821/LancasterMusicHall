@@ -182,7 +182,7 @@ public class SQLConnection implements SQLInterface {
                 "b.staff_id AS bookedBy, " +
                 "b.booking_status, " +
                 "v.venue_id, " +
-                "b.location AS Room, " +
+//                "b.location AS Room, " +
                 "c.client_name AS companyName, " +
                 "c.contact_name AS primaryContact, " +
                 "c.phone_number AS contactPhone, " +
@@ -264,60 +264,60 @@ public class SQLConnection implements SQLInterface {
     /**
      * Inserts a new booking (event) into the database.
      */
-    // this is for Create new Event button
-    public boolean insertEvent(Booking booking) {
-        // SQL to insert core booking details into the Booking table.
-        // Note: We no longer insert an activity_id; instead, we use b.location for room.
-        String bookingQuery = "INSERT INTO Booking " +
-                "(booking_id, booking_DateStart, booking_DateEnd, venue_id, booking_status, staff_ID, location, company_name) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        // SQL to insert time details into the BookingVenue table.
-        String venueQuery = "INSERT INTO BookingVenue " +
-                "(booking_id, start_time, end_time) " +
-                "VALUES (?, ?, ?)";
-        try (Connection con = getConnection()) {
-            con.setAutoCommit(false);
-
-            // Insert into Booking table.
-            try (PreparedStatement psBooking = con.prepareStatement(bookingQuery)) {
-                psBooking.setInt(1, booking.getId());
-                psBooking.setDate(2, java.sql.Date.valueOf(booking.getStartDate()));
-                psBooking.setDate(3, java.sql.Date.valueOf(booking.getEndDate()));
-                psBooking.setInt(4, booking.getVenue().getVenueId());
-                // Set booking_status based on held flag. (You can adjust the logic as needed.)
-                psBooking.setString(5, booking.isHeld() ? "held" : "confirmed");
-                psBooking.setString(6, booking.getBookedBy());
-                psBooking.setString(7, booking.getRoom()); // b.location
-                psBooking.setString(8, booking.getCompanyName());
-
-                int rowsBooking = psBooking.executeUpdate();
-                if (rowsBooking <= 0) {
-                    con.rollback();
-                    return false;
-                }
-            }
-
-            // Insert into BookingVenue table.
-            try (PreparedStatement psVenue = con.prepareStatement(venueQuery)) {
-                psVenue.setInt(1, booking.getId());
-                psVenue.setTime(2, java.sql.Time.valueOf(booking.getStartTime()));
-                psVenue.setTime(3, java.sql.Time.valueOf(booking.getEndTime()));
-
-                int rowsVenue = psVenue.executeUpdate();
-                if (rowsVenue <= 0) {
-                    con.rollback();
-                    return false;
-                }
-            }
-
-            con.commit();
-            notifyUpdateListeners("eventCreated", booking.getId());
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+//    // this is for Create new Event button
+//    public boolean insertEvent(Booking booking) {
+//        // SQL to insert core booking details into the Booking table.
+//        // Note: We no longer insert an activity_id; instead, we use b.location for room.
+//        String bookingQuery = "INSERT INTO Booking " +
+//                "(booking_id, booking_DateStart, booking_DateEnd, venue_id, booking_status, staff_ID, location, company_name) " +
+//                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+//        // SQL to insert time details into the BookingVenue table.
+//        String venueQuery = "INSERT INTO BookingVenue " +
+//                "(booking_id, start_time, end_time) " +
+//                "VALUES (?, ?, ?)";
+//        try (Connection con = getConnection()) {
+//            con.setAutoCommit(false);
+//
+//            // Insert into Booking table.
+//            try (PreparedStatement psBooking = con.prepareStatement(bookingQuery)) {
+//                psBooking.setInt(1, booking.getId());
+//                psBooking.setDate(2, java.sql.Date.valueOf(booking.getStartDate()));
+//                psBooking.setDate(3, java.sql.Date.valueOf(booking.getEndDate()));
+//                psBooking.setInt(4, booking.getVenue().getVenueId());
+//                // Set booking_status based on held flag. (You can adjust the logic as needed.)
+//                psBooking.setString(5, booking.isHeld() ? "held" : "confirmed");
+//                psBooking.setString(6, booking.getBookedBy());
+//                psBooking.setString(7, booking.getRoom()); // b.location
+//                psBooking.setString(8, booking.getCompanyName());
+//
+//                int rowsBooking = psBooking.executeUpdate();
+//                if (rowsBooking <= 0) {
+//                    con.rollback();
+//                    return false;
+//                }
+//            }
+//
+//            // Insert into BookingVenue table.
+//            try (PreparedStatement psVenue = con.prepareStatement(venueQuery)) {
+//                psVenue.setInt(1, booking.getId());
+//                psVenue.setTime(2, java.sql.Time.valueOf(booking.getStartTime()));
+//                psVenue.setTime(3, java.sql.Time.valueOf(booking.getEndTime()));
+//
+//                int rowsVenue = psVenue.executeUpdate();
+//                if (rowsVenue <= 0) {
+//                    con.rollback();
+//                    return false;
+//                }
+//            }
+//
+//            con.commit();
+//            notifyUpdateListeners("eventCreated", booking.getId());
+//            return true;
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
 
 
 // room = b.location
@@ -742,6 +742,94 @@ public class SQLConnection implements SQLInterface {
         }
         return cost;
     }
+
+
+    /**
+     * Retrieves booking details for the given booking ID.
+     * This query joins the Booking and Clients tables so that company_name is retrieved from the Clients entity.
+     * Fields retrieved: booking_DateStart, booking_DateEnd, booking_status, total_cost, payment_status, client_id,
+     * and company_name (from Clients).
+     */
+    public ResultSet getBookingDetails(int bookingId) {
+        String query = "SELECT b.booking_DateStart, b.booking_DateEnd, b.booking_status, b.total_cost, b.payment_status, " +
+                "b.client_id, c.`Company Name` AS company_name " +
+                "FROM Booking b " +
+                "JOIN Clients c ON b.client_id = c.client_id " +
+                "WHERE b.booking_id = ?";
+        try {
+            Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, bookingId);
+            return ps.executeQuery();
+            // Note: The calling code must close the ResultSet, the PreparedStatement, and the Connection.
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves event details from the Event table for the given booking ID.
+     * Fields returned: event_id, name, start_date, end_date, start_time, end_time, a default event_type, and venue_id.
+     */
+    public ResultSet getEventDetails(int bookingId) {
+        // Since the Event table does not have an "event_type" column,
+        // we return a default value (e.g., 'N/A') as event_type.
+        String query = "SELECT event_id, name, start_date, end_date, start_time, end_time, 'N/A' AS event_type, venue_id " +
+                "FROM Event WHERE booking_id = ?";
+        try {
+            Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, bookingId);
+            return ps.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+
+
+    /**
+     * Retrieves client details from the Clients table for the given booking ID.
+     * Joins the Booking and Clients tables using client_id.
+     * Fields: Company Name, Contact Name, Phone Number, Contact Email, Customer Account Number, Customer Sort Code.
+     */
+    public ResultSet getClientDetails(int bookingId) {
+        String query = "SELECT c.`Company Name`, c.`Contact Name`, c.`Phone Number`, c.`Contact Email`, " +
+                "c.`Customer Account Number`, c.`Customer Sort Code` " +
+                "FROM Clients c " +
+                "JOIN Booking b ON c.client_id = b.client_id " +
+                "WHERE b.booking_id = ?";
+        try {
+            Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, bookingId);
+            return ps.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves contract details from the Contract table for the given booking ID.
+     * Assumes that contract_file is stored as a BLOB.
+     */
+    public ResultSet getContractDetails(int bookingId) {
+        String query = "SELECT contract_file FROM Contract WHERE booking_id = ?";
+        try {
+            Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, bookingId);
+            return ps.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+
 
 
 }
