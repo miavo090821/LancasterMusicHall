@@ -54,17 +54,25 @@ public class CalendarPanel extends JPanel {
         // Initialize with sample events
         initializeSampleEvents();
 
-        // Prepare day headers
-        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
+        // Prepare day headers with full day names
+        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.ENGLISH); // Full day name
         days = new String[7];
         for (int i = 0; i < 7; i++) {
-            days[i] = weekStart.plusDays(i).format(dayFormatter); // e.g., "Sat 1"
+            days[i] = weekStart.plusDays(i).format(dayFormatter); // e.g., "Monday"
         }
 
-        DateTimeFormatter weekFormatter = DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH);
-        JLabel weekLabel = new JLabel(weekStart.format(weekFormatter) + " - " + weekEnd.format(weekFormatter));
-        weekLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        weekLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        // Create week range panel
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        JPanel weekRangePanel = new JPanel();
+        weekRangePanel.setBackground(Color.white);
+        weekRangePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JLabel weekRangeLabel = new JLabel(
+                weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter),
+                SwingConstants.CENTER
+        );
+        weekRangeLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        weekRangePanel.add(weekRangeLabel);
 
         // Build calendar grid using GridBagLayout
         JPanel calendarPanel = new JPanel(new GridBagLayout());
@@ -85,15 +93,15 @@ public class CalendarPanel extends JPanel {
 
         calendarCells = new JLabel[times.length][days.length];
 
-        // Day headers
+        // Day headers with full day names
         for (int i = 0; i < days.length; i++) {
             gbc.gridx = i + 1;
             gbc.gridy = 0;
             gbc.weightx = 0.5;
             JLabel dayLabel = new JLabel(days[i], SwingConstants.CENTER);
-            dayLabel.setFont(new Font("Arial", Font.PLAIN, 10));
+            dayLabel.setFont(new Font("Arial", Font.PLAIN, 12));
             dayLabel.setOpaque(true);
-            dayLabel.setPreferredSize(new Dimension(40, 30));
+            dayLabel.setPreferredSize(new Dimension(80, 30)); // Wider to accommodate full day names
             dayLabel.setBackground(new Color(220, 200, 255));
             dayLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
             calendarPanel.add(dayLabel, gbc);
@@ -120,7 +128,7 @@ public class CalendarPanel extends JPanel {
                 gbc.weighty = 0.5;
                 gbc.ipady = 40;
                 JLabel cell = new JLabel("", SwingConstants.CENTER);
-                cell.setPreferredSize(new Dimension(40, 30));
+                cell.setPreferredSize(new Dimension(80, 30)); // Wider cells to match headers
                 cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
                 cell.setOpaque(true);
                 cell.setBackground(Color.WHITE);
@@ -134,11 +142,17 @@ public class CalendarPanel extends JPanel {
 
         // Wrap calendarPanel in a scroll pane and add to center
         JScrollPane scrollPane = new JScrollPane(calendarPanel);
-        scrollPane.setPreferredSize(new Dimension(740, 520));
+        scrollPane.setPreferredSize(new Dimension(720, 480)); // Wider to accommodate full day names
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
+
+        // Create a container for the week range and calendar
+        JPanel calendarContainer = new JPanel(new BorderLayout());
+        calendarContainer.add(weekRangePanel, BorderLayout.NORTH);
+        calendarContainer.add(scrollPane, BorderLayout.CENTER);
+
         JPanel centerContainer = new JPanel(new GridBagLayout());
         centerContainer.setBackground(Color.WHITE);
-        centerContainer.add(scrollPane);
+        centerContainer.add(calendarContainer);
         add(centerContainer, BorderLayout.CENTER);
 
         // Bottom Panel with controls
@@ -171,7 +185,7 @@ public class CalendarPanel extends JPanel {
         JLabel dateLabel = new JLabel("Date:");
         dateLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         JDateChooser datePicker = new JDateChooser();
-        datePicker.setDateFormatString("dd-MM-yyyy");
+        datePicker.setDateFormatString("dd/MM/yyyy");
         datePicker.setPreferredSize(new Dimension(100, 25));
         datePicker.setDate(new Date());
 
@@ -189,7 +203,7 @@ public class CalendarPanel extends JPanel {
                 }
                 weekEnd = weekStart.plusDays(6);
                 updateDayHeaders(dayFormatter);
-                weekLabel.setText(weekStart.format(weekFormatter) + " - " + weekEnd.format(weekFormatter));
+                weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
                 refreshCalendar();
             }
         });
@@ -210,7 +224,7 @@ public class CalendarPanel extends JPanel {
             weekStart = weekStart.minusDays(7);
             weekEnd = weekEnd.minusDays(7);
             updateDayHeaders(dayFormatter);
-            weekLabel.setText(weekStart.format(weekFormatter) + " - " + weekEnd.format(weekFormatter));
+            weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
             refreshCalendar();
         });
 
@@ -218,9 +232,13 @@ public class CalendarPanel extends JPanel {
         JButton todayButton = new JButton("Today");
         todayButton.addActionListener(e -> {
             weekStart = LocalDate.now();
+            // Adjust to start of week (Sunday)
+            while (weekStart.getDayOfWeek().getValue() != 7) { // 7 is Sunday
+                weekStart = weekStart.minusDays(1);
+            }
             weekEnd = weekStart.plusDays(6);
             updateDayHeaders(dayFormatter);
-            weekLabel.setText(weekStart.format(weekFormatter) + " - " + weekEnd.format(weekFormatter));
+            weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
             refreshCalendar();
         });
 
@@ -232,7 +250,7 @@ public class CalendarPanel extends JPanel {
             weekStart = weekStart.plusDays(7);
             weekEnd = weekEnd.plusDays(7);
             updateDayHeaders(dayFormatter);
-            weekLabel.setText(weekStart.format(weekFormatter) + " - " + weekEnd.format(weekFormatter));
+            weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
             refreshCalendar();
         });
 
@@ -247,13 +265,12 @@ public class CalendarPanel extends JPanel {
 
         bottomPanel.add(rightColumn, BorderLayout.EAST);
         add(bottomPanel, BorderLayout.SOUTH);
-
     }
 
     private void updateDayHeaders(DateTimeFormatter dayFormatter) {
         days = new String[7];
         for (int i = 0; i < 7; i++) {
-            days[i] = weekStart.plusDays(i).format(dayFormatter);
+            days[i] = weekStart.plusDays(i).format(dayFormatter); // Full day names
         }
     }
 
@@ -354,16 +371,23 @@ public class CalendarPanel extends JPanel {
 
     // Refresh the calendar view with local events
     public void refreshCalendar() {
-        renderEvents(new ArrayList<>(events));
+        // Filtering events to only show those in the current week
+        ArrayList<Event> eventsThisWeek = new ArrayList<>();
+        for (Event event : events) {
+            LocalDate eventDate = event.getStartDate();
+            if (!eventDate.isBefore(weekStart) && !eventDate.isAfter(weekEnd)) {
+                eventsThisWeek.add(event);
+            }
+        }
+        renderEvents(eventsThisWeek);
         revalidate();
         repaint();
     }
 
     // Renders the list of events into the calendar grid
     private void renderEvents(ArrayList<Event> events) {
-        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
+        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.ENGLISH);
 
-        // Clear previous content
         for (int row = 0; row < times.length; row++) {
             for (int col = 0; col < days.length; col++) {
                 calendarCells[row][col].setText("");
@@ -381,14 +405,17 @@ public class CalendarPanel extends JPanel {
             int startHour = eStartTime.getHour();
             int endHour = eEndTime.getHour();
 
+            // Format using the same full day name pattern
             String startDayLabel = eStartDate.format(dayFormatter);
             String endDayLabel = eEndDate.format(dayFormatter);
 
             int startCol = -1, endCol = -1;
             for (int i = 0; i < days.length; i++) {
-                if (days[i].equals(startDayLabel)) startCol = i;
-                if (days[i].equals(endDayLabel)) endCol = i;
+                if (days[i].equalsIgnoreCase(startDayLabel)) startCol = i;
+                if (days[i].equalsIgnoreCase(endDayLabel)) endCol = i;
             }
+
+            // Skip if event doesn't fall in this week
             if (startCol == -1 || endCol == -1 || startCol > endCol) continue;
 
             int startRow = -1, endRow = -1;
