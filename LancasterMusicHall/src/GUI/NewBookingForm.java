@@ -195,7 +195,140 @@ public class NewBookingForm extends JDialog {
         }
     }
 
-    
+    // On submit, collect client, booking, and event details from all panels.
+    private void handleSubmitBooking(ActionEvent e) {
+        try {
+            // Collect Client details.
+            String companyName = companyNameField.getText().trim();
+            String primaryContact = primaryContactField.getText().trim();
+            String telephone = telephoneField.getText().trim();
+            String email = emailField.getText().trim();
+
+            // Collect Booking details.
+            String bookingEventName = eventNameField.getText().trim();
+            LocalDate bookingStartDate = LocalDate.parse(bookingStartDateField.getText().trim(), DATE_FORMATTER);
+            LocalDate bookingEndDate = LocalDate.parse(bookingEndDateField.getText().trim(), DATE_FORMATTER);
+            boolean confirmed = confirmedCheck.isSelected();
+
+            // Prepare a list for event objects and recalc total.
+            List<Event> events = new ArrayList<>();
+            double totalBill = 0.0;
+            for (EventDetailPanel panel : eventPanels) {
+                Event event = panel.getEvent();
+                if (event != null) {
+                    events.add(event);
+                    totalBill += event.getPrice();
+                }
+            }
+            // Update the customer bill total label.
+            customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
+
+            // Overall pricing details.
+            double ticketPrice = Double.parseDouble(ticketPriceField.getText().trim());
+            String customerAccount = customerAccountField.getText().trim();
+            LocalDate paymentDueDate = LocalDate.parse(paymentDueDateField.getText().trim(), DATE_FORMATTER);
+            String paymentStatus = (String) paymentStatusCombo.getSelectedItem();
+
+            // Call the SQLConnection.insertFullBooking method (must be implemented in SQLConnection)
+            boolean success = sqlCon.insertFullBooking(
+                    bookingEventName,
+                    bookingStartDate,
+                    bookingEndDate,
+                    confirmed ? "confirmed" : "held",
+                    companyName,
+                    primaryContact,
+                    telephone,
+                    email,
+                    events, // list of event objects
+                    totalBill, // total calculated from events
+                    ticketPrice,
+                    customerAccount,
+                    paymentDueDate,
+                    paymentStatus,
+                    contractFile
+            );
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Booking submitted successfully!");
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to submit booking.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error submitting booking: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // --- Inner Class: EventDetailPanel ---
+    private class EventDetailPanel extends JPanel {
+        private JTextField eventStartDateField;
+        private JTextField eventEndDateField;
+        private JComboBox<String> locationCombo;
+        private JTextField eventStartTimeField;
+        private JTextField eventEndTimeField;
+        private JComboBox<String> eventTypeCombo;
+        private JButton calcPriceButton;
+        private JLabel eventPriceLabel;
+
+        public EventDetailPanel() {
+            setLayout(new GridLayout(0, 2, 5, 5));
+            setBorder(BorderFactory.createTitledBorder("Event Detail"));
+
+            // Set default dates in dd/MM/yyyy format.
+            eventStartDateField = new JTextField("01/04/2025");
+            eventEndDateField = new JTextField("01/04/2025");
+            // Updated locations per your mapping.
+            String[] locations = {"Venue", "The Green Room", "Room Brontë Boardroom", "Room Dickens Den", "Room Poe Parlor", "Room Globe Room", "Chekhov Chamber", "Main_Hall", "Small_Hall", "Rehearsal_Space"};
+            locationCombo = new JComboBox<>(locations);
+            eventStartTimeField = new JTextField("10:00");
+            eventEndTimeField = new JTextField("12:00");
+            String[] eventTypes = {"Film", "Show", "Meeting"};
+            eventTypeCombo = new JComboBox<>(eventTypes);
+            calcPriceButton = new JButton("Calc Price");
+            eventPriceLabel = new JLabel("£0.00");
+
+            calcPriceButton.addActionListener(e -> {
+                double price = calculateEventPrice();
+                eventPriceLabel.setText("£" + price);
+                // Optionally update the overall customer total here:
+                updateCustomerBillTotal();
+            });
+
+
+            add(new JLabel("Event Start Date (dd/MM/yyyy):"));
+            add(eventStartDateField);
+            add(new JLabel("Event End Date (dd/MM/yyyy):"));
+            add(eventEndDateField);
+            add(new JLabel("Location:"));
+            add(locationCombo);
+            add(new JLabel("Event Start Time (HH:mm):"));
+            add(eventStartTimeField);
+            add(new JLabel("Event End Time (HH:mm):"));
+            add(eventEndTimeField);
+            add(new JLabel("Event Type:"));
+            add(eventTypeCombo);
+            add(calcPriceButton);
+            add(eventPriceLabel);
+        }
+
+        // Calculate price using SQLConnection pricing functions.
+
+        // A simple class to store the rates for each room.
+        class RoomRate {
+            double hourly;
+            double morningAfternoon;
+            double allDay;
+            double week;
+
+            public RoomRate(double hourly, double morningAfternoon, double allDay, double week) {
+                this.hourly = hourly;
+                this.morningAfternoon = morningAfternoon;
+                this.allDay = allDay;
+                this.week = week;
+            }
+        }
+
+
 
 
         private void updateCustomerBillTotal() {
