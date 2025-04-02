@@ -120,6 +120,7 @@ public class NewBookingForm extends JDialog {
             addNewEventPanel();
             eventsContainer.revalidate();
             eventsContainer.repaint();
+            updateCustomerBillTotal();
         });
 
         // --- Pricing Panel ---
@@ -166,6 +167,18 @@ public class NewBookingForm extends JDialog {
         setContentPane(scrollPane);
     }
 
+    private void updateCustomerBillTotal() {
+        double totalBill = 0.0;
+        for (EventDetailPanel panel : eventPanels) {
+            Event event = panel.getEvent();
+            if (event != null) {
+                totalBill += event.getPrice();
+            }
+        }
+        customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
+    }
+
+
     // Creates and adds a new EventDetailPanel to the events container.
     private void addNewEventPanel() {
         EventDetailPanel eventPanel = new EventDetailPanel();
@@ -182,5 +195,87 @@ public class NewBookingForm extends JDialog {
         }
     }
 
+    
 
+
+        private void updateCustomerBillTotal() {
+            double totalBill = 0.0;
+            for (EventDetailPanel panel : eventPanels) {
+                try {
+                    String priceStr = panel.eventPriceLabel.getText().replaceAll("[£]", "").trim();
+                    totalBill += Double.parseDouble(priceStr);
+                } catch (NumberFormatException e) {
+                    // Ignore if parsing fails
+                }
+            }
+            customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
+        }
+
+
+        // Collect data from this panel and return an Event object.
+        public Event getEvent() {
+            try {
+                LocalDate startDate = LocalDate.parse(eventStartDateField.getText().trim(), DATE_FORMATTER);
+                LocalDate endDate = LocalDate.parse(eventEndDateField.getText().trim(), DATE_FORMATTER);
+                String eventType = (String) eventTypeCombo.getSelectedItem();
+                String location = (String) locationCombo.getSelectedItem();
+                LocalTime startTime = LocalTime.parse(eventStartTimeField.getText().trim());
+                LocalTime endTime = LocalTime.parse(eventEndTimeField.getText().trim());
+                int venueId = mapLocationToVenueId(location);
+                Venue venue = new Venue(venueId, location, "Type", 0);
+                // Parse the price (remove the currency symbol).
+                double price = Double.parseDouble(eventPriceLabel.getText().replaceAll("[£]", ""));
+                // Create a new Event object.
+                return new Event(
+                        0,               // id
+                        "",              // name (could be set from the booking details)
+                        eventType,       // eventType
+                        startDate,
+                        endDate,
+                        startTime,
+                        endTime,
+                        false,           // held
+                        "",              // holdExpiryDate
+                        venue,
+                        null,            // seats (not set)
+                        "",              // bookedBy (set later)
+                        location,        // room (use location)
+                        "",              // companyName (set later)
+                        null,            // contactDetails (set later)
+                        price
+                );
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error collecting event details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
+        }
+    }
+
+    // Mapping method: returns unique venue ID based on location.
+    private int mapLocationToVenueId(String location) {
+        switch (location) {
+            case "Venue":
+                return 1;
+            case "The Green Room":
+                return 2;
+            case "Room Brontë Boardroom":
+                return 3;
+            case "Room Dickens Den":
+                return 4;
+            case "Room Poe Parlor":
+                return 5;
+            case "Room Globe Room":
+                return 6;
+            case "Chekhov Chamber":
+                return 7;
+            case "Main_Hall":
+                return 8;
+            case "Small_Hall":
+                return 9;
+            case "Rehearsal_Space":
+                return 10;
+            default:
+                return 1;
+        }
+    }
 }
