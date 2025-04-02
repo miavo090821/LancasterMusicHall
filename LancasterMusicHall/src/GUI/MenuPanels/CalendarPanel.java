@@ -23,175 +23,101 @@ public class CalendarPanel extends JPanel {
     private CardLayout cardLayout;
     private JPanel cardPanel;
 
+    private enum CalendarView { WEEK, DAY, MONTH }
+    private CalendarView currentView = CalendarView.WEEK;
+    private JPanel calendarViewPanel; // This will hold our different views
+
     // Calendar grid components
     private JLabel[][] calendarCells;
     private String[] days;
     private String[] times = {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
 
-    // Define the diary/calendar view date range
-    private LocalDate weekStart = LocalDate.now().with(DayOfWeek.MONDAY);
-    private LocalDate weekEnd = weekStart.plusDays(6);
+    // Date range tracking - always represents the current view's date range
+    private LocalDate viewStartDate = LocalDate.now().with(DayOfWeek.MONDAY);
+    private LocalDate viewEndDate = viewStartDate.plusDays(6);
 
     // Local storage for events
     private List<Event> events = new ArrayList<>();
 
     private final Color[] eventColors = {
-            new Color(200, 230, 255),
-            new Color(255, 230, 200),
-            new Color(230, 255, 200),
-            new Color(255, 200, 230),
-            new Color(230, 200, 255),
-            new Color(200, 255, 230),
-            new Color(255, 255, 200)
+            new Color(200, 230, 255),  // Operations color (light blue)
+            new Color(255, 230, 200)   // Marketing color (light orange)
     };
 
-    // Formatters as instance variables
+    /**
+     * Returns color based on who booked the event
+     * Light blue for operations, light orange for marketing
+     */
+    private Color getEventColor(Event event) {
+        if (event.getBookedBy().equalsIgnoreCase("operations")) {
+            return eventColors[0]; // First color for operations
+        } else {
+            return eventColors[1]; // Second color for marketing
+        }
+    }
+
+    // Date formatting utilities
     private final DateTimeFormatter dayHeaderFormatter = DateTimeFormatter.ofPattern("EEEE d", Locale.ENGLISH);
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private final DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
 
+    // UI Components that need view updates
+    private JLabel viewRangeLabel;
+    private JComboBox<String> viewCombo;
+
+    /**
+     * Constructs the calendar panel with all view modes and navigation controls
+     */
     public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         this.cardPanel = cardPanel;
         this.cardLayout = cardLayout;
-
         setLayout(new BorderLayout());
         setBackground(new Color(200, 170, 230));
 
-        // Initialize with sample events
-        initializeSampleEvents();
-
-        // Prepare day headers with day name and date
+        // Initialize days array before creating views
         days = new String[7];
-        for (int i = 0; i < 7; i++) {
-            days[i] = weekStart.plusDays(i).format(dayHeaderFormatter);
-        }
+        updateDayHeaders(); // Initialize day labels
 
-        // Create week range panel
-        JPanel weekRangePanel = new JPanel();
-        weekRangePanel.setBackground(Color.white);
-        weekRangePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        initializeSampleEvents();
+        setupCalendarViews();
+        setupBottomPanel(mainMenu);
 
-        JLabel weekRangeLabel = new JLabel(
-                weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter),
-                SwingConstants.CENTER
-        );
-        weekRangeLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        weekRangePanel.add(weekRangeLabel);
-
-        // Build calendar grid using GridBagLayout
-        JPanel calendarPanel = new JPanel(new GridBagLayout());
-        calendarPanel.setPreferredSize(new Dimension(550, 400));
-        calendarPanel.setBackground(Color.WHITE);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-
-        // Top-left corner
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0.1;
-        gbc.weighty = 0;
-        JLabel cornerLabel = new JLabel("");
-        cornerLabel.setPreferredSize(new Dimension(30, 30));
-        cornerLabel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-        calendarPanel.add(cornerLabel, gbc);
-
-        calendarCells = new JLabel[times.length][days.length];
-
-        // Day headers with day name and date
-        for (int i = 0; i < days.length; i++) {
-            gbc.gridx = i + 1;
-            gbc.gridy = 0;
-            gbc.weightx = 0.5;
-            JLabel dayLabel = new JLabel(days[i], SwingConstants.CENTER);
-            dayLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-            dayLabel.setOpaque(true);
-            dayLabel.setPreferredSize(new Dimension(80, 30));
-            dayLabel.setBackground(new Color(220, 200, 255));
-            dayLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-            calendarPanel.add(dayLabel, gbc);
-        }
-
-        // Time labels and calendar cells
-        for (int row = 0; row < times.length; row++) {
-            gbc.gridx = 0;
-            gbc.gridy = row + 1;
-            gbc.weightx = 0.1;
-            gbc.ipady = 40;
-            JLabel timeLabel = new JLabel(times[row], SwingConstants.CENTER);
-            timeLabel.setFont(new Font("Arial", Font.PLAIN, 10));
-            timeLabel.setOpaque(true);
-            timeLabel.setPreferredSize(new Dimension(30, 60));
-            timeLabel.setBackground(Color.WHITE);
-            timeLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-            calendarPanel.add(timeLabel, gbc);
-
-            for (int col = 0; col < days.length; col++) {
-                gbc.gridx = col + 1;
-                gbc.gridy = row + 1;
-                gbc.weightx = 0.5;
-                gbc.weighty = 0.5;
-                gbc.ipady = 40;
-                JLabel cell = new JLabel("", SwingConstants.CENTER);
-                cell.setPreferredSize(new Dimension(80, 30));
-                cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-                cell.setOpaque(true);
-                cell.setBackground(Color.WHITE);
-                calendarCells[row][col] = cell;
-                calendarPanel.add(cell, gbc);
-            }
-        }
-
-        // Load events and render them into the calendar grid
+        // Refresh calendar immediately after setup
         refreshCalendar();
+    }
 
-        // Wrap calendarPanel in a scroll pane and add to center
-        JScrollPane scrollPane = new JScrollPane(calendarPanel);
-        scrollPane.setPreferredSize(new Dimension(720, 480));
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+    private void updateDayHeaders() {
+        // Update the days array with current dates
+        for (int i = 0; i < 7; i++) {
+            days[i] = viewStartDate.plusDays(i).format(dayHeaderFormatter);
+        }
+    }
 
-        // Create a container for the week range and calendar
-        JPanel calendarContainer = new JPanel(new BorderLayout());
-        calendarContainer.add(weekRangePanel, BorderLayout.NORTH);
-        calendarContainer.add(scrollPane, BorderLayout.CENTER);
-
-        JPanel centerContainer = new JPanel(new GridBagLayout());
-        centerContainer.setBackground(Color.WHITE);
-        centerContainer.add(calendarContainer);
-        add(centerContainer, BorderLayout.CENTER);
-
-        // Bottom Panel with controls
+    private void setupBottomPanel(MainMenuGUI mainMenu) {
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(Color.WHITE);
 
-        // Left side: New panel with controls
+        // Left side controls
         JPanel leftColumn = new JPanel();
         leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
         leftColumn.setBackground(Color.WHITE);
 
-        // Upper panel: View options
-        JPanel viewPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        // View options
+        JPanel viewPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 20));
         viewPanel.setBackground(Color.WHITE);
 
         JLabel viewLabel = new JLabel("View:");
         viewLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        JComboBox<String> viewCombo = new JComboBox<>(new String[]{"Week", "Day", "Month"});
+        viewCombo = new JComboBox<>(new String[]{"Week", "Day", "Month"});
         viewCombo.setPreferredSize(new Dimension(100, 25));
+        viewCombo.addActionListener(e -> switchView());
         viewPanel.add(viewLabel);
         viewPanel.add(viewCombo);
 
-        // Lower panel: Print button
-        JPanel printPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        printPanel.setBackground(Color.WHITE);
-
-        JButton printButton = new JButton("Print Week");
-        printButton.setFont(new Font("Arial", Font.PLAIN, 12));
-        printButton.setPreferredSize(new Dimension(120, 30));
-        printPanel.add(printButton);
-
         leftColumn.add(viewPanel);
-        leftColumn.add(printPanel);
 
         // Center: New Event button
-        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 25));
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 35));
         centerPanel.setBackground(Color.white);
         JButton newEventButton = new JButton("New Event");
         newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -201,13 +127,13 @@ public class CalendarPanel extends JPanel {
         centerPanel.add(newEventButton);
         bottomPanel.add(centerPanel, BorderLayout.CENTER);
 
-        // Right side: Two panels stacked vertically
+        // Right side: Date picker and navigation
         JPanel rightColumn = new JPanel();
         rightColumn.setLayout(new BoxLayout(rightColumn, BoxLayout.Y_AXIS));
         rightColumn.setBackground(Color.WHITE);
 
-        // Upper panel: Date Picker
-        JPanel datePickerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        // Date picker
+        JPanel datePickerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 20));
         datePickerPanel.setBackground(Color.WHITE);
 
         JLabel dateLabel = new JLabel("Date:");
@@ -216,23 +142,16 @@ public class CalendarPanel extends JPanel {
         datePicker.setDateFormatString("dd/MM/yyyy");
         datePicker.setPreferredSize(new Dimension(100, 25));
         datePicker.setDate(new Date());
-
-        datePicker.addPropertyChangeListener("date", evt -> {
+        datePicker.addPropertyChangeListener("date", e -> {
             Date selectedDate = datePicker.getDate();
             if (selectedDate != null) {
-                weekStart = LocalDate.of(
+                viewStartDate = LocalDate.of(
                         selectedDate.getYear() + 1900,
                         selectedDate.getMonth() + 1,
                         selectedDate.getDate()
-                );
-                // Adjust to start of week (Monday)
-                while (weekStart.getDayOfWeek().getValue() != 1) { // 1 is Monday
-                    weekStart = weekStart.minusDays(1);
-                }
-                weekEnd = weekStart.plusDays(6);
-                updateDayHeaders();
-                weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
-                refreshCalendar();
+                ).with(DayOfWeek.MONDAY);
+                viewEndDate = viewStartDate.plusDays(6);
+                updateView();
             }
         });
 
@@ -240,51 +159,22 @@ public class CalendarPanel extends JPanel {
         datePickerPanel.add(datePicker);
         rightColumn.add(datePickerPanel);
 
-        // Lower panel: Navigation buttons
-        JPanel navButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        // Navigation buttons
+        JPanel navButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         navButtonPanel.setBackground(Color.WHITE);
 
-        // Left arrow button (previous week)
         JButton leftArrow = new JButton("<");
         leftArrow.setFont(new Font("Arial", Font.BOLD, 16));
         leftArrow.setPreferredSize(new Dimension(50, 30));
-        leftArrow.addActionListener(e -> {
-            weekStart = weekStart.minusDays(7);
-            weekEnd = weekStart.plusDays(6);  // Fixed: Should be plusDays(6) not minusDays(6)
-            updateDayHeaders();
-            weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
-            refreshCalendar();
-        });
+        leftArrow.addActionListener(e -> navigate(-1));
 
-        // Today button
         JButton todayButton = new JButton("Today");
-        todayButton.addActionListener(e -> {
-            weekStart = LocalDate.now();
-            // Adjust to start of week (Monday)
-            while (weekStart.getDayOfWeek().getValue() != 1) { // 1 is Monday
-                weekStart = weekStart.minusDays(1);
-            }
-            weekEnd = weekStart.plusDays(6);
-            updateDayHeaders();
-            weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
-            refreshCalendar();
-        });
+        todayButton.addActionListener(e -> navigateToToday());
 
-        // Right arrow button
         JButton rightArrow = new JButton(">");
         rightArrow.setFont(new Font("Arial", Font.BOLD, 16));
         rightArrow.setPreferredSize(new Dimension(50, 30));
-        rightArrow.addActionListener(e -> {
-            weekStart = weekStart.plusDays(7);
-            weekEnd = weekStart.plusDays(6);
-            updateDayHeaders();
-            weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
-            refreshCalendar();
-        });
-
-        leftColumn.setPreferredSize(new Dimension(300,120));
-        rightColumn.setPreferredSize(new Dimension(300,120));
-        centerPanel.setPreferredSize(new Dimension(300,120));
+        rightArrow.addActionListener(e -> navigate(1));
 
         mainMenu.stylizeButton(leftArrow);
         mainMenu.stylizeButton(rightArrow);
@@ -295,24 +185,393 @@ public class CalendarPanel extends JPanel {
         navButtonPanel.add(rightArrow);
         rightColumn.add(navButtonPanel);
 
+        // Set preferred sizes for layout balance
+        leftColumn.setPreferredSize(new Dimension(300, 120));
+        rightColumn.setPreferredSize(new Dimension(300, 120));
+        centerPanel.setPreferredSize(new Dimension(300, 120));
+
         bottomPanel.add(leftColumn, BorderLayout.WEST);
         bottomPanel.add(rightColumn, BorderLayout.EAST);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    private void updateDayHeaders() {
-        // Update the days array
-        for (int i = 0; i < 7; i++) {
-            days[i] = weekStart.plusDays(i).format(dayHeaderFormatter);
+    /**
+     * Initializes the three calendar view modes and their container
+     */
+    private void setupCalendarViews() {
+        // Create container with CardLayout to switch between views
+        calendarViewPanel = new JPanel(new CardLayout());
+
+        // Create and add all view panels
+        calendarViewPanel.add(createWeekView(), "WEEK");
+        calendarViewPanel.add(createDayView(), "DAY");
+        calendarViewPanel.add(createMonthView(), "MONTH");
+
+        // Add the view container to the main panel
+        add(calendarViewPanel, BorderLayout.CENTER);
+    }
+
+    /**
+     * Creates and configures the week view panel
+     */
+    private JPanel createWeekView() {
+        JPanel weekPanel = new JPanel(new BorderLayout());
+
+        // Header showing date range
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(Color.white);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        viewRangeLabel = new JLabel(
+                viewStartDate.format(dateFormatter) + " to " + viewEndDate.format(dateFormatter),
+                SwingConstants.CENTER
+        );
+        viewRangeLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        headerPanel.add(viewRangeLabel);
+
+        // Main calendar grid
+        JPanel gridPanel = new JPanel(new GridBagLayout());
+        gridPanel.setPreferredSize(new Dimension(550, 400));
+        gridPanel.setBackground(Color.WHITE);
+
+        // Initialize grid cells and headers
+        initializeWeekGrid(gridPanel);
+
+        // Add components to week panel
+        weekPanel.add(headerPanel, BorderLayout.NORTH);
+        weekPanel.add(new JScrollPane(gridPanel), BorderLayout.CENTER);
+
+        return weekPanel;
+    }
+
+    /**
+     * Initializes the week view grid with time slots and day headers
+     */
+    private void initializeWeekGrid(JPanel gridPanel) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+
+        // Update day headers with current dates
+        updateDayHeaders();
+
+        // Top-left corner spacer
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.weightx = 0.1; gbc.weighty = 0;
+        gridPanel.add(new JLabel(""), gbc);
+
+        // Day headers
+        for (int i = 0; i < days.length; i++) {
+            gbc.gridx = i + 1; gbc.gridy = 0;
+            gbc.weightx = 0.5;
+            JLabel dayLabel = createDayHeaderLabel(days[i]);
+            gridPanel.add(dayLabel, gbc);
         }
 
-        // Update the day labels in the calendar grid
-        Component[] components = calendarCells[0][0].getParent().getComponents();
-        for (Component comp : components) {
-            GridBagConstraints gbc = ((GridBagLayout)comp.getParent().getLayout()).getConstraints(comp);
-            if (gbc.gridy == 0 && gbc.gridx >= 1 && gbc.gridx <= 7 && comp instanceof JLabel) {
-                ((JLabel)comp).setText(days[gbc.gridx - 1]);
+        // Initialize calendar cells
+        calendarCells = new JLabel[times.length][days.length];
+
+        // Time slots and event cells
+        for (int row = 0; row < times.length; row++) {
+            // Time label column
+            gbc.gridx = 0; gbc.gridy = row + 1;
+            gbc.weightx = 0.1; gbc.ipady = 40;
+            gridPanel.add(createTimeLabel(times[row]), gbc);
+
+            // Day cells
+            for (int col = 0; col < days.length; col++) {
+                gbc.gridx = col + 1; gbc.gridy = row + 1;
+                gbc.weightx = 0.5; gbc.weighty = 0.5; gbc.ipady = 40;
+                calendarCells[row][col] = createCalendarCell();
+                gridPanel.add(calendarCells[row][col], gbc);
             }
+        }
+    }
+
+    /**
+     * Creates a styled day header label
+     */
+    private JLabel createDayHeaderLabel(String text) {
+        JLabel label = new JLabel(text, SwingConstants.CENTER);
+        label.setFont(new Font("Arial", Font.PLAIN, 12));
+        label.setOpaque(true);
+        label.setPreferredSize(new Dimension(80, 30));
+        label.setBackground(new Color(220, 200, 255));
+        label.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        return label;
+    }
+
+    /**
+     * Creates a styled time slot label
+     */
+    private JLabel createTimeLabel(String time) {
+        JLabel label = new JLabel(time, SwingConstants.CENTER);
+        label.setFont(new Font("Arial", Font.PLAIN, 10));
+        label.setOpaque(true);
+        label.setPreferredSize(new Dimension(30, 60));
+        label.setBackground(Color.WHITE);
+        label.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        return label;
+    }
+
+    /**
+     * Creates an empty calendar cell for events
+     */
+    private JLabel createCalendarCell() {
+        JLabel cell = new JLabel("", SwingConstants.CENTER);
+        cell.setPreferredSize(new Dimension(80, 30));
+        cell.setFont(new Font("Arial", Font.BOLD, 10));
+        cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        cell.setOpaque(true);
+        cell.setBackground(Color.WHITE);
+        return cell;
+    }
+
+    /**
+     * Creates the day view panel
+     */
+    private JPanel createDayView() {
+        JPanel dayPanel = new JPanel(new BorderLayout());
+        // Implementation would go here
+        dayPanel.add(new JLabel("Day View - Under Construction"), BorderLayout.CENTER);
+        return dayPanel;
+    }
+
+    /**
+     * Creates the month view panel
+     */
+    private JPanel createMonthView() {
+        JPanel monthPanel = new JPanel(new BorderLayout());
+        // Implementation would go here
+        monthPanel.add(new JLabel("Month View - Under Construction"), BorderLayout.CENTER);
+        return monthPanel;
+    }
+
+    /**
+     * Handles view switching between Week/Day/Month modes
+     */
+    private void switchView() {
+        String selected = (String)viewCombo.getSelectedItem();
+        currentView = CalendarView.valueOf(selected.toUpperCase());
+
+        // Update the CardLayout to show the selected view
+        CardLayout cl = (CardLayout)calendarViewPanel.getLayout();
+        cl.show(calendarViewPanel, selected.toUpperCase());
+
+        // Adjust date range for the new view
+        adjustViewDates();
+        updateView();
+    }
+
+    /**
+     * Adjusts the date range when switching views
+     */
+    private void adjustViewDates() {
+        switch(currentView) {
+            case WEEK:
+                viewStartDate = viewStartDate.with(DayOfWeek.MONDAY);
+                viewEndDate = viewStartDate.plusDays(6);
+                break;
+            case DAY:
+                viewEndDate = viewStartDate; // Single day
+                break;
+            case MONTH:
+                viewStartDate = viewStartDate.withDayOfMonth(1);
+                viewEndDate = viewStartDate.plusMonths(1).minusDays(1);
+                break;
+        }
+    }
+
+    /**
+     * Updates all view components after navigation or view change
+     */
+    private void updateView() {
+        updateHeaderText();
+        refreshCalendar();
+    }
+
+    /**
+     * Updates the header text based on current view
+     */
+    private void updateHeaderText() {
+        switch(currentView) {
+            case WEEK:
+                viewRangeLabel.setText(viewStartDate.format(dateFormatter) + " to " + viewEndDate.format(dateFormatter));
+                break;
+            case DAY:
+                viewRangeLabel.setText(viewStartDate.format(dateFormatter));
+                break;
+            case MONTH:
+                viewRangeLabel.setText(viewStartDate.format(monthYearFormatter));
+                break;
+        }
+    }
+
+    /**
+     * Resets the view to today's date in current view mode
+     */
+    private void navigateToToday() {
+        viewStartDate = LocalDate.now();
+        adjustViewDates();
+        updateView();
+    }
+
+    /**
+     * Filters events for the current view's date range
+     */
+    private List<Event> filterEventsForCurrentView() {
+        List<Event> filtered = new ArrayList<>();
+        for (Event event : events) {
+            if (!event.getStartDate().isBefore(viewStartDate) &&
+                    !event.getStartDate().isAfter(viewEndDate)) {
+                filtered.add(event);
+            }
+        }
+        return filtered;
+    }
+
+    /**
+     * Renders events in week view with color coding based on bookedBy department
+     */
+    private void renderWeekEvents(List<Event> events) {
+        // Clear all cells
+        resetWeekGrid();
+
+        // update day headers
+        for (int i = 0; i < days.length; i++) {
+            days[i] = viewStartDate.plusDays(i).format(dayHeaderFormatter);
+        }
+
+        for (Event event : events) {
+            // Calculate grid position
+            int dayColumn = (int)(event.getStartDate().toEpochDay() - viewStartDate.toEpochDay());
+            int startRow = findTimeSlot(event.getStartTime().getHour());
+            int endRow = findTimeSlot(event.getEndTime().getHour());
+
+            if (dayColumn >= 0 && dayColumn < 7 && startRow != -1 && endRow != -1) {
+                // Determine color based on bookedBy department
+                Color eventColor = determineEventColor(event.getBookedBy());
+
+                // Render event block
+                for (int row = startRow; row <= endRow; row++) {
+                    JLabel cell = calendarCells[row][dayColumn];
+                    if (row == startRow) {
+                        String displayText = String.format("<html><center>%s<br/><small>%s</small></center></html>",
+                                event.getName(),
+                                event.getBookedBy());
+                        cell.setText(displayText);
+                    }
+                    styleEventCell(cell, eventColor, row == startRow, row == endRow);
+                    attachEventListeners(cell, event, eventColor);
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines event color based on booking department
+     */
+    private Color determineEventColor(String bookedBy) {
+        if (bookedBy.equalsIgnoreCase("operations")) {
+            return new Color(200, 230, 255);  // Light blue for operations
+        } else if (bookedBy.equalsIgnoreCase("marketing")) {
+            return new Color(255, 230, 200);  // Light orange for marketing
+        } else {
+            return new Color(230, 255, 200);  // Default green for other departments
+        }
+    }
+
+    /**
+     * Clears all cells in the week view grid
+     */
+    private void resetWeekGrid() {
+        for (int row = 0; row < times.length; row++) {
+            for (int col = 0; col < days.length; col++) {
+                JLabel cell = calendarCells[row][col];
+                cell.setText("");
+                cell.setBackground(Color.WHITE);
+                cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+
+                // Remove existing listeners
+                for (MouseListener l : cell.getMouseListeners()) {
+                    cell.removeMouseListener(l);
+                }
+            }
+        }
+    }
+
+    /**
+     * Styles an event cell with appropriate colors and borders
+     */
+    private void styleEventCell(JLabel cell, Color color, boolean isFirstRow, boolean isLastRow) {
+        cell.setBackground(color);
+        cell.setOpaque(true);
+        cell.setBorder(BorderFactory.createMatteBorder(
+                isFirstRow ? 1 : 0, 1, isLastRow ? 1 : 0, 1, Color.BLACK
+        ));
+    }
+
+    /**
+     * Attaches mouse listeners to an event cell
+     */
+    private void attachEventListeners(JLabel cell, Event event, Color baseColor) {
+        cell.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                showEventDetails(event);
+            }
+            public void mouseEntered(MouseEvent e) {
+                cell.setBackground(baseColor.darker());
+            }
+            public void mouseExited(MouseEvent e) {
+                cell.setBackground(baseColor);
+            }
+        });
+    }
+
+    /**
+     * Finds the row index for a given hour in the time slots
+     */
+    private int findTimeSlot(int hour) {
+        for (int i = 0; i < times.length; i++) {
+            if (Integer.parseInt(times[i]) == hour) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    /**
+     * Navigates forward or backward in time based on current view
+     */
+    private void navigate(int direction) {
+        switch(currentView) {
+            case WEEK:
+                viewStartDate = viewStartDate.plusWeeks(direction);
+                viewEndDate = viewStartDate.plusDays(6);
+                break;
+            case DAY:
+                viewStartDate = viewStartDate.plusDays(direction);
+                viewEndDate = viewStartDate;
+                break;
+            case MONTH:
+                viewStartDate = viewStartDate.plusMonths(direction);
+                viewEndDate = viewStartDate.plusMonths(1).minusDays(1);
+                break;
+        }
+        updateView();
+    }
+
+    /**
+     * Handles date picker changes
+     */
+    private void onDatePickerChange(JDateChooser datePicker) {
+        Date selectedDate = datePicker.getDate();
+        if (selectedDate != null) {
+            viewStartDate = LocalDate.of(
+                    selectedDate.getYear() + 1900,
+                    selectedDate.getMonth() + 1,
+                    selectedDate.getDate()
+            );
+            adjustViewDates();
+            updateView();
         }
     }
 
@@ -323,7 +582,7 @@ public class CalendarPanel extends JPanel {
 
         LocalDate thisMonday = LocalDate.now().with(DayOfWeek.MONDAY);
 
-        // This week's events
+        // Operations event
         events.add(new Event(
                 1,
                 "Weekly Team Meeting",
@@ -335,13 +594,13 @@ public class CalendarPanel extends JPanel {
                 "",
                 room101,
                 new ArrayList<>(),
-                "manager",
+                "operations", // Changed to operations
                 "Room 101",
                 "Team",
                 null
         ));
 
-        // Next week's events
+        // Marketing event
         events.add(new Event(
                 2,
                 "Project Deadline",
@@ -353,7 +612,7 @@ public class CalendarPanel extends JPanel {
                 "",
                 mainHall,
                 new ArrayList<>(),
-                "director",
+                "marketing", // Changed to marketing
                 "Main Hall",
                 "Company",
                 null
@@ -362,33 +621,31 @@ public class CalendarPanel extends JPanel {
 
     // Refresh the calendar
     public void refreshCalendar() {
-        // Filtering events to only show those in the current week
-        ArrayList<Event> eventsThisWeek = new ArrayList<>();
-        for (Event event : events) {
-            LocalDate eventDate = event.getStartDate();
-            if (!eventDate.isBefore(weekStart) && !eventDate.isAfter(weekEnd)) {
-                eventsThisWeek.add(event);
-            }
+        List<Event> eventsToShow = filterEventsForCurrentView();
+
+        switch(currentView) {
+            case WEEK:
+                updateDayHeaders(); // Ensure day labels are up to date
+                renderWeekEvents(eventsToShow);
+                break;
+            case DAY:
+                // Day view implementation
+                break;
+            case MONTH:
+                // Month view implementation
+                break;
         }
-        renderEvents(eventsThisWeek);
+
         revalidate();
         repaint();
     }
 
+    /**
+     * Renders events in the calendar grid with proper coloring and styling
+     */
     private void renderEvents(ArrayList<Event> events) {
-        // Clear all cells
-        for (int row = 0; row < times.length; row++) {
-            for (int col = 0; col < days.length; col++) {
-                JLabel cell = calendarCells[row][col];
-                cell.setText("");
-                cell.setBackground(Color.WHITE);
-                cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-                // Remove existing mouse listeners
-                for (MouseListener listener : cell.getMouseListeners()) {
-                    cell.removeMouseListener(listener);
-                }
-            }
-        }
+        // Clear all cells first
+        resetWeekGrid();
 
         if (events.isEmpty()) return;
 
@@ -397,69 +654,38 @@ public class CalendarPanel extends JPanel {
             LocalTime startTime = event.getStartTime();
             LocalTime endTime = event.getEndTime();
 
-            // Calculate day offset from week start (0=Monday, 6=Sunday)
-            long daysOffset = eventDate.toEpochDay() - weekStart.toEpochDay();
-            int col = (int)daysOffset;
+            // Calculate day column (0=Monday, 6=Sunday)
+            int dayColumn = (int)(eventDate.toEpochDay() - viewStartDate.toEpochDay());
 
             // Only proceed if event is in current week view
-            if (col < 0 || col >= days.length) continue;
+            if (dayColumn < 0 || dayColumn >= days.length) continue;
 
             // Find time slot rows
             int startRow = findTimeSlot(startTime.getHour());
             int endRow = findTimeSlot(endTime.getHour());
 
-            // If we couldn't find matching slots, skip this event
+            // Skip if we couldn't find matching time slots
             if (startRow == -1 || endRow == -1) continue;
 
-            Color eventColor = eventColors[events.indexOf(event) % eventColors.length];
+            // Get consistent color for this event
+            Color eventColor = getEventColor(event);
 
             // Render the event block
             for (int row = startRow; row <= endRow; row++) {
-                JLabel cell = calendarCells[row][col];
-                if (row == startRow) { // Only show text in first cell
+                JLabel cell = calendarCells[row][dayColumn];
+
+                // Only show text in the first cell
+                if (row == startRow) {
                     cell.setText("<html><center>" + event.getName() + "</center></html>");
                 }
-                cell.setBackground(eventColor);
-                cell.setOpaque(true);
 
-                // Custom border to show merged cells
-                cell.setBorder(BorderFactory.createMatteBorder(
-                        (row == startRow) ? 1 : 0, // top
-                        1, // left
-                        (row == endRow) ? 1 : 0, // bottom
-                        1, // right
-                        Color.BLACK
-                ));
+                // Style the cell
+                styleEventCell(cell, eventColor, row == startRow, row == endRow);
 
-                // Add hover and click effects
-                cell.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        showEventDetails(event);
-                    }
-
-                    @Override
-                    public void mouseEntered(MouseEvent e) {
-                        cell.setBackground(eventColor.darker());
-                    }
-
-                    @Override
-                    public void mouseExited(MouseEvent e) {
-                        cell.setBackground(eventColor);
-                    }
-                });
+                // Add interactivity
+                attachEventListeners(cell, event, eventColor);
             }
         }
-    }
-
-    // Helper method to find time slot row
-    private int findTimeSlot(int hour) {
-        for (int i = 0; i < times.length; i++) {
-            if (Integer.parseInt(times[i]) == hour) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     private void showEventDetails(Event event) {
