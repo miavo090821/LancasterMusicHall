@@ -159,12 +159,37 @@ public class CalendarPanel extends JPanel {
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(Color.WHITE);
 
-        // Left side: Empty space
-        bottomPanel.add(Box.createHorizontalGlue(), BorderLayout.WEST);
+        // Left side: New panel with controls
+        JPanel leftColumn = new JPanel();
+        leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
+        leftColumn.setBackground(Color.WHITE);
+
+        // Upper panel: View options
+        JPanel viewPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        viewPanel.setBackground(Color.WHITE);
+
+        JLabel viewLabel = new JLabel("View:");
+        viewLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        JComboBox<String> viewCombo = new JComboBox<>(new String[]{"Week", "Day", "Month"});
+        viewCombo.setPreferredSize(new Dimension(100, 25));
+        viewPanel.add(viewLabel);
+        viewPanel.add(viewCombo);
+
+         // Lower panel: Print button
+        JPanel printPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        printPanel.setBackground(Color.WHITE);
+
+        JButton printButton = new JButton("Print Week");
+        printButton.setFont(new Font("Arial", Font.PLAIN, 12));
+        printButton.setPreferredSize(new Dimension(120, 30));
+        printPanel.add(printButton);
+
+        leftColumn.add(viewPanel);
+        leftColumn.add(printPanel);
 
         // Center: New Event button
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 25));
-        centerPanel.setBackground(Color.WHITE);
+        centerPanel.setBackground(Color.white);
         JButton newEventButton = new JButton("New Event");
         newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
         newEventButton.setBackground(new Color(200, 170, 250));
@@ -254,6 +279,10 @@ public class CalendarPanel extends JPanel {
             refreshCalendar();
         });
 
+        leftColumn.setPreferredSize(new Dimension(300,120));
+        rightColumn.setPreferredSize(new Dimension(300,120));
+        centerPanel.setPreferredSize(new Dimension(300,120));
+
         mainMenu.stylizeButton(leftArrow);
         mainMenu.stylizeButton(rightArrow);
         mainMenu.stylizeButton(todayButton);
@@ -263,6 +292,7 @@ public class CalendarPanel extends JPanel {
         navButtonPanel.add(rightArrow);
         rightColumn.add(navButtonPanel);
 
+        bottomPanel.add(leftColumn, BorderLayout.WEST);
         bottomPanel.add(rightColumn, BorderLayout.EAST);
         add(bottomPanel, BorderLayout.SOUTH);
     }
