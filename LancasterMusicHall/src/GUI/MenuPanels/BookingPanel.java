@@ -2,6 +2,9 @@ package GUI.MenuPanels;
 
 import Database.SQLConnection;
 import GUI.MainMenuGUI;
+import GUI.NewBookingForm;
+import java.awt.Window;
+
 import operations.entities.Activity;
 import operations.entities.Booking;
 import operations.entities.Seat;
@@ -138,110 +141,120 @@ public class BookingPanel extends JPanel {
 
         return contentPanel;
     }
+    private void showNewBookingForm() {
+        Window ownerWindow = SwingUtilities.getWindowAncestor(this);
+        Frame ownerFrame = (ownerWindow instanceof Frame) ? (Frame) ownerWindow : null;
+        NewBookingForm newBookingDialog = new NewBookingForm(ownerFrame, sqlCon);
+        newBookingDialog.setVisible(true);
+    }
+
+
+
+
 
     /**
      * Displays a form to capture new booking (event) details, then calls SQLConnection.insertEvent(...) to insert the data.
      */
-    private void showNewBookingForm() {
-        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "New Booking", Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setSize(400, 450);
-        dialog.setLayout(new GridLayout(0, 2, 10, 10));
-
-        // Fields for event details (order is important):
-        // booking_id, start_date, end_date, start_time, end_time,
-        // activity_id, venue_id, staff_ID, client_id (to get company name), and held status.
-        JTextField bookingIdField = new JTextField();
-        JTextField startDateField = new JTextField("2025-03-01");  // yyyy-MM-dd
-        JTextField endDateField = new JTextField("2025-03-01");
-        JTextField startTimeField = new JTextField("10:00");       // HH:mm
-        JTextField endTimeField = new JTextField("12:00");
-        JTextField activityIdField = new JTextField("1");
-        JTextField venueIdField = new JTextField("1");
-        JTextField staffIdField = new JTextField("1001");
-        JTextField clientIdField = new JTextField("2001");
-        JCheckBox heldCheck = new JCheckBox("Held");
-
-        dialog.add(new JLabel("Booking ID:"));
-        dialog.add(bookingIdField);
-        dialog.add(new JLabel("Start Date (yyyy-MM-dd):"));
-        dialog.add(startDateField);
-        dialog.add(new JLabel("End Date (yyyy-MM-dd):"));
-        dialog.add(endDateField);
-        dialog.add(new JLabel("Start Time (HH:mm):"));
-        dialog.add(startTimeField);
-        dialog.add(new JLabel("End Time (HH:mm):"));
-        dialog.add(endTimeField);
-        dialog.add(new JLabel("Activity ID:"));
-        dialog.add(activityIdField);
-        dialog.add(new JLabel("Venue ID:"));
-        dialog.add(venueIdField);
-        dialog.add(new JLabel("Staff ID:"));
-        dialog.add(staffIdField);
-        dialog.add(new JLabel("Client ID:"));
-        dialog.add(clientIdField);
-        dialog.add(new JLabel("Held:"));
-        dialog.add(heldCheck);
-
-        JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(ev -> {
-            try {
-                int bookingId = Integer.parseInt(bookingIdField.getText().trim());
-                LocalDate sDate = LocalDate.parse(startDateField.getText().trim());
-                LocalDate eDate = LocalDate.parse(endDateField.getText().trim());
-                LocalTime sTime = LocalTime.parse(startTimeField.getText().trim());
-                LocalTime eTime = LocalTime.parse(endTimeField.getText().trim());
-                int activityId = Integer.parseInt(activityIdField.getText().trim());
-                int venueId = Integer.parseInt(venueIdField.getText().trim());
-                int staffId = Integer.parseInt(staffIdField.getText().trim());
-                int clientId = Integer.parseInt(clientIdField.getText().trim());
-                boolean isHeld = heldCheck.isSelected();
-
-                // Create placeholder Activity and Venue objects.
-                Activity act = new Activity(activityId, "Activity " + activityId);
-                Venue ven = new Venue(venueId, "Room " + venueId, "Hall", 300);
-                // For simplicity, we assume an empty list for seats.
-                java.util.List<Seat> seats = new ArrayList<>();
-
-                // Construct a new Booking using the collected fields.
-                // For client data, we assume that the client ID will be used to lookup the company name in the SQL insertEvent() method.
-                Booking newBooking = new Booking(
-                        bookingId,
-                        sDate,
-                        eDate,
-                        sTime,
-                        eTime,
-                        act,
-                        ven,
-                        isHeld,
-                        "",  // holdExpiryDate is empty if not used
-                        seats,
-                        String.valueOf(staffId),  // bookedBy is the staff ID (as string)
-                        ven.getName(),            // room from the Venue
-                        String.valueOf(clientId), // companyName placeholder (client ID as string)
-                        null                      // contactDetails (null for now; SQL join can bring real client data)
-                );
-
-                // Insert the new booking via SQLConnection.insertEvent().
-                boolean inserted = sqlCon.insertEvent(newBooking);
-                if (inserted) {
-                    JOptionPane.showMessageDialog(dialog, "Event created successfully!");
-                    dialog.dispose();
-                    // Optionally refresh your table model to reflect new data.
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Failed to create event.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-        dialog.add(saveButton);
-
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(ev -> dialog.dispose());
-        dialog.add(cancelButton);
-
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-    }
+//    private void showNewBookingForm() {
+//        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "New Booking", Dialog.ModalityType.APPLICATION_MODAL);
+//        dialog.setSize(400, 450);
+//        dialog.setLayout(new GridLayout(0, 2, 10, 10));
+//
+//        // Fields for event details (order is important):
+//        // booking_id, start_date, end_date, start_time, end_time,
+//        // activity_id, venue_id, staff_ID, client_id (to get company name), and held status.
+//        JTextField bookingIdField = new JTextField();
+//        JTextField startDateField = new JTextField("2025-03-01");  // yyyy-MM-dd
+//        JTextField endDateField = new JTextField("2025-03-01");
+//        JTextField startTimeField = new JTextField("10:00");       // HH:mm
+//        JTextField endTimeField = new JTextField("12:00");
+//        JTextField activityIdField = new JTextField("1");
+//        JTextField venueIdField = new JTextField("1");
+//        JTextField staffIdField = new JTextField("1001");
+//        JTextField clientIdField = new JTextField("2001");
+//        JCheckBox heldCheck = new JCheckBox("Held");
+//
+//        dialog.add(new JLabel("Booking ID:"));
+//        dialog.add(bookingIdField);
+//        dialog.add(new JLabel("Start Date (yyyy-MM-dd):"));
+//        dialog.add(startDateField);
+//        dialog.add(new JLabel("End Date (yyyy-MM-dd):"));
+//        dialog.add(endDateField);
+//        dialog.add(new JLabel("Start Time (HH:mm):"));
+//        dialog.add(startTimeField);
+//        dialog.add(new JLabel("End Time (HH:mm):"));
+//        dialog.add(endTimeField);
+//        dialog.add(new JLabel("Activity ID:"));
+//        dialog.add(activityIdField);
+//        dialog.add(new JLabel("Venue ID:"));
+//        dialog.add(venueIdField);
+//        dialog.add(new JLabel("Staff ID:"));
+//        dialog.add(staffIdField);
+//        dialog.add(new JLabel("Client ID:"));
+//        dialog.add(clientIdField);
+//        dialog.add(new JLabel("Held:"));
+//        dialog.add(heldCheck);
+//
+//        JButton saveButton = new JButton("Save");
+//        saveButton.addActionListener(ev -> {
+//            try {
+//                int bookingId = Integer.parseInt(bookingIdField.getText().trim());
+//                LocalDate sDate = LocalDate.parse(startDateField.getText().trim());
+//                LocalDate eDate = LocalDate.parse(endDateField.getText().trim());
+//                LocalTime sTime = LocalTime.parse(startTimeField.getText().trim());
+//                LocalTime eTime = LocalTime.parse(endTimeField.getText().trim());
+//                int activityId = Integer.parseInt(activityIdField.getText().trim());
+//                int venueId = Integer.parseInt(venueIdField.getText().trim());
+//                int staffId = Integer.parseInt(staffIdField.getText().trim());
+//                int clientId = Integer.parseInt(clientIdField.getText().trim());
+//                boolean isHeld = heldCheck.isSelected();
+//
+//                // Create placeholder Activity and Venue objects.
+//                Activity act = new Activity(activityId, "Activity " + activityId);
+//                Venue ven = new Venue(venueId, "Room " + venueId, "Hall", 300);
+//                // For simplicity, we assume an empty list for seats.
+//                java.util.List<Seat> seats = new ArrayList<>();
+//
+//                // Construct a new Booking using the collected fields.
+//                // For client data, we assume that the client ID will be used to lookup the company name in the SQL insertEvent() method.
+//                Booking newBooking = new Booking(
+//                        bookingId,
+//                        sDate,
+//                        eDate,
+//                        sTime,
+//                        eTime,
+//                        act,
+//                        ven,
+//                        isHeld,
+//                        "",  // holdExpiryDate is empty if not used
+//                        seats,
+//                        String.valueOf(staffId),  // bookedBy is the staff ID (as string)
+//                        ven.getName(),            // room from the Venue
+//                        String.valueOf(clientId), // companyName placeholder (client ID as string)
+//                        null                      // contactDetails (null for now; SQL join can bring real client data)
+//                );
+//
+//                // Insert the new booking via SQLConnection.insertEvent().
+//                boolean inserted = sqlCon.insertEvent(newBooking);
+//                if (inserted) {
+//                    JOptionPane.showMessageDialog(dialog, "Event created successfully!");
+//                    dialog.dispose();
+//                    // Optionally refresh your table model to reflect new data.
+//                } else {
+//                    JOptionPane.showMessageDialog(dialog, "Failed to create event.", "Error", JOptionPane.ERROR_MESSAGE);
+//                }
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+//            }
+//        });
+//        dialog.add(saveButton);
+//
+//        JButton cancelButton = new JButton("Cancel");
+//        cancelButton.addActionListener(ev -> dialog.dispose());
+//        dialog.add(cancelButton);
+//
+//        dialog.setLocationRelativeTo(this);
+//        dialog.setVisible(true);
+//    }
 }

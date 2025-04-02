@@ -5,6 +5,8 @@ import operations.entities.Booking;
 import operations.entities.ContactDetails;
 import operations.entities.Seat;
 import operations.entities.Venue;
+import operations.entities.Activities.Event;
+import java.io.File;
 
 import javax.swing.table.DefaultTableModel;
 import java.sql.Connection;
@@ -386,63 +388,7 @@ public class SQLConnection implements SQLInterface {
         return booking;
     }
 
-//    public List<Booking> getAllBookings() {
-//        List<Booking> bookings = new ArrayList<>();
-//        String query = "SELECT b.booking_id, b.booking_DateStart, b.booking_DateEnd, b.start_time, b.end_time, " +
-//                "b.activity_id, b.venue_id, b.held, b.hold_expiry_date, " +
-//                "b.staff_ID as bookedBy, b.room, b.company_name, " +
-//                "c.primary_contact, c.telephone, c.email " +
-//                "FROM Booking b " +
-//                "LEFT JOIN ContactDetails c ON b.booking_id = c.booking_id";
-//        try (Connection con = getConnection();
-//             PreparedStatement ps = con.prepareStatement(query);
-//             ResultSet rs = ps.executeQuery()) {
-//
-//            while (rs.next()) {
-//                int bookingId = rs.getInt("booking_id");
-//                LocalDate bStartDate = rs.getDate("booking_DateStart").toLocalDate();
-//                LocalDate bEndDate = rs.getDate("booking_DateEnd").toLocalDate();
-//                LocalTime startTime = rs.getTime("start_time").toLocalTime();
-//                LocalTime endTime = rs.getTime("end_time").toLocalTime();
-//                int activityId = rs.getInt("activity_id");
-//                int venueId = rs.getInt("venue_id");
-//                boolean held = rs.getBoolean("held");
-//                String holdExpiry = rs.getString("hold_expiry_date");
-//                String bookedBy = rs.getString("bookedBy");
-//                String room = rs.getString("room");
-//                String companyName = rs.getString("company_name");
-//
-//                ContactDetails contactDetails = null;
-//                String primaryContact = rs.getString("primary_contact");
-//                if (primaryContact != null) {
-//                    contactDetails = new ContactDetails(primaryContact, rs.getString("telephone"), rs.getString("email"));
-//                }
-//                Activity activity = new Activity(activityId, "Activity" + activityId);
-//                Venue venue = new Venue(venueId, "Venue" + venueId, "Hall", 300);
-//                List<Seat> seats = new ArrayList<>();
-//                Booking booking = new Booking(
-//                        bookingId,
-//                        bStartDate,
-//                        bEndDate,
-//                        startTime,
-//                        endTime,
-//                        activity,
-//                        venue,
-//                        held,
-//                        holdExpiry != null ? holdExpiry : "",
-//                        seats,
-//                        bookedBy,
-//                        room,
-//                        companyName,
-//                        contactDetails
-//                );
-//                bookings.add(booking);
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return bookings;
-//    }
+
 
     /**
      * Returns a DefaultTableModel containing bookings data.
@@ -588,6 +534,217 @@ public class SQLConnection implements SQLInterface {
         }
         return new ReportDateRange(startDate, today);
     }
+
+
+    public boolean insertFullBooking(String bookingEventName,
+                                     LocalDate bookingStartDate,
+                                     LocalDate bookingEndDate,
+                                     String bookingStatus,
+                                     String companyName,
+                                     String primaryContact,
+                                     String telephone,
+                                     String email,
+                                     List<Event> events,
+                                     double customerBillTotal,
+                                     double ticketPrice,
+                                     String customerAccount,
+                                     LocalDate paymentDueDate,
+                                     String paymentStatus,
+                                     File contractFile) {
+        // Queries for Booking, Event, Client, and Contract (adjust these if needed)
+        String insertBooking = "INSERT INTO Booking (booking_DateStart, booking_DateEnd, booking_status, venue_id, location, company_name, ticket_price) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String insertEvent = "INSERT INTO Event (name, start_date, end_date, start_time, end_time, event_type, venue_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String insertClient = "INSERT INTO Clients (`Company Name`, `Contact Name`, `Phone Number`, `Contact Email`, `Customer Account Number`, `Payment Due Date`, `payment_status`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String insertContract = "INSERT INTO Contract (contract_file) VALUES (?)";
+
+        try (Connection con = getConnection()) {
+            con.setAutoCommit(false);
+
+            // Insert Client details.
+            try (PreparedStatement psClient = con.prepareStatement(insertClient, Statement.RETURN_GENERATED_KEYS)) {
+                psClient.setString(1, companyName);
+                psClient.setString(2, primaryContact);
+                psClient.setString(3, telephone);
+                psClient.setString(4, email);
+                psClient.setString(5, customerAccount);
+                psClient.setDate(6, java.sql.Date.valueOf(paymentDueDate));
+                psClient.setString(7, paymentStatus);
+                psClient.executeUpdate();
+            }
+
+            // Use the first event's venue and room for the booking record.
+            if (events == null || events.isEmpty()) {
+                throw new Exception("No event details provided.");
+            }
+            Event firstEvent = events.get(0);
+            int venueId = firstEvent.getVenue().getVenueId();
+            String location = firstEvent.getRoom();
+
+            // Insert Booking details.
+            try (PreparedStatement psBooking = con.prepareStatement(insertBooking)) {
+                psBooking.setDate(1, java.sql.Date.valueOf(bookingStartDate));
+                psBooking.setDate(2, java.sql.Date.valueOf(bookingEndDate));
+                psBooking.setString(3, bookingStatus);
+                psBooking.setInt(4, venueId);
+                psBooking.setString(5, location);
+                psBooking.setString(6, companyName);
+                psBooking.setDouble(7, ticketPrice);
+                psBooking.executeUpdate();
+            }
+
+            // Insert each Event.
+            for (Event event : events) {
+                try (PreparedStatement psEvent = con.prepareStatement(insertEvent, Statement.RETURN_GENERATED_KEYS)) {
+                    // If the event name is empty, use the booking event name.
+                    String eventName = (event.getName() == null || event.getName().isEmpty())
+                            ? bookingEventName : event.getName();
+                    psEvent.setString(1, eventName);
+                    psEvent.setDate(2, java.sql.Date.valueOf(event.getStartDate()));
+                    psEvent.setDate(3, java.sql.Date.valueOf(event.getEndDate()));
+                    psEvent.setTime(4, java.sql.Time.valueOf(event.getStartTime()));
+                    psEvent.setTime(5, java.sql.Time.valueOf(event.getEndTime()));
+                    psEvent.setString(6, event.getEventType());
+                    psEvent.setInt(7, event.getVenue().getVenueId());
+                    psEvent.executeUpdate();
+                }
+            }
+
+            // Optionally insert contract file if provided.
+            if (contractFile != null) {
+                try (PreparedStatement psContract = con.prepareStatement(insertContract)) {
+                    psContract.setBlob(1, new java.io.FileInputStream(contractFile));
+                    psContract.executeUpdate();
+                }
+            }
+
+            // Additional inserts for pricing records could be added here.
+
+            con.commit();
+            notifyUpdateListeners("fullBookingCreated", null);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // handle the pricing functions:
+
+    // In SQLConnection.java
+
+    /**
+     * Calls the MySQL stored function calculateMainHallCost.
+     */
+    public double calculateMainHallCost(java.sql.Date p_date, String p_rate_type, int p_hours) {
+        double cost = 0.0;
+        String query = "SELECT calculateMainHallCost(?, ?, ?) AS cost";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setDate(1, p_date);
+            ps.setString(2, p_rate_type);
+            ps.setInt(3, p_hours);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    cost = rs.getDouble("cost");
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return cost;
+    }
+
+    /**
+     * Calls the MySQL stored function calculateSmallHallCost.
+     */
+    public double calculateSmallHallCost(java.sql.Date p_date, String p_rate_type, int p_hours) {
+        double cost = 0.0;
+        String query = "SELECT calculateSmallHallCost(?, ?, ?) AS cost";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setDate(1, p_date);
+            ps.setString(2, p_rate_type);
+            ps.setInt(3, p_hours);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    cost = rs.getDouble("cost");
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return cost;
+    }
+
+    /**
+     * Calls the MySQL stored function calculateRehearsalCost.
+     */
+    public double calculateRehearsalCost(java.sql.Date p_date, String p_rate_type, int p_hours) {
+        double cost = 0.0;
+        String query = "SELECT calculateRehearsalCost(?, ?, ?) AS cost";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setDate(1, p_date);
+            ps.setString(2, p_rate_type);
+            ps.setInt(3, p_hours);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    cost = rs.getDouble("cost");
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return cost;
+    }
+
+    /**
+     * Calls the MySQL stored function calculateRoomCost.
+     */
+    public double calculateRoomCost(int p_venue_id, String p_room_name, String p_duration_type) {
+        double cost = 0.0;
+        String query = "SELECT calculateRoomCost(?, ?, ?) AS cost";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setInt(1, p_venue_id);
+            ps.setString(2, p_room_name);
+            ps.setString(3, p_duration_type);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    cost = rs.getDouble("cost");
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return cost;
+    }
+
+    /**
+     * Calls the MySQL stored function calculateVenueCost.
+     */
+    public double calculateVenueCost(java.sql.Date p_date, String p_booking_type) {
+        double cost = 0.0;
+        String query = "SELECT calculateVenueCost(?, ?) AS cost";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setDate(1, p_date);
+            ps.setString(2, p_booking_type);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    cost = rs.getDouble("cost");
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return cost;
+    }
+
+
+
+
+
 
 
     public List<Venue> getAllVenues() {

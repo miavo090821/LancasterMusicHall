@@ -10,7 +10,8 @@ import operations.entities.Venue;
 
 public class Event {
     private int id;
-    private String name;
+    private String name;               // Event name (as provided by booking details)
+    private String eventType;          // e.g., "Film", "Show", "Meeting"
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalTime startTime;
@@ -20,21 +21,21 @@ public class Event {
     private Venue venue;
     private List<Seat> seats;
     private String bookedBy;
-    private String room;
+    private String room;               // e.g., the location (room name)
     private String companyName;
     private ContactDetails contactDetails;
+    private double price;              // Calculated price for the event
 
     public Event() {
     }
 
-
-    public Event(int id, String name, LocalDate startDate, LocalDate endDate,
-                 LocalTime startTime, LocalTime endTime, boolean held,
-                 String holdExpiryDate, Venue venue, List<Seat> seats,
-                 String bookedBy, String room, String companyName,
-                 ContactDetails contactDetails) {
+    public Event(int id, String name, String eventType, LocalDate startDate, LocalDate endDate,
+                 LocalTime startTime, LocalTime endTime, boolean held, String holdExpiryDate,
+                 Venue venue, List<Seat> seats, String bookedBy, String room,
+                 String companyName, ContactDetails contactDetails, double price) {
         this.id = id;
         this.name = name;
+        this.eventType = eventType;
         this.startDate = startDate;
         this.endDate = endDate;
         this.startTime = startTime;
@@ -47,6 +48,7 @@ public class Event {
         this.room = room;
         this.companyName = companyName;
         this.contactDetails = contactDetails;
+        this.price = price;
     }
 
     // Getters
@@ -56,6 +58,10 @@ public class Event {
 
     public String getName() {
         return name;
+    }
+
+    public String getEventType() {
+        return eventType;
     }
 
     public LocalDate getStartDate() {
@@ -94,12 +100,20 @@ public class Event {
         return bookedBy;
     }
 
+    public String getRoom() {
+        return room;
+    }
+
     public String getCompanyName() {
         return companyName;
     }
 
     public ContactDetails getContactDetails() {
         return contactDetails;
+    }
+
+    public double getPrice() {
+        return price;
     }
 
     // Setters
@@ -109,6 +123,10 @@ public class Event {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
     }
 
     public void setStartDate(LocalDate startDate) {
@@ -159,11 +177,16 @@ public class Event {
         this.contactDetails = contactDetails;
     }
 
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
     @Override
     public String toString() {
         return "Event{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", eventType='" + eventType + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", startTime=" + startTime +
@@ -176,6 +199,7 @@ public class Event {
                 ", room='" + room + '\'' +
                 ", companyName='" + companyName + '\'' +
                 ", contactDetails=" + contactDetails +
+                ", price=" + price +
                 '}';
     }
 }
