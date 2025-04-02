@@ -21,12 +21,10 @@ public class DiaryPanel extends JPanel {
     private CardLayout cardLayout;
     private JPanel cardPanel;
 
-    // Declare these as instance variables for use in refreshCalendar() and renderBookings()
     private JLabel[][] calendarCells;
     private String[] days;
     private String[] times;
 
-    // Define the diary view date range (one week view)
     private final LocalDate weekStart = LocalDate.of(2025, 3, 1);
     private final LocalDate weekEnd = weekStart.plusDays(6);
 
@@ -41,7 +39,7 @@ public class DiaryPanel extends JPanel {
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE d", Locale.ENGLISH);
         days = new String[7];
         for (int i = 0; i < 7; i++) {
-            days[i] = weekStart.plusDays(i).format(dayFormatter); // e.g., "Sat 1"
+            days[i] = weekStart.plusDays(i).format(dayFormatter);
         }
 
         times = new String[]{"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"};
@@ -63,7 +61,7 @@ public class DiaryPanel extends JPanel {
         cornerLabel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
         calendarPanel.add(cornerLabel, gbc);
 
-        calendarCells = new JLabel[times.length][days.length]; // now instance variable
+        calendarCells = new JLabel[times.length][days.length];
 
         // Day headers
         for (int i = 0; i < days.length; i++) {

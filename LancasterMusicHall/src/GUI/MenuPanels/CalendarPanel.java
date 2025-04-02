@@ -10,6 +10,7 @@ import operations.module.Event;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -27,8 +28,8 @@ public class CalendarPanel extends JPanel {
     private String[] days;
     private String[] times = {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
 
-    // Define the diary/calendar view date range (one week view)
-    private LocalDate weekStart = LocalDate.of(2025, 3, 1);
+    // Define the diary/calendar view date range
+    private LocalDate weekStart = LocalDate.now().with(DayOfWeek.MONDAY);
     private LocalDate weekEnd = weekStart.plusDays(6);
 
     // Local storage for events
@@ -44,6 +45,10 @@ public class CalendarPanel extends JPanel {
             new Color(255, 255, 200)
     };
 
+    // Formatters as instance variables
+    private final DateTimeFormatter dayHeaderFormatter = DateTimeFormatter.ofPattern("EEEE d", Locale.ENGLISH);
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     public CalendarPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         this.cardPanel = cardPanel;
         this.cardLayout = cardLayout;
@@ -54,15 +59,13 @@ public class CalendarPanel extends JPanel {
         // Initialize with sample events
         initializeSampleEvents();
 
-        // Prepare day headers with full day names
-        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.ENGLISH); // Full day name
+        // Prepare day headers with day name and date
         days = new String[7];
         for (int i = 0; i < 7; i++) {
-            days[i] = weekStart.plusDays(i).format(dayFormatter); // e.g., "Monday"
+            days[i] = weekStart.plusDays(i).format(dayHeaderFormatter);
         }
 
         // Create week range panel
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         JPanel weekRangePanel = new JPanel();
         weekRangePanel.setBackground(Color.white);
         weekRangePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -93,7 +96,7 @@ public class CalendarPanel extends JPanel {
 
         calendarCells = new JLabel[times.length][days.length];
 
-        // Day headers with full day names
+        // Day headers with day name and date
         for (int i = 0; i < days.length; i++) {
             gbc.gridx = i + 1;
             gbc.gridy = 0;
@@ -101,7 +104,7 @@ public class CalendarPanel extends JPanel {
             JLabel dayLabel = new JLabel(days[i], SwingConstants.CENTER);
             dayLabel.setFont(new Font("Arial", Font.PLAIN, 12));
             dayLabel.setOpaque(true);
-            dayLabel.setPreferredSize(new Dimension(80, 30)); // Wider to accommodate full day names
+            dayLabel.setPreferredSize(new Dimension(80, 30));
             dayLabel.setBackground(new Color(220, 200, 255));
             dayLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
             calendarPanel.add(dayLabel, gbc);
@@ -128,7 +131,7 @@ public class CalendarPanel extends JPanel {
                 gbc.weighty = 0.5;
                 gbc.ipady = 40;
                 JLabel cell = new JLabel("", SwingConstants.CENTER);
-                cell.setPreferredSize(new Dimension(80, 30)); // Wider cells to match headers
+                cell.setPreferredSize(new Dimension(80, 30));
                 cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
                 cell.setOpaque(true);
                 cell.setBackground(Color.WHITE);
@@ -142,7 +145,7 @@ public class CalendarPanel extends JPanel {
 
         // Wrap calendarPanel in a scroll pane and add to center
         JScrollPane scrollPane = new JScrollPane(calendarPanel);
-        scrollPane.setPreferredSize(new Dimension(720, 480)); // Wider to accommodate full day names
+        scrollPane.setPreferredSize(new Dimension(720, 480));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         // Create a container for the week range and calendar
@@ -175,7 +178,7 @@ public class CalendarPanel extends JPanel {
         viewPanel.add(viewLabel);
         viewPanel.add(viewCombo);
 
-         // Lower panel: Print button
+        // Lower panel: Print button
         JPanel printPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         printPanel.setBackground(Color.WHITE);
 
@@ -222,12 +225,12 @@ public class CalendarPanel extends JPanel {
                         selectedDate.getMonth() + 1,
                         selectedDate.getDate()
                 );
-                // Adjust to start of week (Sunday)
-                while (weekStart.getDayOfWeek().getValue() != 7) { // 7 is Sunday
+                // Adjust to start of week (Monday)
+                while (weekStart.getDayOfWeek().getValue() != 1) { // 1 is Monday
                     weekStart = weekStart.minusDays(1);
                 }
                 weekEnd = weekStart.plusDays(6);
-                updateDayHeaders(dayFormatter);
+                updateDayHeaders();
                 weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
                 refreshCalendar();
             }
@@ -241,14 +244,14 @@ public class CalendarPanel extends JPanel {
         JPanel navButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         navButtonPanel.setBackground(Color.WHITE);
 
-        // Left arrow button
+        // Left arrow button (previous week)
         JButton leftArrow = new JButton("<");
         leftArrow.setFont(new Font("Arial", Font.BOLD, 16));
         leftArrow.setPreferredSize(new Dimension(50, 30));
         leftArrow.addActionListener(e -> {
             weekStart = weekStart.minusDays(7);
-            weekEnd = weekEnd.minusDays(7);
-            updateDayHeaders(dayFormatter);
+            weekEnd = weekStart.plusDays(6);  // Fixed: Should be plusDays(6) not minusDays(6)
+            updateDayHeaders();
             weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
             refreshCalendar();
         });
@@ -257,12 +260,12 @@ public class CalendarPanel extends JPanel {
         JButton todayButton = new JButton("Today");
         todayButton.addActionListener(e -> {
             weekStart = LocalDate.now();
-            // Adjust to start of week (Sunday)
-            while (weekStart.getDayOfWeek().getValue() != 7) { // 7 is Sunday
+            // Adjust to start of week (Monday)
+            while (weekStart.getDayOfWeek().getValue() != 1) { // 1 is Monday
                 weekStart = weekStart.minusDays(1);
             }
             weekEnd = weekStart.plusDays(6);
-            updateDayHeaders(dayFormatter);
+            updateDayHeaders();
             weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
             refreshCalendar();
         });
@@ -273,8 +276,8 @@ public class CalendarPanel extends JPanel {
         rightArrow.setPreferredSize(new Dimension(50, 30));
         rightArrow.addActionListener(e -> {
             weekStart = weekStart.plusDays(7);
-            weekEnd = weekEnd.plusDays(7);
-            updateDayHeaders(dayFormatter);
+            weekEnd = weekStart.plusDays(6);
+            updateDayHeaders();
             weekRangeLabel.setText(weekStart.format(dateFormatter) + " to " + weekEnd.format(dateFormatter));
             refreshCalendar();
         });
@@ -297,10 +300,19 @@ public class CalendarPanel extends JPanel {
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    private void updateDayHeaders(DateTimeFormatter dayFormatter) {
-        days = new String[7];
+    private void updateDayHeaders() {
+        // Update the days array
         for (int i = 0; i < 7; i++) {
-            days[i] = weekStart.plusDays(i).format(dayFormatter); // Full day names
+            days[i] = weekStart.plusDays(i).format(dayHeaderFormatter);
+        }
+
+        // Update the day labels in the calendar grid
+        Component[] components = calendarCells[0][0].getParent().getComponents();
+        for (Component comp : components) {
+            GridBagConstraints gbc = ((GridBagLayout)comp.getParent().getLayout()).getConstraints(comp);
+            if (gbc.gridy == 0 && gbc.gridx >= 1 && gbc.gridx <= 7 && comp instanceof JLabel) {
+                ((JLabel)comp).setText(days[gbc.gridx - 1]);
+            }
         }
     }
 
@@ -308,115 +320,47 @@ public class CalendarPanel extends JPanel {
     private void initializeSampleEvents() {
         Venue mainHall = new Venue(1, "Main Hall", "Conference", 500);
         Venue room101 = new Venue(2, "Room 101", "Meeting", 30);
-        Venue auditorium = new Venue(3, "Auditorium", "Performance", 1000);
 
-        // Empty lists and null values for optional fields
-        List<Seat> emptySeats = new ArrayList<>();
-        ContactDetails emptyContact = null;
+        LocalDate thisMonday = LocalDate.now().with(DayOfWeek.MONDAY);
 
+        // This week's events
         events.add(new Event(
                 1,
-                "Tech Conference",
-                LocalDate.of(2025, 3, 1),
-                LocalDate.of(2025, 3, 1),
+                "Weekly Team Meeting",
+                thisMonday.plusDays(2), // Wednesday
+                thisMonday.plusDays(2),
                 LocalTime.of(10, 0),
-                LocalTime.of(12, 0),
+                LocalTime.of(11, 30),
                 false,
                 "",
-                mainHall,
-                emptySeats,
-                "admin",
-                mainHall.getName(),
-                "Tech Corp",
-                emptyContact
-        ));
-        events.add(new Event(
-                1,
-                "Thor",
-                LocalDate.of(2025, 3, 1),
-                LocalDate.of(2025, 3, 1),
-                LocalTime.of(14, 0),
-                LocalTime.of(15, 0),
-                false,
-                "",
-                mainHall,
-                emptySeats,
-                "admin",
-                mainHall.getName(),
-                "Tech Corp",
-                emptyContact
+                room101,
+                new ArrayList<>(),
+                "manager",
+                "Room 101",
+                "Team",
+                null
         ));
 
+        // Next week's events
         events.add(new Event(
                 2,
-                "Team Meeting",
-                LocalDate.of(2025, 3, 3),
-                LocalDate.of(2025, 3, 3),
-                LocalTime.of(14, 0),
-                LocalTime.of(16, 0),
-                true,
-                "2025-03-02",
-                room101,
-                emptySeats,
-                "manager1",
-                room101.getName(),
-                "Sales Team",
-                emptyContact
-        ));
-
-        events.add(new Event(
-                3,
-                "Music Concert",
-                LocalDate.of(2025, 3, 5),
-                LocalDate.of(2025, 3, 5),
+                "Project Deadline",
+                LocalDate.of(2025, 4, 3),
+                LocalDate.of(2025, 4, 3),
                 LocalTime.of(15, 0),
                 LocalTime.of(17, 0),
                 false,
                 "",
-                auditorium,
-                emptySeats,
-                "event_coord",
-                auditorium.getName(),
-                "Arts Council",
-                emptyContact
-        ));
-
-        events.add(new Event(
-                3,
-                "Batman",
-                LocalDate.of(2025, 3, 5),
-                LocalDate.of(2025, 3, 5),
-                LocalTime.of(11, 0),
-                LocalTime.of(13, 0),
-                false,
-                "",
-                auditorium,
-                emptySeats,
-                "event_coord",
-                auditorium.getName(),
-                "Arts Council",
-                emptyContact
-        ));
-
-        events.add(new Event(
-                3,
-                "Batman",
-                LocalDate.of(2025, 3, 15),
-                LocalDate.of(2025, 3, 15),
-                LocalTime.of(11, 0),
-                LocalTime.of(13, 0),
-                false,
-                "",
-                auditorium,
-                emptySeats,
-                "event_coord",
-                auditorium.getName(),
-                "Arts Council",
-                emptyContact
+                mainHall,
+                new ArrayList<>(),
+                "director",
+                "Main Hall",
+                "Company",
+                null
         ));
     }
 
-    // Refresh the calendar view with local events
+    // Refresh the calendar
     public void refreshCalendar() {
         // Filtering events to only show those in the current week
         ArrayList<Event> eventsThisWeek = new ArrayList<>();
@@ -431,115 +375,91 @@ public class CalendarPanel extends JPanel {
         repaint();
     }
 
-    // Renders the list of events into the calendar grid
     private void renderEvents(ArrayList<Event> events) {
-        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.ENGLISH);
-
-        // Clear all of last week's events
+        // Clear all cells
         for (int row = 0; row < times.length; row++) {
             for (int col = 0; col < days.length; col++) {
                 JLabel cell = calendarCells[row][col];
                 cell.setText("");
                 cell.setBackground(Color.WHITE);
                 cell.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-                cell.setCursor(Cursor.getDefaultCursor());
-
-                // Remove all mouse listeners
+                // Remove existing mouse listeners
                 for (MouseListener listener : cell.getMouseListeners()) {
                     cell.removeMouseListener(listener);
                 }
             }
         }
 
-        // Only proceed if there are events to render
-        if (events.isEmpty()) {
-            return;
-        }
-
-        for (int row = 0; row < times.length; row++) {
-            for (int col = 0; col < days.length; col++) {
-                calendarCells[row][col].setText("");
-                calendarCells[row][col].setBackground(Color.WHITE);
-                calendarCells[row][col].setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-            }
-        }
+        if (events.isEmpty()) return;
 
         for (Event event : events) {
-            LocalDate eStartDate = event.getStartDate();
-            LocalDate eEndDate = event.getEndDate();
-            LocalTime eStartTime = event.getStartTime();
-            LocalTime eEndTime = event.getEndTime();
+            LocalDate eventDate = event.getStartDate();
+            LocalTime startTime = event.getStartTime();
+            LocalTime endTime = event.getEndTime();
 
-            int startHour = eStartTime.getHour();
-            int endHour = eEndTime.getHour();
+            // Calculate day offset from week start (0=Monday, 6=Sunday)
+            long daysOffset = eventDate.toEpochDay() - weekStart.toEpochDay();
+            int col = (int)daysOffset;
 
-            // Format using the same full day name pattern
-            String startDayLabel = eStartDate.format(dayFormatter);
-            String endDayLabel = eEndDate.format(dayFormatter);
+            // Only proceed if event is in current week view
+            if (col < 0 || col >= days.length) continue;
 
-            int startCol = -1, endCol = -1;
-            for (int i = 0; i < days.length; i++) {
-                if (days[i].equalsIgnoreCase(startDayLabel)) startCol = i;
-                if (days[i].equalsIgnoreCase(endDayLabel)) endCol = i;
-            }
+            // Find time slot rows
+            int startRow = findTimeSlot(startTime.getHour());
+            int endRow = findTimeSlot(endTime.getHour());
 
-            // Skip if event doesn't fall in this week
-            if (startCol == -1 || endCol == -1 || startCol > endCol) continue;
-
-            int startRow = -1, endRow = -1;
-            for (int i = 0; i < times.length; i++) {
-                int timeSlotHour = Integer.parseInt(times[i]);
-                if (timeSlotHour == startHour) startRow = i;
-                if (timeSlotHour == endHour) endRow = i;
-            }
-            if (startRow == -1 || endRow == -1 || startRow > endRow) continue;
+            // If we couldn't find matching slots, skip this event
+            if (startRow == -1 || endRow == -1) continue;
 
             Color eventColor = eventColors[events.indexOf(event) % eventColors.length];
 
-            // Render event in merged cells
+            // Render the event block
             for (int row = startRow; row <= endRow; row++) {
-                for (int col = startCol; col <= endCol; col++) {
-                    JLabel cell = calendarCells[row][col];
-                    if (row == startRow && col == startCol) {
-                        cell.setText("<html><center>" + event.getName() + "</center></html>");
-                    } else {
-                        cell.setText("");
-                    }
-                    cell.setBackground(eventColor);
-                    cell.setOpaque(true);
-                    cell.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-                    boolean isTop = (row == startRow);
-                    boolean isBottom = (row == endRow);
-                    boolean isLeft = (col == startCol);
-                    boolean isRight = (col == endCol);
-                    cell.setBorder(BorderFactory.createMatteBorder(
-                            isTop ? 2 : 0,
-                            isLeft ? 2 : 0,
-                            isBottom ? 2 : 0,
-                            isRight ? 2 : 0,
-                            Color.black
-                    ));
-
-                    cell.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            showEventDetails(event);
-                        }
-
-                        @Override
-                        public void mouseEntered(MouseEvent e) {
-                            cell.setBackground(eventColor.darker());
-                        }
-
-                        @Override
-                        public void mouseExited(MouseEvent e) {
-                            cell.setBackground(eventColor);
-                        }
-                    });
+                JLabel cell = calendarCells[row][col];
+                if (row == startRow) { // Only show text in first cell
+                    cell.setText("<html><center>" + event.getName() + "</center></html>");
                 }
+                cell.setBackground(eventColor);
+                cell.setOpaque(true);
+
+                // Custom border to show merged cells
+                cell.setBorder(BorderFactory.createMatteBorder(
+                        (row == startRow) ? 1 : 0, // top
+                        1, // left
+                        (row == endRow) ? 1 : 0, // bottom
+                        1, // right
+                        Color.BLACK
+                ));
+
+                // Add hover and click effects
+                cell.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        showEventDetails(event);
+                    }
+
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        cell.setBackground(eventColor.darker());
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        cell.setBackground(eventColor);
+                    }
+                });
             }
         }
+    }
+
+    // Helper method to find time slot row
+    private int findTimeSlot(int hour) {
+        for (int i = 0; i < times.length; i++) {
+            if (Integer.parseInt(times[i]) == hour) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void showEventDetails(Event event) {
