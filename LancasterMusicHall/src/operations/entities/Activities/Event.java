@@ -1,12 +1,12 @@
-package operations.module;
-
-import operations.entities.ContactDetails;
-import operations.entities.Seat;
-import operations.entities.Venue;
+package operations.entities.Activities;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+
+import operations.entities.ContactDetails;
+import operations.entities.Seat;
+import operations.entities.Venue;
 
 public class Event {
     private int id;
@@ -24,9 +24,10 @@ public class Event {
     private String companyName;
     private ContactDetails contactDetails;
 
-    /**
-     * Full parameterized constructor.
-     */
+    public Event() {
+    }
+
+
     public Event(int id, String name, LocalDate startDate, LocalDate endDate,
                  LocalTime startTime, LocalTime endTime, boolean held,
                  String holdExpiryDate, Venue venue, List<Seat> seats,
@@ -91,10 +92,6 @@ public class Event {
 
     public String getBookedBy() {
         return bookedBy;
-    }
-
-    public String getRoom() {
-        return room;
     }
 
     public String getCompanyName() {

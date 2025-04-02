@@ -2,6 +2,7 @@ package operations.services;
 
 import Database.SQLConnection;
 import Database.DatabaseUpdateListener;
+import operations.entities.Activities.Event;
 import operations.interfaces.OperationsInterface;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -54,31 +55,31 @@ public class OperationSQLService implements OperationsInterface, DatabaseUpdateL
     }
 
     @Override
-    public String getEventRoom(operations.module.Event event) {
+    public String getEventRoom(Event event) {
         // Implementation here...
         return "";
     }
 
     @Override
-    public LocalDate getEventDate(operations.module.Event event) {
+    public LocalDate getEventDate(Event event) {
         // Implementation here...
         return null;
     }
 
     @Override
-    public LocalTime getEventTime(operations.module.Event event) {
+    public LocalTime getEventTime(Event event) {
         // Implementation here...
         return null;
     }
 
     @Override
-    public String reasonofBooking(operations.module.Event event) {
+    public String reasonofBooking(Event event) {
         // Implementation here...
         return "";
     }
 
     @Override
-    public int getOverallAttendance(operations.module.Event event) {
+    public int getOverallAttendance(Event event) {
         // Implementation here...
         return 0;
     }
@@ -114,13 +115,13 @@ public class OperationSQLService implements OperationsInterface, DatabaseUpdateL
     }
 
     @Override
-    public List<operations.entities.Seat> getBookedSeatsForEvent(operations.module.Event event) {
+    public List<operations.entities.Seat> getBookedSeatsForEvent(Event event) {
         // Implementation here...
         return null;
     }
 
     @Override
-    public List<operations.entities.Booking> getRecordofDiscounts(operations.module.Event event) {
+    public List<operations.entities.Booking> getRecordofDiscounts(Event event) {
         // Implementation here...
         return null;
     }
@@ -132,7 +133,7 @@ public class OperationSQLService implements OperationsInterface, DatabaseUpdateL
     }
 
     @Override
-    public int getAttendeesCount(operations.module.Event event) {
+    public int getAttendeesCount(Event event) {
         // Implementation here...
         return 0;
     }
