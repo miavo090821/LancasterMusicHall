@@ -388,8 +388,6 @@ public class SQLConnection implements SQLInterface {
         return booking;
     }
 
-
-
     /**
      * Returns a DefaultTableModel containing bookings data.
      * The table has 5 columns:

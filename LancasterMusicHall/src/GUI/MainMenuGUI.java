@@ -2,6 +2,7 @@ package GUI;
 
 import Database.SQLConnection;
 import GUI.MenuPanels.*;
+import GUI.MenuPanels.Calendar.CalendarPanel;
 import GUI.MenuPanels.EventPanel;
 import GUI.MenuPanels.Reports.ReportPanel;
 
@@ -36,7 +37,7 @@ public class MainMenuGUI {
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
 
-        CalendarPanel calendar = new CalendarPanel(this, cardLayout, cardPanel );
+        CalendarPanel calendar = new CalendarPanel(this );
         EventPanel event = new EventPanel(this, cardLayout, cardPanel);
         ReportPanel report = new ReportPanel(this, cardLayout, cardPanel);
         HomePanel home = new HomePanel(this);
