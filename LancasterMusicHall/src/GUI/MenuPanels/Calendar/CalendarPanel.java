@@ -215,21 +215,21 @@ public class CalendarPanel extends JPanel {
         viewRangeLabel.setText(headerText);
     }
 
-    private void showEventDetails(Event event) {
-        JOptionPane.showMessageDialog(this,
-                "Event Details:\n" +
-                        "ID: " + event.getId() + "\n" +
-                        "Name: " + event.getName() + "\n" +
-                        "Date: " + event.getStartDate() + " to " + event.getEndDate() + "\n" +
-                        "Time: " + event.getStartTime() + " - " + event.getEndTime() + "\n" +
-                        "Held: " + (event.isHeld() ? "Yes" : "No") + "\n" +
-                        "Hold Expiry: " + event.getHoldExpiryDate() + "\n" +
-                        "Venue: " + event.getVenue().getName() + "\n" +
-                        "Booked By: " + event.getBookedBy() + "\n" +
-                        "Company: " + event.getCompanyName(),
-                "Event Details",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
+//    private void showEventDetails(Event event) {
+//        JOptionPane.showMessageDialog(this,
+//                "Event Details:\n" +
+//                        "ID: " + event.getId() + "\n" +
+//                        "Name: " + event.getName() + "\n" +
+//                        "Date: " + event.getStartDate() + " to " + event.getEndDate() + "\n" +
+//                        "Time: " + event.getStartTime() + " - " + event.getEndTime() + "\n" +
+//                        "Held: " + (event.isHeld() ? "Yes" : "No") + "\n" +
+//                        "Hold Expiry: " + event.getHoldExpiryDate() + "\n" +
+//                        "Venue: " + event.getVenue().getName() + "\n" +
+//                        "Booked By: " + event.getBookedBy() + "\n" +
+//                        "Company: " + event.getCompanyName(),
+//                "Event Details",
+//                JOptionPane.INFORMATION_MESSAGE);
+//    }
 
     private void showNewEventForm() {
         JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Create New Event", Dialog.ModalityType.APPLICATION_MODAL);

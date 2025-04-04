@@ -397,18 +397,24 @@ public class SQLConnection implements SQLInterface {
     public DefaultTableModel getBookingsTableModel() {
         String[] columnNames = {"ID No.", "Name", "Start Date", "End Date", "Status"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-        String query = "SELECT booking_id, location, booking_DateStart, booking_DateEnd, booking_status FROM Booking";
+
+        // Updated query with a JOIN on Clients to get the "Company Name"
+        String query = "SELECT B.booking_id, C.`Company Name` AS clientName, "
+                + "B.booking_DateStart, B.booking_DateEnd, B.booking_status "
+                + "FROM Booking B "
+                + "JOIN Clients C ON B.client_id = C.client_id";
+
         try (Connection con = getConnection();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()){
                 int bookingId = rs.getInt("booking_id");
-                String location = rs.getString("location");
+                String clientName = rs.getString("clientName");
                 String startDate = rs.getDate("booking_DateStart").toString();
                 String endDate = rs.getDate("booking_DateEnd").toString();
                 String status = rs.getString("booking_status");
-                Object[] row = {bookingId, location, startDate, endDate, status};
+                Object[] row = {bookingId, clientName, startDate, endDate, status};
                 model.addRow(row);
             }
         } catch (SQLException e) {
@@ -768,13 +774,15 @@ public class SQLConnection implements SQLInterface {
 
     /**
      * Retrieves event details from the Event table for the given booking ID.
-     * Fields returned: event_id, name, start_date, end_date, start_time, end_time, a default event_type, and venue_id.
+     * Joins the Venue table to replace venue_id with venue_name.
+     * Fields returned: event_id, name, start_date, end_date, start_time, end_time, a default event_type, and venue_name.
      */
     public ResultSet getEventDetails(int bookingId) {
-        // Since the Event table does not have an "event_type" column,
-        // we return a default value (e.g., 'N/A') as event_type.
-        String query = "SELECT event_id, name, start_date, end_date, start_time, end_time, 'N/A' AS event_type, venue_id " +
-                "FROM Event WHERE booking_id = ?";
+        String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
+                "'N/A' AS event_type, v.venue_name " +
+                "FROM Event e " +
+                "JOIN Venue v ON e.venue_id = v.venue_id " +
+                "WHERE e.booking_id = ?";
         try {
             Connection con = getConnection();
             PreparedStatement ps = con.prepareStatement(query);
@@ -785,6 +793,7 @@ public class SQLConnection implements SQLInterface {
             return null;
         }
     }
+
 
 
 
@@ -812,10 +821,10 @@ public class SQLConnection implements SQLInterface {
 
     /**
      * Retrieves contract details from the Contract table for the given booking ID.
-     * Assumes that contract_file is stored as a BLOB.
+     * Returns the contract_id, file_name, and file_data (the contract file as a BLOB).
      */
     public ResultSet getContractDetails(int bookingId) {
-        String query = "SELECT contract_file FROM Contract WHERE booking_id = ?";
+        String query = "SELECT contract_id, file_name, file_data FROM Contract WHERE booking_id = ?";
         try {
             Connection con = getConnection();
             PreparedStatement ps = con.prepareStatement(query);
@@ -826,6 +835,7 @@ public class SQLConnection implements SQLInterface {
             return null;
         }
     }
+
 
 
 
