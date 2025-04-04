@@ -12,8 +12,7 @@ public class BoxOfficeService implements BoxOfficeInterface {
     private static int filmId = 1; // Added filmId as it was being used but not declared
 
     public BoxOfficeService() {
-        // The following sample data is for testing purposes.
-        // Once SQL integration is in place, you can comment out (or remove) these lines.
+
         /*
         // Sample contact details
         String bookedBy = "Operations";
