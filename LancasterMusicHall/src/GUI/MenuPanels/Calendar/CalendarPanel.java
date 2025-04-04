@@ -1,6 +1,7 @@
 package GUI.MenuPanels.Calendar;
 
 import GUI.MainMenuGUI;
+import GUI.NewBookingForm;
 import com.toedter.calendar.JDateChooser;
 import operations.entities.Venue;
 import operations.module.Event;
@@ -15,14 +16,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class CalendarPanel extends JPanel {
     private enum CalendarView {WEEK, DAY, MONTH}
 
     private CalendarView currentView = CalendarView.WEEK;
     private CalendarViewPanel currentViewPanel;
-    private List<Event> events = new ArrayList<>();
+    private List<Event> events = new ArrayList<>(); // Start empty
 
     // UI Components
     private JComboBox<String> viewCombo;
@@ -31,13 +31,19 @@ public class CalendarPanel extends JPanel {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private final DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
 
-    private JLabel viewRangeLabel = new JLabel(); // Initialize here
+    private JLabel viewRangeLabel = new JLabel();
+
+    // Reference to MainMenuGUI (to get SQLConnection)
+    private MainMenuGUI mainMenu;
 
     public CalendarPanel(MainMenuGUI mainMenu) {
+        this.mainMenu = mainMenu;
         setLayout(new BorderLayout());
-        initializeSampleEvents();
 
-        // Create header panel first
+        // Remove sample data initialization
+        // initializeSampleEvents();  <-- Removed
+
+        // Create header panel
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(Color.white);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -45,7 +51,7 @@ public class CalendarPanel extends JPanel {
         headerPanel.add(viewRangeLabel);
         add(headerPanel, BorderLayout.NORTH);
 
-        // Then create initial view
+        // Create initial view
         switchToView(CalendarView.WEEK);
         setupBottomPanel(mainMenu);
     }
@@ -105,7 +111,7 @@ public class CalendarPanel extends JPanel {
         newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
         newEventButton.setBackground(new Color(200, 170, 250));
         newEventButton.setPreferredSize(new Dimension(120, 50));
-        newEventButton.addActionListener(e -> showNewEventForm());
+        newEventButton.addActionListener(e -> showNewBookingForm());
         centerPanel.add(newEventButton);
         bottomPanel.add(centerPanel, BorderLayout.CENTER);
 
@@ -215,152 +221,14 @@ public class CalendarPanel extends JPanel {
         viewRangeLabel.setText(headerText);
     }
 
-//    private void showEventDetails(Event event) {
-//        JOptionPane.showMessageDialog(this,
-//                "Event Details:\n" +
-//                        "ID: " + event.getId() + "\n" +
-//                        "Name: " + event.getName() + "\n" +
-//                        "Date: " + event.getStartDate() + " to " + event.getEndDate() + "\n" +
-//                        "Time: " + event.getStartTime() + " - " + event.getEndTime() + "\n" +
-//                        "Held: " + (event.isHeld() ? "Yes" : "No") + "\n" +
-//                        "Hold Expiry: " + event.getHoldExpiryDate() + "\n" +
-//                        "Venue: " + event.getVenue().getName() + "\n" +
-//                        "Booked By: " + event.getBookedBy() + "\n" +
-//                        "Company: " + event.getCompanyName(),
-//                "Event Details",
-//                JOptionPane.INFORMATION_MESSAGE);
-//    }
+    // Remove the sample events initialization.
+    // private void initializeSampleEvents() { ... }
 
-    private void showNewEventForm() {
-        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Create New Event", Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setSize(500, 600);
-        dialog.setLayout(new GridLayout(0, 2, 10, 10));
-
-        // Fields to collect event information
-        JTextField eventIdField = new JTextField();
-        JTextField nameField = new JTextField();
-        JTextField startDateField = new JTextField("2025-03-01");
-        JTextField endDateField = new JTextField("2025-03-01");
-        JTextField startTimeField = new JTextField("10:00");
-        JTextField endTimeField = new JTextField("12:00");
-        JCheckBox heldCheck = new JCheckBox();
-        JTextField holdExpiryField = new JTextField("");
-        JTextField venueIdField = new JTextField("1");
-        JTextField bookedByField = new JTextField("admin");
-        JTextField companyField = new JTextField("Company Inc");
-
-        dialog.add(new JLabel("Event ID:"));
-        dialog.add(eventIdField);
-        dialog.add(new JLabel("Event Name:"));
-        dialog.add(nameField);
-        dialog.add(new JLabel("Start Date (yyyy-MM-dd):"));
-        dialog.add(startDateField);
-        dialog.add(new JLabel("End Date (yyyy-MM-dd):"));
-        dialog.add(endDateField);
-        dialog.add(new JLabel("Start Time (HH:mm):"));
-        dialog.add(startTimeField);
-        dialog.add(new JLabel("End Time (HH:mm):"));
-        dialog.add(endTimeField);
-        dialog.add(new JLabel("Held:"));
-        dialog.add(heldCheck);
-        dialog.add(new JLabel("Hold Expiry (yyyy-MM-dd):"));
-        dialog.add(holdExpiryField);
-        dialog.add(new JLabel("Venue ID:"));
-        dialog.add(venueIdField);
-        dialog.add(new JLabel("Booked By:"));
-        dialog.add(bookedByField);
-        dialog.add(new JLabel("Company Name:"));
-        dialog.add(companyField);
-
-        JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(ev -> {
-            try {
-                // Create Venue object based on ID
-                Venue venue;
-                int venueId = Integer.parseInt(venueIdField.getText().trim());
-                venue = switch (venueId) {
-                    case 1 -> new Venue(1, "Main Hall", "Conference", 500);
-                    case 2 -> new Venue(2, "Room 101", "Meeting", 30);
-                    case 3 -> new Venue(3, "Auditorium", "Performance", 1000);
-                    default -> new Venue(venueId, "Room " + venueId, "Generic", 50);
-                };
-
-                Event newEvent = new Event(
-                        Integer.parseInt(eventIdField.getText().trim()),
-                        nameField.getText().trim(),
-                        LocalDate.parse(startDateField.getText().trim()),
-                        LocalDate.parse(endDateField.getText().trim()),
-                        LocalTime.parse(startTimeField.getText().trim()),
-                        LocalTime.parse(endTimeField.getText().trim()),
-                        heldCheck.isSelected(),
-                        holdExpiryField.getText().trim(),
-                        venue,
-                        new ArrayList<>(), // Empty seats list
-                        bookedByField.getText().trim(),
-                        venue.getName(), // Use venue name as room
-                        companyField.getText().trim(),
-                        null // No contact details
-                );
-
-                events.add(newEvent);
-                JOptionPane.showMessageDialog(dialog, "Event created successfully!");
-                dialog.dispose();
-                currentViewPanel.refreshView();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-        dialog.add(saveButton);
-
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(ev -> dialog.dispose());
-        dialog.add(cancelButton);
-
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-    }
-
-    private void initializeSampleEvents() {
-        Venue mainHall = new Venue(1, "Main Hall", "Conference", 500);
-        Venue room101 = new Venue(2, "Room 101", "Meeting", 30);
-
-        LocalDate thisMonday = LocalDate.now().with(DayOfWeek.MONDAY);
-
-        // Operations event
-        events.add(new Event(
-                1,
-                "Weekly Team Meeting",
-                thisMonday.plusDays(2), // Wednesday
-                thisMonday.plusDays(2),
-                LocalTime.of(10, 0),
-                LocalTime.of(11, 30),
-                false,
-                "",
-                room101,
-                new ArrayList<>(),
-                "operations",
-                "Room 101",
-                "Team",
-                null
-        ));
-
-        // Marketing event
-        events.add(new Event(
-                2,
-                "Project Deadline",
-                LocalDate.of(2025, 4, 3),
-                LocalDate.of(2025, 4, 3),
-                LocalTime.of(15, 0),
-                LocalTime.of(17, 0),
-                false,
-                "",
-                mainHall,
-                new ArrayList<>(),
-                "marketing",
-                "Main Hall",
-                "Company",
-                null
-        ));
+    private void showNewBookingForm() {
+        Window ownerWindow = SwingUtilities.getWindowAncestor(this);
+        Frame ownerFrame = (ownerWindow instanceof Frame) ? (Frame) ownerWindow : null;
+        // Use the SQLConnection from mainMenu.
+        NewBookingForm newBookingDialog = new NewBookingForm(ownerFrame, mainMenu.getSqlConnection());
+        newBookingDialog.setVisible(true);
     }
 }
