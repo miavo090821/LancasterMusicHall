@@ -2,6 +2,7 @@ package GUI.MenuPanels;
 
 import Database.SQLConnection;
 import GUI.MainMenuGUI;
+import GUI.NewEventForm;
 import com.toedter.calendar.JDateChooser;
 import operations.entities.*;
 
@@ -166,11 +167,28 @@ public class DiaryPanel extends JPanel {
         JPanel middle = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 25));
         middle.setBackground(Color.WHITE);
         middle.setPreferredSize(new Dimension(240, 100));
+
         JButton newEventButton = new JButton("New Draft");
         newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
         newEventButton.setBackground(new Color(200, 170, 250));
         newEventButton.setPreferredSize(new Dimension(120, 50));
-        newEventButton.addActionListener(_ -> { cardLayout.show(cardPanel, "NewEvent"); });
+        newEventButton.addActionListener(e -> {
+            // Create and show the NewEventForm dialog
+            NewEventForm newEventForm = new NewEventForm(
+                    (Frame) SwingUtilities.getWindowAncestor(this),
+                    sqlConnection
+            );
+            newEventForm.setVisible(true);
+
+            // Refresh the calendar after the dialog closes
+            newEventForm.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    refreshCalendar();
+                }
+            });
+        });
+
         middle.add(newEventButton);
         bottomPanel.add(middle);
 
