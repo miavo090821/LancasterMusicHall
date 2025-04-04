@@ -19,6 +19,7 @@ import java.util.List;
 
 public class CalendarPanel extends JPanel {
     private enum CalendarView {WEEK, DAY, MONTH}
+    private LocalDate currentDate = LocalDate.now();
 
     private CalendarView currentView = CalendarView.WEEK;
     private CalendarViewPanel currentViewPanel;
@@ -65,13 +66,14 @@ public class CalendarPanel extends JPanel {
 
         switch (view) {
             case WEEK:
-                currentViewPanel = new WeekViewPanel(LocalDate.now(), events);
+                currentViewPanel = new WeekViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection());
                 break;
             case DAY:
-                currentViewPanel = new DayViewPanel(LocalDate.now(), events);
+                currentViewPanel = new DayViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection());
                 break;
             case MONTH:
-                currentViewPanel = new MonthViewPanel(LocalDate.now(), events);
+
+//                currentViewPanel = new MonthViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection());
                 break;
         }
 
@@ -80,6 +82,7 @@ public class CalendarPanel extends JPanel {
         revalidate();
         repaint();
     }
+
 
     private void setupBottomPanel(MainMenuGUI mainMenu) {
         JPanel bottomPanel = new JPanel(new BorderLayout());
@@ -133,15 +136,16 @@ public class CalendarPanel extends JPanel {
         datePicker.addPropertyChangeListener("date", e -> {
             Date selectedDate = datePicker.getDate();
             if (selectedDate != null) {
-                LocalDate newDate = LocalDate.of(
+                currentDate = LocalDate.of(
                         selectedDate.getYear() + 1900,
                         selectedDate.getMonth() + 1,
                         selectedDate.getDate()
                 );
-                currentViewPanel.setViewDate(newDate);
+                currentViewPanel.setViewDate(currentDate);
                 updateView();
             }
         });
+
 
         datePickerPanel.add(dateLabel);
         datePickerPanel.add(datePicker);
@@ -159,10 +163,12 @@ public class CalendarPanel extends JPanel {
         JButton todayButton = new JButton("Today");
         todayButton.addActionListener(e -> navigateToToday());
 
+        // In CalendarPanel's bottom panel:
         JButton rightArrow = new JButton(">");
         rightArrow.setFont(new Font("Arial", Font.BOLD, 16));
         rightArrow.setPreferredSize(new Dimension(50, 30));
         rightArrow.addActionListener(e -> navigate(1));
+
 
         mainMenu.stylizeButton(leftArrow);
         mainMenu.stylizeButton(rightArrow);
@@ -220,9 +226,6 @@ public class CalendarPanel extends JPanel {
         }
         viewRangeLabel.setText(headerText);
     }
-
-    // Remove the sample events initialization.
-    // private void initializeSampleEvents() { ... }
 
     private void showNewBookingForm() {
         Window ownerWindow = SwingUtilities.getWindowAncestor(this);

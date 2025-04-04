@@ -837,6 +837,27 @@ public class SQLConnection implements SQLInterface {
     }
 
 
+    // handle the calendar panel for event look on calendar:
+
+    public ResultSet getEventDetailsByEventId(int eventId) {
+        String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
+                "e.`event type`, e.description, e.booked_by, v.venue_name " +
+                "FROM Event e " +
+                "LEFT JOIN Venue v ON e.venue_id = v.venue_id " +
+                "WHERE e.event_id = ?";
+        try {
+            Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, eventId);
+            return ps.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+
+
 
 
 

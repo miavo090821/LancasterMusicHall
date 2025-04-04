@@ -1,22 +1,28 @@
 package GUI.MenuPanels.Calendar;
 
+import GUI.EventDetailForm;
 import operations.module.Event;
+import Database.SQLConnection; // make sure this import is correct
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 public class DayViewPanel extends CalendarViewPanel {
     private final String[] times = {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
     private JLabel[] eventSlots;
 
-    public DayViewPanel(LocalDate startDate, List<Event> events) {
-        super(startDate, events);
+    // For accessing SQLConnection – you must supply your own method.
+    private SQLConnection sqlCon;
+
+    public DayViewPanel(LocalDate startDate, List<Event> events, SQLConnection sqlCon) {
+        super(startDate, events, sqlCon);
+        this.sqlCon = sqlCon;
         this.viewStartDate = startDate;
         this.viewEndDate = startDate;
         initializeUI();
@@ -87,34 +93,48 @@ public class DayViewPanel extends CalendarViewPanel {
         for (JLabel slot : eventSlots) {
             slot.setText("");
             slot.setBackground(Color.WHITE);
-            for (MouseListener listener : slot.getMouseListeners()) {
+            for (MouseAdapter listener : slot.getListeners(MouseAdapter.class)) {
                 slot.removeMouseListener(listener);
             }
         }
 
-        // Render new events
+        // Render new events (only for those on the current day)
         for (Event event : events) {
             if (event.getStartDate().isEqual(viewStartDate)) {
-                int startHour = event.getStartTime().getHour();
-                int timeSlotIndex = -1;
+                // Fetch detailed event info from the database using the provided SQL method.
+                try {
+                    ResultSet rs = getSQLConnection().getEventDetailsByEventId(event.getId());
+                    if (rs != null && rs.next()) {
+                        String eventName = rs.getString("name");
+                        String venueName = rs.getString("venue_name");
+                        // Optionally, you can fetch start and end times from the result set if needed:
+                        // Time startTime = rs.getTime("start_time");
+                        // Time endTime = rs.getTime("end_time");
 
-                // Find the time slot index
-                for (int i = 0; i < times.length; i++) {
-                    if (Integer.parseInt(times[i]) == startHour) {
-                        timeSlotIndex = i;
-                        break;
+                        // Determine the time slot index based on the event's start time.
+                        int startHour = event.getStartTime().getHour();
+                        int timeSlotIndex = -1;
+                        for (int i = 0; i < times.length; i++) {
+                            if (Integer.parseInt(times[i]) == startHour) {
+                                timeSlotIndex = i;
+                                break;
+                            }
+                        }
+                        if (timeSlotIndex == -1) continue;
+
+                        JLabel eventSlot = eventSlots[timeSlotIndex];
+                        // Display only the event name and venue name.
+                        eventSlot.setText(String.format("<html><center>%s<br/>%s</center></html>",
+                                eventName, venueName));
+                        eventSlot.setBackground(determineEventColor(event.getBookedBy()));
+                        attachEventListeners(eventSlot, event);
                     }
+                    if(rs != null) {
+                        rs.close();
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
-
-                if (timeSlotIndex == -1) continue;
-
-                JLabel eventSlot = eventSlots[timeSlotIndex];
-                eventSlot.setText(String.format("<html><center>%s<br/>%s - %s</center></html>",
-                        event.getName(),
-                        event.getStartTime(),
-                        event.getEndTime()));
-                eventSlot.setBackground(determineEventColor(event.getBookedBy()));
-                attachEventListeners(eventSlot, event);
             }
         }
     }
@@ -125,18 +145,34 @@ public class DayViewPanel extends CalendarViewPanel {
         } else if (bookedBy.equalsIgnoreCase("marketing")) {
             return new Color(255, 230, 200);  // Light orange for marketing
         } else {
-            return new Color(230, 255, 200);  // Default green for other departments
+            return new Color(230, 255, 200);  // Default green for others
         }
     }
 
+    /**
+     * Attaches mouse listeners to the given event slot label.
+     * On click, opens the EventDetailForm for the corresponding event.
+     */
     private void attachEventListeners(JLabel cell, Event event) {
         Color baseColor = cell.getBackground();
         cell.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseEntered(MouseEvent e) {
                 cell.setBackground(baseColor.darker());
             }
+            @Override
             public void mouseExited(MouseEvent e) {
                 cell.setBackground(baseColor);
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Open the event detail form using the event's ID.
+                EventDetailForm eventDetailForm = new EventDetailForm(
+                        (Frame) SwingUtilities.getWindowAncestor(cell),
+                        getSQLConnection(),
+                        String.valueOf(event.getId())
+                );
+                eventDetailForm.setVisible(true);
             }
         });
     }
@@ -144,5 +180,14 @@ public class DayViewPanel extends CalendarViewPanel {
     @Override
     public void refreshView() {
         renderEvents(filterEvents(viewStartDate, viewEndDate));
+    }
+
+    /**
+     * Override to provide the SQLConnection to use.
+     * Adjust this method to return your actual SQLConnection instance.
+     */
+    @Override
+    protected SQLConnection getSQLConnection() {
+        return sqlCon;
     }
 }

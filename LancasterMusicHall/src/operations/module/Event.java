@@ -181,4 +181,28 @@ public class Event {
                 ", contactDetails=" + contactDetails +
                 '}';
     }
+
+    private String eventType;  // Allowed values: "Film", "Show", "Meeting"
+
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        if (eventType == null) {
+            throw new IllegalArgumentException("Event type cannot be null.");
+        }
+        String lower = eventType.toLowerCase();
+        if (!lower.equals("film") && !lower.equals("show") && !lower.equals("meeting")) {
+            throw new IllegalArgumentException("Invalid event type. Allowed values: Film, Show, Meeting.");
+        }
+        // Optionally, store the value in a standardized way.
+        this.eventType = capitalize(eventType);
+    }
+
+    private String capitalize(String str) {
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+    }
+
 }
