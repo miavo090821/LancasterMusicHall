@@ -2,6 +2,7 @@ package GUI;
 
 import Database.SQLConnection;
 import GUI.MenuPanels.*;
+import GUI.MenuPanels.Booking.BookingPanel;
 import GUI.MenuPanels.Calendar.CalendarPanel;
 import GUI.MenuPanels.EventPanel;
 import GUI.MenuPanels.Reports.ReportPanel;
@@ -22,6 +23,7 @@ public class MainMenuGUI {
     private JPanel cardPanel;
     private CardLayout cardLayout;
     private SQLConnection sqlConnection = new SQLConnection();
+    private int fontSize;
 
 
     public MainMenuGUI() {
@@ -194,6 +196,14 @@ public class MainMenuGUI {
 
     public SQLConnection getSqlConnection() {
         return sqlConnection;
+    }
+
+    public int getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(int fontSize) {
+        this.fontSize = fontSize;
     }
 
     public void logout() {

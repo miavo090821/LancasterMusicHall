@@ -1,4 +1,4 @@
-package GUI;
+package GUI.MenuPanels.Booking;
 
 import Database.SQLConnection;
 import operations.entities.Activities.Event;

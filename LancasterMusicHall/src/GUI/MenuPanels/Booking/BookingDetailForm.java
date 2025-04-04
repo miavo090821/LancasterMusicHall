@@ -1,8 +1,7 @@
-package GUI;
+package GUI.MenuPanels.Booking;
 
 import Database.SQLConnection;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;

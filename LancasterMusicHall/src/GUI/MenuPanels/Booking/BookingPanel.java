@@ -1,9 +1,7 @@
-package GUI.MenuPanels;
+package GUI.MenuPanels.Booking;
 
 import Database.SQLConnection;
-import GUI.BookingDetailForm;
 import GUI.MainMenuGUI;
-import GUI.NewBookingForm;
 
 import java.awt.*;
 import java.util.Arrays;

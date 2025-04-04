@@ -6,9 +6,17 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class SettingsPanel extends JPanel {
+    private int fontSize;
+    private MainMenuGUI mainMenu;
+    private JLabel titleLabel, fontLabel, colourLabel, generalLabel, logoutLabel;
+
     public SettingsPanel(MainMenuGUI mainMenu) {
+        this.mainMenu = mainMenu;
+        fontSize = mainMenu.getFontSize();
         setPreferredSize(new Dimension(700, 350));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -32,7 +40,7 @@ public class SettingsPanel extends JPanel {
         titlePanel.setBackground(Color.white);
         textPanel.add(titlePanel);
 
-        JLabel titleLabel = new JLabel("Accessibility");
+        titleLabel = new JLabel("Accessibility");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titlePanel.add(titleLabel);
 
@@ -51,13 +59,23 @@ public class SettingsPanel extends JPanel {
         fontPanel.setBackground(Color.white);
         textPanel.add(fontPanel);
 
-        JLabel fontLabel = new JLabel("Font Size:");
+        fontLabel = new JLabel("Font Size:");
         fontLabel.setFont(new Font("Arial", Font.PLAIN, 18));
 
         String[] fontSizes = {"10", "12", "14", "16", "18", "20"};
         JComboBox<String> fontSizeDropdown = new JComboBox<>(fontSizes);
         mainMenu.styleDropdown(fontSizeDropdown);
-        fontSizeDropdown.setSelectedItem("12");
+        fontSizeDropdown.setSelectedItem(String.valueOf(fontSize)); // Set current font size
+
+        // Add ActionListener to the dropdown
+        fontSizeDropdown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int newFontSize = Integer.parseInt((String) fontSizeDropdown.getSelectedItem());
+                updateFontSizes(newFontSize);
+            }
+        });
+
         fontPanel.add(fontLabel);
         fontPanel.add(fontSizeDropdown);
 
@@ -68,7 +86,7 @@ public class SettingsPanel extends JPanel {
         colourPanel.setBackground(Color.white);
         textPanel.add(colourPanel);
 
-        JLabel colourLabel = new JLabel("Colour Blind Filters:");
+        colourLabel = new JLabel("Colour Blind Filters:");
         colourLabel.setFont(new Font("Arial", Font.PLAIN, 18));
         String[] colourFilters = {"Off", "Protanopia", "Deuteranopia", "Tritanopia"};
         JComboBox<String> colourDropdown = new JComboBox<>(colourFilters);
@@ -82,7 +100,7 @@ public class SettingsPanel extends JPanel {
         generalPanel.setBackground(Color.white);
         textPanel.add(generalPanel);
 
-        JLabel generalLabel = new JLabel("General");
+        generalLabel = new JLabel("General");
         generalLabel.setFont(new Font("Arial", Font.BOLD, 24));
         generalLabel.setBorder(new EmptyBorder(0, 5, 20, 0));
         generalPanel.add(generalLabel);
@@ -94,7 +112,7 @@ public class SettingsPanel extends JPanel {
         logoutPanel.add(Box.createHorizontalStrut(10));
         textPanel.add(logoutPanel);
 
-        JLabel logoutLabel = new JLabel("Auto Logout:");
+        logoutLabel = new JLabel("Auto Logout:");
         logoutLabel.setFont(new Font("Arial", Font.PLAIN, 18));
         String[] logoutTimes = {"5 minutes", "10 minutes", "30 minutes", "1 hour"};
         JComboBox<String> logoutDropdown = new JComboBox<>(logoutTimes);
@@ -108,7 +126,6 @@ public class SettingsPanel extends JPanel {
         panel.setPreferredSize(new Dimension(700, 260));
         panel.setBackground(Color.white);
         textPanel.add(panel);
-
 
         // === Bottom Panel ===
         JPanel bottomPanel = new JPanel();
@@ -149,10 +166,24 @@ public class SettingsPanel extends JPanel {
 
         bottomPanel.add(Box.createHorizontalGlue()); // Add glue to the other side
 
-
         mainPanel.add(bottomPanel);
+    }
 
+    private void updateFontSizes(int newFontSize) {
+        // Update the font size of all relevant labels
+        titleLabel.setFont(new Font("Arial", Font.BOLD, newFontSize + 6)); // Title is slightly larger
+        fontLabel.setFont(new Font("Arial", Font.PLAIN, newFontSize));
+        colourLabel.setFont(new Font("Arial", Font.PLAIN, newFontSize));
+        generalLabel.setFont(new Font("Arial", Font.BOLD, newFontSize + 6)); // Title is slightly larger
+        logoutLabel.setFont(new Font("Arial", Font.PLAIN, newFontSize));
 
+        // You may also want to update the font size of buttons and other components
+        // For example:
+        // logoutButton.setFont(new Font("Arial", Font.BOLD, newFontSize));
+
+        // Store the new font size
+        this.fontSize = newFontSize;
+        mainMenu.setFontSize(newFontSize); // Update in MainMenuGUI if needed
     }
 
     private JPanel createFixedHeightPanel(int height) {
