@@ -14,7 +14,7 @@ import java.time.LocalTime;
 
 public class DayViewPanel extends CalendarViewPanel {
     private final String[] times = {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
-    // Use an array of JPanels for each time slot to hold multiple event boxes horizontally.
+    // Array of panels for each time slot to hold event boxes.
     private JPanel[] eventSlots;
 
     // SQL connection instance.
@@ -40,54 +40,53 @@ public class DayViewPanel extends CalendarViewPanel {
     private void initializeUI() {
         setLayout(new BorderLayout());
 
-        // Timeline panel for the day view. We do not set a fixed size so it resizes with the window.
-        JPanel timelinePanel = new JPanel(new GridBagLayout());
+        // Create a container panel for the timeline (left: time labels, right: event boxes)
+        JPanel timelinePanel = new JPanel(new BorderLayout());
         timelinePanel.setBackground(Color.WHITE);
-        timelinePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Adjusted preferred size to leave room for the bottom navigation.
+        timelinePanel.setPreferredSize(new Dimension(550, 350));
+        timelinePanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
 
-        initializeDayGrid(timelinePanel);
+        // Create left panel for time labels with GridLayout (rows = number of times, 1 column)
+        JPanel leftPanel = new JPanel(new GridLayout(times.length, 1, 5, 5));
+        leftPanel.setBackground(Color.WHITE);
 
-        // Wrap the timelinePanel in a container with left alignment.
+        // Create right panel for event slots with GridLayout (rows = number of times, 1 column)
+        JPanel rightPanel = new JPanel(new GridLayout(times.length, 1, 5, 5));
+        rightPanel.setBackground(Color.WHITE);
+
+        eventSlots = new JPanel[times.length];
+
+        for (int i = 0; i < times.length; i++) {
+            // Time label
+            JLabel timeLabel = new JLabel(times[i] + ":00", SwingConstants.RIGHT);
+            timeLabel.setFont(new Font("Arial", Font.PLAIN, 10));
+            leftPanel.add(timeLabel);
+
+            // Event slot panel
+            JPanel eventSlotPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+            eventSlotPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+            eventSlotPanel.setBackground(Color.WHITE);
+            // Ensure each event slot has a consistent size.
+            eventSlotPanel.setPreferredSize(new Dimension(300, 60));
+            rightPanel.add(eventSlotPanel);
+
+            eventSlots[i] = eventSlotPanel;
+        }
+
+        // Add left and right panels to the timeline panel.
+        timelinePanel.add(leftPanel, BorderLayout.WEST);
+        timelinePanel.add(rightPanel, BorderLayout.CENTER);
+
+        // Wrap the timelinePanel in a container.
         JPanel container = new JPanel(new BorderLayout());
         container.setBackground(Color.WHITE);
         container.add(timelinePanel, BorderLayout.CENTER);
 
-        // Place container in a scroll pane for scrolling if necessary.
+        // Place the container in a scroll pane.
         JScrollPane scrollPane = new JScrollPane(container);
         scrollPane.setBorder(null);
         add(scrollPane, BorderLayout.CENTER);
-    }
-
-    private void initializeDayGrid(JPanel timelinePanel) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        // Allow the components to expand horizontally.
-        gbc.weightx = 0.3;
-
-        // Create an array of panels (one per time slot) to hold event boxes.
-        eventSlots = new JPanel[times.length];
-
-        for (int i = 0; i < times.length; i++) {
-            // Time label on the left.
-            gbc.gridx = 0;
-            gbc.gridy = i;
-            gbc.weightx = 0.2;  // Allocate less horizontal space for time labels.
-            gbc.weighty = 1.0;  // Let each row expand equally.
-            gbc.insets = new Insets(5, 5, 5, 5);
-            JLabel timeLabel = new JLabel(times[i] + ":00", SwingConstants.RIGHT);
-            timeLabel.setFont(new Font("Arial", Font.PLAIN, 10));
-            timelinePanel.add(timeLabel, gbc);
-
-            // Event slot on the right.
-            gbc.gridx = 1;
-            gbc.weightx = 0.8;  // Allocate more horizontal space for event slots.
-            // Create a JPanel with FlowLayout for multiple events.
-            JPanel eventSlotPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-            eventSlotPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-            eventSlotPanel.setBackground(Color.WHITE);
-            timelinePanel.add(eventSlotPanel, gbc);
-            eventSlots[i] = eventSlotPanel;
-        }
     }
 
     @Override
@@ -100,7 +99,7 @@ public class DayViewPanel extends CalendarViewPanel {
 
     /**
      * Render events for the currently selected day by querying the SQL connection.
-     * Only events with a start_date equal to viewStartDate will be fetched and displayed.
+     * Only events with a start_date equal to viewStartDate are fetched and displayed.
      */
     @Override
     public void renderEvents(java.util.List ignored) {
@@ -110,7 +109,6 @@ public class DayViewPanel extends CalendarViewPanel {
             slot.setBackground(Color.WHITE);
         }
 
-        // SQL query to fetch events for the selected day.
         String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
                 "e.`event type`, e.description, e.booked_by, v.venue_name " +
                 "FROM Event e " +
@@ -147,6 +145,7 @@ public class DayViewPanel extends CalendarViewPanel {
                 eventLabel.setOpaque(true);
                 eventLabel.setBackground(determineEventColor(bookedBy));
                 eventLabel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+
                 // Attach the mouse listener to open event details.
                 attachEventListeners(eventLabel, eventId);
 
@@ -165,16 +164,16 @@ public class DayViewPanel extends CalendarViewPanel {
     private Color determineEventColor(String bookedBy) {
         if (bookedBy != null) {
             if (bookedBy.equalsIgnoreCase("operations")) {
-                return new Color(200, 230, 255);  // Light blue for operations.
+                return new Color(200, 230, 255);  // Light blue.
             } else if (bookedBy.equalsIgnoreCase("marketing")) {
-                return new Color(255, 230, 200);  // Light orange for marketing.
+                return new Color(255, 230, 200);  // Light orange.
             }
         }
-        return new Color(230, 255, 200);  // Default green for others.
+        return new Color(230, 255, 200);  // Default green.
     }
 
     /**
-     * Attaches a mouse listener to the event box so that clicking it opens the event detail form.
+     * Attaches a mouse listener to the event label to open the event detail form.
      */
     private void attachEventListeners(JLabel cell, int eventId) {
         Color baseColor = cell.getBackground();

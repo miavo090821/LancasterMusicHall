@@ -137,6 +137,7 @@ public class MainMenuGUI {
         return navigationTab;
     }
 
+
     private JPanel getTopPanel() {
         JPanel topPanel = new JPanel();
         topPanel.setBackground(Color.white);

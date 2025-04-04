@@ -9,12 +9,9 @@ import operations.module.Event;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class CalendarPanel extends JPanel {
@@ -41,9 +38,6 @@ public class CalendarPanel extends JPanel {
         this.mainMenu = mainMenu;
         setLayout(new BorderLayout());
 
-        // Remove sample data initialization
-        // initializeSampleEvents();  <-- Removed
-
         // Create header panel
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(Color.white);
@@ -52,7 +46,7 @@ public class CalendarPanel extends JPanel {
         headerPanel.add(viewRangeLabel);
         add(headerPanel, BorderLayout.NORTH);
 
-        // Create initial view
+        // Create initial view (Week view by default)
         switchToView(CalendarView.WEEK);
         setupBottomPanel(mainMenu);
     }
@@ -72,8 +66,15 @@ public class CalendarPanel extends JPanel {
                 currentViewPanel = new DayViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection());
                 break;
             case MONTH:
-
-//                currentViewPanel = new MonthViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection());
+                // Pass the MonthViewListener callback.
+                currentViewPanel = new MonthViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection(), new MonthViewListener() {
+                    @Override
+                    public void onDayCellClicked(LocalDate date) {
+                        // Switch to WeekViewPanel for the week containing the clicked date.
+                        // For example, call an overloaded switchToView that accepts a date:
+                        switchToView(CalendarView.WEEK, date);
+                    }
+                });
                 break;
         }
 
@@ -82,6 +83,22 @@ public class CalendarPanel extends JPanel {
         revalidate();
         repaint();
     }
+
+//    private void switchToView(CalendarView view, LocalDate date) {
+//        currentView = view;
+//        if (currentViewPanel != null) {
+//            remove(currentViewPanel);
+//        }
+//        if (view == CalendarView.WEEK) {
+//            currentViewPanel = new WeekViewPanel(date, events, mainMenu.getSqlConnection());
+//        }
+//        // (Handle other views if needed)
+//        add(currentViewPanel, BorderLayout.CENTER);
+//        updateHeaderText();
+//        revalidate();
+//        repaint();
+//    }
+
 
 
     private void setupBottomPanel(MainMenuGUI mainMenu) {
@@ -132,9 +149,10 @@ public class CalendarPanel extends JPanel {
         JDateChooser datePicker = new JDateChooser();
         datePicker.setDateFormatString("dd/MM/yyyy");
         datePicker.setPreferredSize(new Dimension(100, 25));
-        datePicker.setDate(new Date());
+        datePicker.setDate(new java.util.Date());
+
         datePicker.addPropertyChangeListener("date", e -> {
-            Date selectedDate = datePicker.getDate();
+            java.util.Date selectedDate = datePicker.getDate();
             if (selectedDate != null) {
                 currentDate = LocalDate.of(
                         selectedDate.getYear() + 1900,
@@ -145,8 +163,6 @@ public class CalendarPanel extends JPanel {
                 updateView();
             }
         });
-
-
         datePickerPanel.add(dateLabel);
         datePickerPanel.add(datePicker);
         rightColumn.add(datePickerPanel);
@@ -163,12 +179,10 @@ public class CalendarPanel extends JPanel {
         JButton todayButton = new JButton("Today");
         todayButton.addActionListener(e -> navigateToToday());
 
-        // In CalendarPanel's bottom panel:
         JButton rightArrow = new JButton(">");
         rightArrow.setFont(new Font("Arial", Font.BOLD, 16));
         rightArrow.setPreferredSize(new Dimension(50, 30));
         rightArrow.addActionListener(e -> navigate(1));
-
 
         mainMenu.stylizeButton(leftArrow);
         mainMenu.stylizeButton(rightArrow);
@@ -191,8 +205,10 @@ public class CalendarPanel extends JPanel {
 
     private void switchView() {
         String selected = (String) viewCombo.getSelectedItem();
-        currentView = CalendarView.valueOf(selected.toUpperCase());
-        switchToView(currentView);
+        if (selected != null) {
+            CalendarView view = CalendarView.valueOf(selected.toUpperCase());
+            switchToView(view);
+        }
     }
 
     private void navigate(int direction) {
@@ -230,8 +246,39 @@ public class CalendarPanel extends JPanel {
     private void showNewBookingForm() {
         Window ownerWindow = SwingUtilities.getWindowAncestor(this);
         Frame ownerFrame = (ownerWindow instanceof Frame) ? (Frame) ownerWindow : null;
-        // Use the SQLConnection from mainMenu.
         NewBookingForm newBookingDialog = new NewBookingForm(ownerFrame, mainMenu.getSqlConnection());
         newBookingDialog.setVisible(true);
+    }
+
+    private void switchToMonthView() {
+        // When switching to Month view, pass a MonthViewListener that calls switchToView(WEEK) with the clicked date.
+        currentViewPanel = new MonthViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection(), new MonthViewListener() {
+            @Override
+            public void onDayCellClicked(LocalDate date) {
+                // Switch to Week view for the week containing the clicked date.
+                // For example:
+                switchToView(CalendarView.WEEK, date);
+            }
+        });
+        add(currentViewPanel, BorderLayout.CENTER);
+        updateHeaderText();
+        revalidate();
+        repaint();
+    }
+
+    // Overload switchToView to accept a date for Week view:
+    private void switchToView(CalendarView view, LocalDate date) {
+        currentView = view;
+        if (currentViewPanel != null) {
+            remove(currentViewPanel);
+        }
+        if (view == CalendarView.WEEK) {
+            currentViewPanel = new WeekViewPanel(date, events, mainMenu.getSqlConnection());
+        }
+        // Handle other views if needed.
+        add(currentViewPanel, BorderLayout.CENTER);
+        updateHeaderText();
+        revalidate();
+        repaint();
     }
 }
