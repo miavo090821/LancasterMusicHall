@@ -1,13 +1,16 @@
 package GUI;
 
-import GUI.EventDetailForm;
+import GUI.MenuPanels.Event.EventDetailForm;
 import Database.SQLConnection;
 import GUI.MenuPanels.Calendar.CalendarViewPanel;
+import GUI.MenuPanels.Event.NewEventForm;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -97,6 +100,76 @@ public class DiaryPanel extends CalendarViewPanel {
         JScrollPane scrollPane = new JScrollPane(timelinePanel);
         scrollPane.setBorder(null);
         add(scrollPane, BorderLayout.CENTER);
+
+        // Add bottom panel with controls
+        add(createBottomPanel(), BorderLayout.SOUTH);
+    }
+
+    /**
+     * Creates the bottom panel with navigation and view controls.
+     */
+    private JPanel createBottomPanel() {
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        bottomPanel.add(Box.createHorizontalGlue());
+
+        // Left column - View controls
+        JPanel leftColumn = new JPanel();
+        leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
+        leftColumn.setBackground(Color.WHITE);
+
+        JPanel viewPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        viewPanel.setBackground(Color.WHITE);
+        viewPanel.add(new JLabel("View:"));
+        JComboBox<String> viewCombo = new JComboBox<>(new String[]{"Day", "Week", "Month"});
+        viewPanel.add(viewCombo);
+        leftColumn.add(viewPanel);
+
+        bottomPanel.add(leftColumn);
+        bottomPanel.add(Box.createHorizontalGlue());
+
+        // Middle column - New Draft button (changed from New Event)
+        JButton newEventButton = new JButton("New Draft");
+        newEventButton.setBackground(new Color(200, 170, 250));
+        newEventButton.setPreferredSize(new Dimension(120, 30));
+        newEventButton.addActionListener(e -> {
+            // Create and show the NewEventForm dialog
+            NewEventForm newEventForm = new NewEventForm(
+                    (Frame) SwingUtilities.getWindowAncestor(this),
+                    sqlCon
+            );
+            newEventForm.setVisible(true);
+
+            // Refresh the calendar after the dialog closes
+            newEventForm.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    refreshView();
+                }
+            });
+        });
+        bottomPanel.add(newEventButton);
+        bottomPanel.add(Box.createHorizontalGlue());
+
+
+        // Right column - Date navigation
+        JPanel rightColumn = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+        rightColumn.setBackground(Color.WHITE);
+
+        JButton prevButton = new JButton("<");
+        prevButton.addActionListener(e -> navigate(-1));
+
+        JButton nextButton = new JButton(">");
+        nextButton.addActionListener(e -> navigate(1));
+
+        rightColumn.add(prevButton);
+        rightColumn.add(nextButton);
+        bottomPanel.add(rightColumn);
+        bottomPanel.add(Box.createHorizontalGlue());
+
+        return bottomPanel;
     }
 
     @Override

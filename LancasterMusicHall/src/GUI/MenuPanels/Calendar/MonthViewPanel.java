@@ -1,7 +1,7 @@
 package GUI.MenuPanels.Calendar;
 
 import Database.SQLConnection;
-import operations.module.Event;
+import operations.entities.Activities.Event;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

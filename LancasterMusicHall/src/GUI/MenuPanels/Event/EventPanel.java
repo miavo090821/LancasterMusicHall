@@ -1,4 +1,4 @@
-package GUI.MenuPanels;
+package GUI.MenuPanels.Event;
 
 import GUI.MainMenuGUI;
 import com.toedter.calendar.JDateChooser;

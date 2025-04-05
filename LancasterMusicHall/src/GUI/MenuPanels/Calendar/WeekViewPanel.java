@@ -1,8 +1,8 @@
 package GUI.MenuPanels.Calendar;
 
 import Database.SQLConnection;
-import GUI.EventDetailForm;
-import operations.module.Event;  // may no longer be used for event details
+import GUI.MenuPanels.Event.EventDetailForm;
+import operations.entities.Activities.Event;
 
 import javax.swing.*;
 import java.awt.*;

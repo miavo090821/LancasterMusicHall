@@ -1,7 +1,7 @@
 package GUI.MenuPanels.Calendar;
 
-import GUI.EventDetailForm;
-import operations.module.Event;
+import GUI.MenuPanels.Event.EventDetailForm;
+import operations.entities.Activities.Event;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,7 +33,7 @@ public abstract class CalendarViewPanel extends JPanel {
                     EventDetailForm eventDetailForm = new EventDetailForm(
                             (Frame) SwingUtilities.getWindowAncestor(CalendarViewPanel.this),
                             getSQLConnection(),
-                            String.valueOf(clickedEvent.getId())
+                            "" + clickedEvent.getId()
                     );
                     eventDetailForm.setVisible(true);
                 }

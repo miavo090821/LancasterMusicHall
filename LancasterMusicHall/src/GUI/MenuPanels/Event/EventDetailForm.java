@@ -1,13 +1,8 @@
-package GUI;
+package GUI.MenuPanels.Event;
 
 import Database.SQLConnection;
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.sql.ResultSet;
 
 public class EventDetailForm extends JDialog {
@@ -16,7 +11,7 @@ public class EventDetailForm extends JDialog {
 
     // Event UI Components
     private JTextField startDateField, endDateField, startTimeField, endTimeField;
-    private JTextField eventNameField, venueNameField, eventTypeField, descriptionField, bookedByField;
+    private JTextField eventNameField, venueNameField, eventTypeField, descriptionField, bookedByField, layoutField;
 
     // You can add more fields as needed
 
@@ -109,7 +104,10 @@ public class EventDetailForm extends JDialog {
         bookedByField.setEditable(false);
         mainPanel.add(bookedByField, gbc);
 
-        // You can add more fields if needed (e.g., client details)
+        // New input fields for Description and Layout.
+        descriptionField = new JTextField();
+        layoutField = new JTextField();
+
 
         // Add a button to close the form
         gbc.gridx = 1; gbc.gridy++;

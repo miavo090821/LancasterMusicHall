@@ -1,10 +1,10 @@
 package GUI;
 
-import GUI.DiaryPanel;
 import Database.SQLConnection;
 import GUI.MenuPanels.*;
+import GUI.MenuPanels.Booking.BookingPanel;
 import GUI.MenuPanels.Calendar.CalendarPanel;
-import GUI.MenuPanels.EventPanel;
+import GUI.MenuPanels.Event.EventPanel;
 import GUI.MenuPanels.Reports.ReportPanel;
 
 import javax.swing.*;
@@ -31,6 +31,7 @@ public class MainMenuGUI {
     private JButton activeButton = null;
     private JPanel cardPanel;
     private CardLayout cardLayout;
+    private int fontSize;
 //    private SQLConnection sqlConnection = new SQLConnection();
 
     public MainMenuGUI(int staffId, SQLConnection sqlConnection) {
@@ -212,5 +213,13 @@ public class MainMenuGUI {
 
     public void logout() {
         // Implement logout functionality if needed.
+    }
+
+    public int getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(int newFontSize) {
+        fontSize = newFontSize;
     }
 }

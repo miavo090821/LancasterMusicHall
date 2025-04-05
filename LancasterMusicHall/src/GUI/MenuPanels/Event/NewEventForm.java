@@ -1,4 +1,4 @@
-package GUI;
+package GUI.MenuPanels.Event;
 
 import Database.SQLConnection;
 import operations.entities.Activities.Event;
@@ -277,6 +277,9 @@ public class NewEventForm extends JDialog {
         private JComboBox<String> eventTypeCombo;
         private JButton calcPriceButton;
         private JLabel eventPriceLabel;
+        // New fields for event description and layout:
+        private JTextField descriptionField;
+        private JTextField layoutField;
 
         public EventDetailPanel() {
             setLayout(new GridLayout(0, 2, 5, 5));
@@ -294,6 +297,10 @@ public class NewEventForm extends JDialog {
             eventTypeCombo = new JComboBox<>(eventTypes);
             calcPriceButton = new JButton("Calc Price");
             eventPriceLabel = new JLabel("£0.00");
+
+            // New input fields for Description and Layout.
+            descriptionField = new JTextField();
+            layoutField = new JTextField();
 
             calcPriceButton.addActionListener(e -> {
                 double price = calculateEventPrice();
@@ -315,6 +322,9 @@ public class NewEventForm extends JDialog {
             add(eventEndTimeField);
             add(new JLabel("Event Type:"));
             add(eventTypeCombo);
+            add(new JLabel("Description:"));  // new
+            add(descriptionField);              // new
+            add(new JLabel("Layout:"));         // new
             add(calcPriceButton);
             add(eventPriceLabel);
         }
@@ -479,27 +489,33 @@ public class NewEventForm extends JDialog {
                 LocalTime startTime = LocalTime.parse(eventStartTimeField.getText().trim());
                 LocalTime endTime = LocalTime.parse(eventEndTimeField.getText().trim());
                 int venueId = mapLocationToVenueId(location);
-                Venue venue = new Venue(venueId, location, "Type", 0);
-                // Parse the price (remove the currency symbol).
+                Venue venue = new Venue(venueId, location, location, 0, "N/A", false, false, 0.0);
                 double price = Double.parseDouble(eventPriceLabel.getText().replaceAll("[£]", ""));
-                // Create a new Event object.
+                String description = descriptionField.getText().trim(); // new
+                String layout = layoutField.getText().trim();           // new
+
+                // Use the outer form's company name field for companyName.
+                String companyName = NewEventForm.this.companyNameField.getText().trim();
+
                 return new Event(
-                        0,               // id
-                        "",              // name (could be set from the event details)
-                        eventType,       // eventType
-                        startDate,
-                        endDate,
-                        startTime,
-                        endTime,
-                        false,           // held
-                        "",              // holdExpiryDate
-                        venue,
-                        null,            // seats (not set)
-                        "",              // bookedBy (set later)
-                        location,        // room (use location)
-                        "",              // companyName (set later)
-                        null,            // contactDetails (set later)
-                        price
+                        0,                 // id (to be generated)
+                        "",                // name (can be set later)
+                        eventType,         // eventType
+                        startDate,         // startDate
+                        endDate,           // endDate
+                        startTime,         // startTime
+                        endTime,           // endTime
+                        false,             // held flag
+                        "",                // holdExpiryDate (if not applicable)
+                        venue,             // venue
+                        null,              // seats (if not applicable)
+                        "",                // bookedBy (placeholder if needed)
+                        location,          // room (using location as room name)
+                        companyName,       // companyName (from outer form)
+                        null,              // contactDetails (if not applicable)
+                        price,             // price
+                        description,       // new description field
+                        layout             // new layout field
                 );
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error collecting event details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);

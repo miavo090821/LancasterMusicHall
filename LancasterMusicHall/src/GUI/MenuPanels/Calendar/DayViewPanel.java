@@ -1,6 +1,6 @@
 package GUI.MenuPanels.Calendar;
 
-import GUI.EventDetailForm;
+import GUI.MenuPanels.Event.EventDetailForm;
 import Database.SQLConnection;
 import javax.swing.*;
 import java.awt.*;

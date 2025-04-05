@@ -1,14 +1,12 @@
 package GUI.MenuPanels.Calendar;
 
 import GUI.MainMenuGUI;
-import GUI.NewBookingForm;
+import GUI.MenuPanels.Booking.NewBookingForm;
 import com.toedter.calendar.JDateChooser;
-import operations.entities.Venue;
-import operations.module.Event;
+import operations.entities.Activities.Event;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
