@@ -19,14 +19,24 @@ public class MainMenuGUI {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainMenuGUI::new);
     }
+    public MainMenuGUI() {
+        // Use 0 to represent a guest or not-logged-in staff.
+        this(0, new SQLConnection());
+    }
+
+    private int staffId;
+    private SQLConnection sqlConnection;
 
     // Track the currently selected navigation button.
     private JButton activeButton = null;
     private JPanel cardPanel;
     private CardLayout cardLayout;
-    private SQLConnection sqlConnection = new SQLConnection();
+//    private SQLConnection sqlConnection = new SQLConnection();
 
-    public MainMenuGUI() {
+    public MainMenuGUI(int staffId, SQLConnection sqlConnection) {
+        this.staffId = staffId;
+        this.sqlConnection = sqlConnection;
+
         JFrame frame = new JFrame("Main Menu");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 800);

@@ -233,9 +233,9 @@ public class NewBookingForm extends JDialog {
             String primaryContact = primaryContactField.getText().trim();
             String telephone = telephoneField.getText().trim();
             String email = emailField.getText().trim();
-            String streetAddress = streetAddressField.getText().trim();  // new
-            String city = cityField.getText().trim();                      // new
-            String postcode = postcodeField.getText().trim();              // new
+            String streetAddress = streetAddressField.getText().trim();
+            String city = cityField.getText().trim();
+            String postcode = postcodeField.getText().trim();
 
             // Collect Booking details.
             String bookingEventName = eventNameField.getText().trim();
@@ -259,13 +259,19 @@ public class NewBookingForm extends JDialog {
             String customerAccount = customerAccountField.getText().trim();
             String customerSortCode = customerSortCodeField.getText().trim();
             LocalDate paymentDueDate = LocalDate.parse(paymentDueDateField.getText().trim(), DATE_FORMATTER);
-            double maxDiscount = Double.parseDouble(maxDiscountField.getText().trim()); // new
+            double maxDiscount = Double.parseDouble(maxDiscountField.getText().trim());
             String paymentStatus = (String) paymentStatusCombo.getSelectedItem();
 
             // Contract details.
             String contractDetails = contractDetailsArea.getText().trim();
 
-            // Call insertFullBooking with the new values.
+            // Pass the logged-in staff id (which may be 0 for guests)
+            Integer staffId = sqlCon.getCurrentStaffId();
+            if (staffId == null) {
+                staffId = 0;
+            }
+
+            // Call insertFullBooking with all the details, including maxDiscount and staffId.
             boolean success = sqlCon.insertFullBooking(
                     bookingEventName,
                     bookingStartDate,
@@ -288,7 +294,7 @@ public class NewBookingForm extends JDialog {
                     contractDetails,
                     contractFile,
                     maxDiscount,
-                    sqlCon.getCurrentStaffId() // Logged-in staff id
+                    staffId
             );
             if (success) {
                 JOptionPane.showMessageDialog(this, "Booking submitted successfully!");
@@ -362,7 +368,6 @@ public class NewBookingForm extends JDialog {
         }
 
         // Calculate price using SQLConnection pricing functions.
-        // A simple class to store the rates for each room.
         class RoomRate {
             double hourly;
             double morningAfternoon;
@@ -378,7 +383,6 @@ public class NewBookingForm extends JDialog {
         }
 
         private RoomRate getRoomRate(String roomName) {
-            // Return the correct RoomRate based on roomName.
             switch (roomName) {
                 case "The Green Room":
                     return new RoomRate(25, 75, 130, 600);
@@ -551,7 +555,6 @@ public class NewBookingForm extends JDialog {
                 return null;
             }
         }
-
     }
 
     // Mapping method for venue ID remains unchanged.
@@ -570,5 +573,4 @@ public class NewBookingForm extends JDialog {
             default: return 1;
         }
     }
-
 }

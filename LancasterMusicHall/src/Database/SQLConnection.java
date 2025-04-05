@@ -96,19 +96,27 @@ public class SQLConnection implements SQLInterface {
     @Override
     public boolean loginStaff(String staffId, String password) {
         boolean valid = false;
-        String query = "SELECT 1 FROM Staff WHERE staff_id = ? AND password = ?";
+        // Use the correct column name, e.g. "staff_id", instead of "id"
+        String query = "SELECT staff_id FROM Staff WHERE staff_id = ? AND password = ?";
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(query)) {
             ps.setString(1, staffId);
             ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
-                valid = rs.next();
+                if (rs.next()) {
+                    valid = true;
+                    // Retrieve the staff id from the correct column and store it.
+                    int id = rs.getInt("staff_id");
+                    setCurrentStaffId(id);
+                    System.out.println("Logged in Staff ID: " + id);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return valid;
     }
+
 
     @Override
     public boolean resetPassword(String staffId, String email, String newPassword) {
@@ -262,8 +270,8 @@ public class SQLConnection implements SQLInterface {
                                      Integer staffId) {
         // 1. Booking: Now includes payment_due_date, staff_id, client_id, and max_discount.
         String insertBooking = "INSERT INTO Booking (booking_DateStart, booking_DateEnd, booking_status, ticket_price, payment_status, payment_due_date, staff_id, client_id, max_discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        // 2. Event: Now includes booking_id, client_id, location, description, layout.
-        String insertEvent = "INSERT INTO Event (name, start_date, end_date, start_time, end_time, event_type, venue_id, booking_id, client_id, location, description, layout) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // 2. Event: Now includes booking_id, client_id, location, description, layout, and max_discount.
+        String insertEvent = "INSERT INTO Event (name, start_date, end_date, start_time, end_time, event_type, venue_id, booking_id, client_id, location, description, layout, max_discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         // 3. Clients: Now includes Street Address, City, Postcode.
         String insertClient = "INSERT INTO Clients (`Company Name`, `Contact Name`, `Phone Number`, `Contact Email`, `Customer Account Number`, `Customer Sort Code`, `Payment Due Date`, `Street Address`, `City`, `Postcode`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         // 4. Contract: remains unchanged.
@@ -345,6 +353,7 @@ public class SQLConnection implements SQLInterface {
                     psEvent.setString(10, event.getRoom());           // location from the event
                     psEvent.setString(11, event.getDescription());      // new description field
                     psEvent.setString(12, event.getLayout());           // new layout field
+                    psEvent.setDouble(13, maxDiscount);                 // send maxDiscount to Event entity
                     psEvent.executeUpdate();
                 }
             }
@@ -368,6 +377,7 @@ public class SQLConnection implements SQLInterface {
             return false;
         }
     }
+
 
 
 

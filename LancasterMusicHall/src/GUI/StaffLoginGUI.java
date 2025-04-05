@@ -139,6 +139,7 @@ public class StaffLoginGUI {
         });
 
         // Action listener for login validation using SQL query.
+        // In StaffLoginGUI.java, update the login action listener as follows:
         enterButton.addActionListener(_ -> {
             String staffId = getStaffID();
             String password = getPassword();
@@ -148,10 +149,16 @@ public class StaffLoginGUI {
                 // Validate credentials using SQLConnection's loginStaff method.
                 boolean isValid = sqlConnection.loginStaff(staffId, password);
                 if (isValid) {
-                    JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    // After successful login, open Main Menu GUI.
-                    new MainMenuGUI();
-                    frame.dispose(); // Close login window.
+                    // Retrieve the current staff id from SQLConnection.
+                    Integer currentStaffId = sqlConnection.getCurrentStaffId();
+                    if (currentStaffId != null) {
+                        System.out.println("Logged in Staff ID: " + currentStaffId);
+                        // Optionally, pass the staff id to the MainMenuGUI.
+                        new MainMenuGUI(currentStaffId, sqlConnection);
+                        frame.dispose(); // Close login window.
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Error retrieving Staff ID from session.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 } else {
                     JOptionPane.showMessageDialog(null, "Invalid Staff ID or Password", "Login Failed", JOptionPane.ERROR_MESSAGE);
                 }
