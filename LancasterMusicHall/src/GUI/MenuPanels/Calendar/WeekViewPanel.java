@@ -161,7 +161,7 @@ public class WeekViewPanel extends CalendarViewPanel {
 
         // Build SQL query to fetch events for the week.
         String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
-                "e.`event type`, e.description, e.booked_by, v.venue_name " +
+                "e.`event_type`, e.description, e.booked_by, v.venue_name " +
                 "FROM Event e " +
                 "LEFT JOIN Venue v ON e.venue_id = v.venue_id " +
                 "WHERE e.start_date BETWEEN ? AND ?";

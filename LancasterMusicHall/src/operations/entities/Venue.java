@@ -1,71 +1,115 @@
 package operations.entities;
 
+import java.math.BigDecimal;
+
 public class Venue {
-    private int venueId;             // ID field
-    private String name;             // e.g., "Main Hall", "Small Hall"
-    private String type;             // e.g., "Hall", "Room", "Rehearsal Space"
-    private int capacity;
+    private int venueId;              // corresponds to venue_id
+    private String venueName;         // corresponds to venue_name
+    private String venueLocation;     // corresponds to venue_location
+    private int venueCapacity;        // corresponds to venue_capacity
+    private String venueLayout;       // corresponds to venue_layout
+    private boolean isFlexibleSeating; // corresponds to is_flexible_seating
+    private boolean isAccessible;     // corresponds to is_accessible
+    private BigDecimal baseRentalCost; // corresponds to base_rental_cost
 
     // Default constructor
     public Venue() {
     }
 
-    // Parameterized constructor
-    public Venue(int venueId, String name, String type, int capacity) {
+    // Parameterized constructor using BigDecimal for baseRentalCost
+    public Venue(int venueId, String venueName, String venueLocation, int venueCapacity, String venueLayout, boolean isFlexibleSeating, boolean isAccessible, BigDecimal baseRentalCost) {
         this.venueId = venueId;
-        this.name = name;
-        this.type = type;
-        this.capacity = capacity;
+        this.venueName = venueName;
+        this.venueLocation = venueLocation;
+        this.venueCapacity = venueCapacity;
+        this.venueLayout = venueLayout;
+        this.isFlexibleSeating = isFlexibleSeating;
+        this.isAccessible = isAccessible;
+        this.baseRentalCost = baseRentalCost;
     }
 
-    // Getter for venueId
+    // Convenience constructor using double for baseRentalCost
+    public Venue(int venueId, String venueName, String venueLocation, int venueCapacity, String venueLayout, boolean isFlexibleSeating, boolean isAccessible, double baseRentalCost) {
+        this(venueId, venueName, venueLocation, venueCapacity, venueLayout, isFlexibleSeating, isAccessible, BigDecimal.valueOf(baseRentalCost));
+    }
+
+    // Getters and setters
+
     public int getVenueId() {
         return venueId;
     }
 
-    // Setter for venueId
     public void setVenueId(int venueId) {
         this.venueId = venueId;
     }
 
-    // Getter for name
-    public String getName() {
-        return name;
+    public String getVenueName() {
+        return venueName;
     }
 
-    // Setter for name
-    public void setName(String name) {
-        this.name = name;
+    public void setVenueName(String venueName) {
+        this.venueName = venueName;
     }
 
-    // Getter for type
-    public String getType() {
-        return type;
+    public String getVenueLocation() {
+        return venueLocation;
     }
 
-    // Setter for type
-    public void setType(String type) {
-        this.type = type;
+    public void setVenueLocation(String venueLocation) {
+        this.venueLocation = venueLocation;
     }
 
-    // Getter for capacity
-    public int getCapacity() {
-        return capacity;
+    public int getVenueCapacity() {
+        return venueCapacity;
     }
 
-    // Setter for capacity
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
+    public void setVenueCapacity(int venueCapacity) {
+        this.venueCapacity = venueCapacity;
+    }
+
+    public String getVenueLayout() {
+        return venueLayout;
+    }
+
+    public void setVenueLayout(String venueLayout) {
+        this.venueLayout = venueLayout;
+    }
+
+    public boolean isFlexibleSeating() {
+        return isFlexibleSeating;
+    }
+
+    public void setFlexibleSeating(boolean flexibleSeating) {
+        isFlexibleSeating = flexibleSeating;
+    }
+
+    public boolean isAccessible() {
+        return isAccessible;
+    }
+
+    public void setAccessible(boolean accessible) {
+        isAccessible = accessible;
+    }
+
+    public BigDecimal getBaseRentalCost() {
+        return baseRentalCost;
+    }
+
+    public void setBaseRentalCost(BigDecimal baseRentalCost) {
+        this.baseRentalCost = baseRentalCost;
     }
 
     @Override
     public String toString() {
         return "Venue{" +
-                "Venue ID=" + venueId +
-                ", Name='" + name + '\'' +
-                ", Type='" + type + '\'' +
-                ", Capacity=" + capacity +
+                "venueId=" + venueId +
+                ", venueName='" + venueName + '\'' +
+                ", venueLocation='" + venueLocation + '\'' +
+                ", venueCapacity=" + venueCapacity +
+                ", venueLayout='" + venueLayout + '\'' +
+                ", isFlexibleSeating=" + isFlexibleSeating +
+                ", isAccessible=" + isAccessible +
+                ", baseRentalCost=" + baseRentalCost +
                 '}';
     }
-
 }

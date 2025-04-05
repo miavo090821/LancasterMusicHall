@@ -131,7 +131,7 @@ public class EventDetailForm extends JDialog {
                 endDateField.setText(rsEvent.getString("end_date"));
                 startTimeField.setText(rsEvent.getString("start_time"));
                 endTimeField.setText(rsEvent.getString("end_time"));
-                eventTypeField.setText(rsEvent.getString("event type"));
+                eventTypeField.setText(rsEvent.getString("event_type"));
                 venueNameField.setText(rsEvent.getString("venue_name"));  // Venue name from join
                 descriptionField.setText(rsEvent.getString("description"));
                 bookedByField.setText(rsEvent.getString("booked_by"));

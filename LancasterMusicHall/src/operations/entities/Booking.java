@@ -10,6 +10,7 @@ public class Booking {
     private LocalDate endDate;
     private LocalTime startTime;
     private LocalTime endTime;
+    private LocalDate paymentDueDate; // New field: Payment due date for the booking
     private Activity activity;
     private Venue venue;
     private boolean held;             // True if booking status is "held", false if confirmed
@@ -28,6 +29,7 @@ public class Booking {
      * @param endDate End date.
      * @param startTime Start time.
      * @param endTime End time.
+     * @param paymentDueDate Payment due date.
      * @param activity Associated Activity.
      * @param venue Associated Venue.
      * @param held True if the booking is on hold; false if confirmed.
@@ -39,7 +41,7 @@ public class Booking {
      * @param contactDetails Contact details (from Client).
      */
     public Booking(int id, LocalDate startDate, LocalDate endDate,
-                   LocalTime startTime, LocalTime endTime,
+                   LocalTime startTime, LocalTime endTime, LocalDate paymentDueDate,
                    Activity activity, Venue venue, boolean held,
                    String holdExpiryDate, List<Seat> seats, String bookedBy,
                    String room, String companyName, ContactDetails contactDetails) {
@@ -48,6 +50,7 @@ public class Booking {
         this.endDate = endDate;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.paymentDueDate = paymentDueDate;
         this.activity = activity;
         this.venue = venue;
         this.held = held;
@@ -99,6 +102,14 @@ public class Booking {
 
     public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
+    }
+
+    public LocalDate getPaymentDueDate() {
+        return paymentDueDate;
+    }
+
+    public void setPaymentDueDate(LocalDate paymentDueDate) {
+        this.paymentDueDate = paymentDueDate;
     }
 
     public Activity getActivity() {
@@ -191,6 +202,7 @@ public class Booking {
         sb.append("End Date: ").append(endDate).append("\n");
         sb.append("Start Time: ").append(startTime).append("\n");
         sb.append("End Time: ").append(endTime).append("\n");
+        sb.append("Payment Due Date: ").append(paymentDueDate != null ? paymentDueDate : "N/A").append("\n");
         sb.append("Booked By (Staff ID): ").append(bookedBy).append("\n");
         sb.append("Room: ").append(room).append("\n");
         sb.append("Company Name: ").append(companyName).append("\n");
@@ -201,7 +213,7 @@ public class Booking {
             sb.append("  Email: ").append(contactDetails.getEmail()).append("\n");
         }
         sb.append("Activity: ").append(getActivityName()).append("\n");
-        sb.append("Venue: ").append(venue != null ? venue.getName() : "N/A").append("\n");
+        sb.append("Venue: ").append(venue != null ? venue.getVenueName() : "N/A").append("\n");
         sb.append("Held: ").append(held).append("\n");
         sb.append("Hold Expiry Date: ").append(holdExpiryDate).append("\n");
         if (seats != null && !seats.isEmpty()) {

@@ -27,13 +27,18 @@ public class Event {
     private double price;              // Calculated price for the event
     private String sortCode;
 
+    // New fields added:
+    private String description;        // Event description
+    private String layout;             // Event layout
+
     public Event() {
     }
 
     public Event(int id, String name, String eventType, LocalDate startDate, LocalDate endDate,
                  LocalTime startTime, LocalTime endTime, boolean held, String holdExpiryDate,
                  Venue venue, List<Seat> seats, String bookedBy, String room,
-                 String companyName, ContactDetails contactDetails, double price) {
+                 String companyName, ContactDetails contactDetails, double price,
+                 String description, String layout) {
         this.id = id;
         this.name = name;
         this.eventType = eventType;
@@ -49,8 +54,9 @@ public class Event {
         this.room = room;
         this.companyName = companyName;
         this.contactDetails = contactDetails;
-        this.sortCode = sortCode;
         this.price = price;
+        this.description = description;
+        this.layout = layout;
     }
 
     // Getters
@@ -118,6 +124,28 @@ public class Event {
         return price;
     }
 
+    public String getSortCode() {
+        return sortCode;
+    }
+
+    /**
+     * Returns the event description.
+     *
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Returns the event layout.
+     *
+     * @return the layout
+     */
+    public String getLayout() {
+        return layout;
+    }
+
     // Setters
     public void setId(int id) {
         this.id = id;
@@ -178,17 +206,31 @@ public class Event {
     public void setContactDetails(ContactDetails contactDetails) {
         this.contactDetails = contactDetails;
     }
-    public String getSortCode() {
-        return sortCode;
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 
     public void setSortCode(String sortCode) {
         this.sortCode = sortCode;
     }
 
+    /**
+     * Sets the event description.
+     *
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public void setPrice(double price) {
-        this.price = price;
+    /**
+     * Sets the event layout.
+     *
+     * @param layout the layout to set
+     */
+    public void setLayout(String layout) {
+        this.layout = layout;
     }
 
     @Override
@@ -210,6 +252,9 @@ public class Event {
                 ", companyName='" + companyName + '\'' +
                 ", contactDetails=" + contactDetails +
                 ", price=" + price +
+                ", sortCode='" + sortCode + '\'' +
+                ", description='" + description + '\'' +
+                ", layout='" + layout + '\'' +
                 '}';
     }
 }
