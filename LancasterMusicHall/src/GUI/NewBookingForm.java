@@ -265,13 +265,14 @@ public class NewBookingForm extends JDialog {
             // Contract details.
             String contractDetails = contractDetailsArea.getText().trim();
 
-            // Pass the logged-in staff id (which may be 0 for guests)
+            // Retrieve the logged-in staff id (or default to 0 for guests).
             Integer staffId = sqlCon.getCurrentStaffId();
             if (staffId == null) {
                 staffId = 0;
             }
 
-            // Call insertFullBooking with all the details, including maxDiscount and staffId.
+            // Call insertFullBooking with all the details.
+            // Note: totalBill is passed as the total_cost for the booking.
             boolean success = sqlCon.insertFullBooking(
                     bookingEventName,
                     bookingStartDate,
@@ -282,7 +283,7 @@ public class NewBookingForm extends JDialog {
                     telephone,
                     email,
                     events,
-                    totalBill,
+                    totalBill,           // total_cost from customer bill
                     ticketPrice,
                     customerAccount,
                     customerSortCode,
@@ -430,7 +431,6 @@ public class NewBookingForm extends JDialog {
                             price = sqlCon.calculateMainHallCost(sqlDate, "daily", 0) * totalDays;
                         }
                         break;
-
                     case "Small_Hall":
                         if (totalDays == 1) {
                             if (startTime.getHour() >= 17) {
@@ -442,7 +442,6 @@ public class NewBookingForm extends JDialog {
                             price = sqlCon.calculateSmallHallCost(sqlDate, "daily", 0) * totalDays;
                         }
                         break;
-
                     case "Rehearsal_Space":
                         if (totalDays == 1) {
                             price = sqlCon.calculateRehearsalCost(sqlDate, "hourly", (int) Math.max(hours, 3));
@@ -452,7 +451,6 @@ public class NewBookingForm extends JDialog {
                             price = sqlCon.calculateRehearsalCost(sqlDate, "daily_long", 0) * totalDays;
                         }
                         break;
-
                     case "Venue":
                         if (totalDays == 1) {
                             if (startTime.getHour() >= 17) {
@@ -464,7 +462,6 @@ public class NewBookingForm extends JDialog {
                             price = sqlCon.calculateVenueCost(sqlDate, "full_day") * totalDays;
                         }
                         break;
-
                     case "The Green Room":
                     case "Brontë Boardroom":
                     case "Dickens Den":
@@ -487,7 +484,6 @@ public class NewBookingForm extends JDialog {
                             price = sqlCon.calculateRoomCost(venueId, location, "All Day") * totalDays;
                         }
                         break;
-
                     default:
                         price = sqlCon.calculateMainHallCost(sqlDate, "hourly", (int) Math.max(hours, 3));
                         break;
@@ -527,7 +523,7 @@ public class NewBookingForm extends JDialog {
                 String description = descriptionField.getText().trim(); // new
                 String layout = layoutField.getText().trim();           // new
 
-                // Use the outer form's company name field for companyName
+                // Use the outer form's company name field for companyName.
                 String companyName = NewBookingForm.this.companyNameField.getText().trim();
 
                 return new Event(

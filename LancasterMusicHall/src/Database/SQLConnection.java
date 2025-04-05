@@ -269,7 +269,7 @@ public class SQLConnection implements SQLInterface {
                                      double maxDiscount,
                                      Integer staffId) {
         // 1. Booking: Now includes payment_due_date, staff_id, client_id, and max_discount.
-        String insertBooking = "INSERT INTO Booking (booking_DateStart, booking_DateEnd, booking_status, ticket_price, payment_status, payment_due_date, staff_id, client_id, max_discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertBooking = "INSERT INTO Booking (booking_DateStart, booking_DateEnd, booking_status, ticket_price, total_cost, payment_status, payment_due_date, staff_id, client_id, max_discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         // 2. Event: Now includes booking_id, client_id, location, description, layout, and max_discount.
         String insertEvent = "INSERT INTO Event (name, start_date, end_date, start_time, end_time, event_type, venue_id, booking_id, client_id, location, description, layout, max_discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         // 3. Clients: Now includes Street Address, City, Postcode.
@@ -309,24 +309,26 @@ public class SQLConnection implements SQLInterface {
             }
 
             // 2. Insert Booking details (including staff_id, client_id, and max_discount) and retrieve the generated booking_id.
+            // 2. Insert Booking details (including staff_id, client_id, total_cost, and max_discount) and retrieve the generated booking_id.
             try (PreparedStatement psBooking = con.prepareStatement(insertBooking, Statement.RETURN_GENERATED_KEYS)) {
                 psBooking.setDate(1, java.sql.Date.valueOf(bookingStartDate));
                 psBooking.setDate(2, java.sql.Date.valueOf(bookingEndDate));
                 psBooking.setString(3, bookingStatus);
                 psBooking.setDouble(4, ticketPrice);
-                psBooking.setString(5, paymentStatus);
+                psBooking.setDouble(5, customerBillTotal); // total_cost
+                psBooking.setString(6, paymentStatus);
                 if (paymentDueDate != null) {
-                    psBooking.setDate(6, java.sql.Date.valueOf(paymentDueDate));
+                    psBooking.setDate(7, java.sql.Date.valueOf(paymentDueDate));
                 } else {
-                    psBooking.setDate(6, null);
+                    psBooking.setDate(7, null);
                 }
                 if (staffId != null) {
-                    psBooking.setInt(7, staffId);
+                    psBooking.setInt(8, staffId);
                 } else {
-                    psBooking.setNull(7, java.sql.Types.INTEGER);
+                    psBooking.setNull(8, java.sql.Types.INTEGER);
                 }
-                psBooking.setInt(8, clientId);
-                psBooking.setDouble(9, maxDiscount);
+                psBooking.setInt(9, clientId);
+                psBooking.setDouble(10, maxDiscount);
                 psBooking.executeUpdate();
                 try (ResultSet rs = psBooking.getGeneratedKeys()) {
                     if (rs.next()) {
@@ -336,6 +338,7 @@ public class SQLConnection implements SQLInterface {
                     }
                 }
             }
+
 
             // 3. Insert each Event.
             for (Event event : events) {
