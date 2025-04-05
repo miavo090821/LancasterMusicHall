@@ -86,13 +86,14 @@ public class DayViewPanel extends CalendarViewPanel {
         // Initialize event slots with reduced height
         eventSlots = new JPanel[times.length];
         for (int i = 0; i < times.length; i++) {
-            JLabel timeLabel = new JLabel(times[i] + ":00", SwingConstants.RIGHT);
-            timeLabel.setFont(new Font("Arial", Font.PLAIN, 10)); // Smaller font
+            JLabel timeLabel = new JLabel(times[i] + ":00", SwingConstants.CENTER); // Changed to CENTER
+            timeLabel.setFont(new Font("Arial", Font.PLAIN, 10));
+            timeLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
             timeLabelsPanel.add(timeLabel);
 
             JPanel eventSlot = new JPanel(new BorderLayout());
             eventSlot.setBackground(Color.WHITE);
-            eventSlot.setPreferredSize(new Dimension(0, 40)); // Reduced from 60 to 40
+            eventSlot.setPreferredSize(new Dimension(0, 40));
             eventSlots[i] = eventSlot;
             eventSlotsPanel.add(eventSlot);
         }
@@ -219,9 +220,18 @@ public class DayViewPanel extends CalendarViewPanel {
 
     private JPanel createEventPanel(EventInfo event, boolean isFirstSlot, boolean isLastSlot) {
         JPanel panel = new JPanel(new BorderLayout());
+
+        if (event == null) {
+            // This is an empty slot - show guidelines
+            panel.setBackground(Color.WHITE);
+            panel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(240, 240, 240))); // Light gray bottom border
+            return panel;
+        }
+
+        // Existing event panel code
         panel.setBackground(eventColors.get(event.eventId));
 
-        // Customize borders (unchanged)
+        // Customize borders for events
         if (isFirstSlot && isLastSlot) {
             panel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.DARK_GRAY));
         } else if (isFirstSlot) {
@@ -239,7 +249,7 @@ public class DayViewPanel extends CalendarViewPanel {
                             event.startTime, event.endTime),
                     SwingConstants.CENTER
             );
-            label.setFont(new Font("Arial", Font.PLAIN, 9)); // Reduced from 10 to 9
+            label.setFont(new Font("Arial", Font.PLAIN, 9));
             panel.add(label, BorderLayout.CENTER);
         }
 

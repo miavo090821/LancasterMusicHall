@@ -1,6 +1,6 @@
 package operations.module;
 
-import operations.entities.Activities.Event;
+import operations.entities.Event;
 
 import java.util.ArrayList;
 import java.util.List;

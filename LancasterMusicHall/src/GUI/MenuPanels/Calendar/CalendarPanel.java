@@ -3,7 +3,7 @@ package GUI.MenuPanels.Calendar;
 import GUI.MainMenuGUI;
 import GUI.MenuPanels.Booking.NewBookingForm;
 import com.toedter.calendar.JDateChooser;
-import operations.entities.Activities.Event;
+import operations.entities.Event;
 
 import javax.swing.*;
 import java.awt.*;

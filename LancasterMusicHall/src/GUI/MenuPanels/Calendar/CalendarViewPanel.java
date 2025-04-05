@@ -1,7 +1,7 @@
 package GUI.MenuPanels.Calendar;
 
 import GUI.MenuPanels.Event.EventDetailForm;
-import operations.entities.Activities.Event;
+import operations.entities.Event;
 
 import javax.swing.*;
 import java.awt.*;

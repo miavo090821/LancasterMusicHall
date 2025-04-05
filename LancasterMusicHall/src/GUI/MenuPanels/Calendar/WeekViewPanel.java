@@ -2,7 +2,7 @@ package GUI.MenuPanels.Calendar;
 
 import Database.SQLConnection;
 import GUI.MenuPanels.Event.EventDetailForm;
-import operations.entities.Activities.Event;
+import operations.entities.Event;
 
 import javax.swing.*;
 import java.awt.*;

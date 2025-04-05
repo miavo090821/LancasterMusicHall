@@ -1,11 +1,6 @@
 package Database;
 
-import operations.entities.Activity;
-import operations.entities.Booking;
-import operations.entities.ContactDetails;
-import operations.entities.Seat;
-import operations.entities.Venue;
-import operations.entities.Activities.Event;
+import operations.entities.Event;
 import java.io.File;
 
 import javax.swing.table.DefaultTableModel;
@@ -14,12 +9,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.sql.Statement;
 
 

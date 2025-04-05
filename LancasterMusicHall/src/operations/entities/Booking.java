@@ -8,8 +8,6 @@ public class Booking {
     private int id;
     private LocalDate startDate;
     private LocalDate endDate;
-    private LocalTime startTime;
-    private LocalTime endTime;
     private LocalDate paymentDueDate; // New field: Payment due date for the booking
     private Activity activity;
     private Venue venue;
@@ -27,9 +25,7 @@ public class Booking {
      * @param id Unique booking ID.
      * @param startDate Start date.
      * @param endDate End date.
-     * @param startTime Start time.
-     * @param endTime End time.
-     * @param paymentDueDate Payment due date.
+     * @param paymentDueDate Payment due date.  `1
      * @param activity Associated Activity.
      * @param venue Associated Venue.
      * @param held True if the booking is on hold; false if confirmed.
@@ -41,15 +37,13 @@ public class Booking {
      * @param contactDetails Contact details (from Client).
      */
     public Booking(int id, LocalDate startDate, LocalDate endDate,
-                   LocalTime startTime, LocalTime endTime, LocalDate paymentDueDate,
+                    LocalDate paymentDueDate,
                    Activity activity, Venue venue, boolean held,
                    String holdExpiryDate, List<Seat> seats, String bookedBy,
                    String room, String companyName, ContactDetails contactDetails) {
         this.id = id;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.startTime = startTime;
-        this.endTime = endTime;
         this.paymentDueDate = paymentDueDate;
         this.activity = activity;
         this.venue = venue;
@@ -86,22 +80,6 @@ public class Booking {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
-    }
-
-    public LocalTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LocalTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public LocalTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalTime endTime) {
-        this.endTime = endTime;
     }
 
     public LocalDate getPaymentDueDate() {
@@ -200,8 +178,6 @@ public class Booking {
         sb.append("Booking ID: ").append(id).append("\n");
         sb.append("Start Date: ").append(startDate).append("\n");
         sb.append("End Date: ").append(endDate).append("\n");
-        sb.append("Start Time: ").append(startTime).append("\n");
-        sb.append("End Time: ").append(endTime).append("\n");
         sb.append("Payment Due Date: ").append(paymentDueDate != null ? paymentDueDate : "N/A").append("\n");
         sb.append("Booked By (Staff ID): ").append(bookedBy).append("\n");
         sb.append("Room: ").append(room).append("\n");

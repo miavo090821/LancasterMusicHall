@@ -1,7 +1,6 @@
 package boxoffice;
 
-import operations.entities.Booking;
-import operations.entities.FinancialRecord;
+import operations.entities.Event;
 import operations.entities.Seat;
 
 import java.time.LocalDate;
@@ -12,10 +11,10 @@ public interface BoxOfficeInterface {
     // --- Calendar Access ---
 
     /**
-     * Get all bookings (shows, films, meetings, etc.) scheduled within a specific date range.
+     * Get all Events (shows, films, meetings, etc.) scheduled within a specific date range.
      * @param startDate The start of the date range.
      * @param endDate   The end of the date range.
-     * @return A list of bookings happening within this period, each booking has a:
+     * @return A list of Events happening within this period, each Event has a:
      * - Title
      * - Date & Time
      * - Location (room/venue)
@@ -23,42 +22,42 @@ public interface BoxOfficeInterface {
      * - Capacity
      * - Seating plan
      */
-    List<Booking> getBookingsByDateRange(LocalDate startDate, LocalDate endDate);
+    List<Event> getEventsByDateRange(LocalDate startDate, LocalDate endDate);
 
     /**
-     * Notify the Box Office when a booking changes (e.g., if a show is rescheduled or canceled).
-     * @param bookingId The ID of the booking being updated.
-     * @param updatedDetails The new booking details.
+     * Notify the Box Office when a Event changes (e.g., if a show is rescheduled or canceled).
+     * @param EventId The ID of the Event being updated.
+     * @param updatedDetails The new Event details.
      * @return True if the update was successful.
      */
-    boolean notifyBookingChanges(int bookingId, Booking updatedDetails);
+    boolean notifyEventChanges(int EventId, Event updatedDetails);
 
     // --- Seating Plans ---
 
     /**
      * Get the seating chart for a specific event.
-     * @param bookingId The ID of the event.
+     * @param EventId The ID of the event.
      * @return A list of seats showing:
      * - Seat row, and number
      * - Whether they are available, sold, held, or have restricted views
      * - If they are wheelchair-accessible or their companions
      */
-    List<Seat> getSeatingPlanForBooking(int bookingId);
+    List<Seat> getSeatingPlanForEvent(int EventId);
 
     /**
      * Update the seating chart for an event (e.g., mark seats as wheelchair-accessible or restricted view).
-     * @param bookingId The ID of the event.
+     * @param EventId The ID of the event.
      * @param updatedSeats The new seating details.
      * @return True if the update was successful.
      */
-    boolean updateSeatingPlan(int bookingId, List<Seat> updatedSeats);
+    boolean updateSeatingPlan(int EventId, List<Seat> updatedSeats);
 
     /**
      * Get a list of seats reserved for wheelchair users and their companions.
-     * @param bookingId The ID of the event.
+     * @param EventId The ID of the event.
      * @return A list of seats specifically held for accessibility.
      */
-    List<Seat> getHeldAccessibleSeats(int bookingId);
+    List<Seat> getHeldAccessibleSeats(int EventId);
 }
 
 // Not sure if they need these features, since they weren’t mentioned in the requirements.
@@ -76,7 +75,7 @@ public interface BoxOfficeInterface {
 //
 // /**
 //  * Get a financial report for a specific event, including revenue, costs, and profit.
-//  * @param bookingId The ID of the event.
+//  * @param EventId The ID of the event.
 //  * @return A detailed financial breakdown.
 //  */
-// FinancialRecord getRevenueBreakdownForBooking(int bookingId);
+// FinancialRecord getRevenueBreakdownForEvent(int EventId);

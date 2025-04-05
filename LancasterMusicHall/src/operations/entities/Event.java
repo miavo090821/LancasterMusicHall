@@ -1,12 +1,8 @@
-package operations.entities.Activities;
+package operations.entities;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-
-import operations.entities.ContactDetails;
-import operations.entities.Seat;
-import operations.entities.Venue;
 
 public class Event {
     private int id;

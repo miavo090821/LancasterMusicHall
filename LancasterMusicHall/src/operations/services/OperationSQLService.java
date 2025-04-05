@@ -2,7 +2,7 @@ package operations.services;
 
 import Database.SQLConnection;
 import Database.DatabaseUpdateListener;
-import operations.entities.Activities.Event;
+import operations.entities.Event;
 import operations.interfaces.OperationsInterface;
 import java.time.LocalDate;
 import java.time.LocalTime;

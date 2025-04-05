@@ -1,7 +1,7 @@
 package GUI.MenuPanels.Event;
 
 import Database.SQLConnection;
-import operations.entities.Activities.Event;
+import operations.entities.Event;
 import operations.entities.Venue;
 
 import javax.swing.*;
