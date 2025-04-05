@@ -1,7 +1,8 @@
-package GUI.MenuPanels.Calendar;
-
+package GUI.MenuPanels.Reports;
 import Database.SQLConnection;
+
 import operations.module.Event;
+import GUI.MenuPanels.Calendar.CalendarViewPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,7 +17,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class MonthViewPanel extends CalendarViewPanel {
+public class DairyPanel extends CalendarViewPanel {
     private SQLConnection sqlCon;
     private DayCellPanel[][] dayCells;
     private LocalDate viewStartDate;
@@ -25,14 +26,13 @@ public class MonthViewPanel extends CalendarViewPanel {
     private List<Event> events;
 
     // The listener to notify when a day is clicked.
-    private MonthViewListener listener;
+//    private DairyPanelListener listener;
 
-    // Constructor now accepts MonthViewListener as well.
-    public MonthViewPanel(LocalDate startDate, List<Event> events, SQLConnection sqlCon, MonthViewListener listener) {
+    public DairyPanel(LocalDate startDate, List<Event> events, SQLConnection sqlCon) {
         super(startDate, events, sqlCon);
         this.sqlCon = sqlCon;
         this.events = events;
-        this.listener = listener;
+//        this.listener = listener;
         // Set view to the first day of the month.
         this.viewStartDate = startDate.withDayOfMonth(1);
         this.viewEndDate = viewStartDate.plusMonths(1).minusDays(1);
@@ -55,7 +55,7 @@ public class MonthViewPanel extends CalendarViewPanel {
     private void initializeUI() {
         setLayout(new BorderLayout());
 
-        // Header panel displays the month name and a note.
+        // Header panel displays the month name and a diary-specific note.
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(Color.WHITE);
         headerPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -63,12 +63,11 @@ public class MonthViewPanel extends CalendarViewPanel {
         // Month header label.
         JLabel monthHeader = new JLabel(viewStartDate.format(monthYearFormatter), SwingConstants.CENTER);
         monthHeader.setFont(new Font("Arial", Font.BOLD, 16));
-        // Store the header label for later updates.
         this.putClientProperty("monthHeader", monthHeader);
         headerPanel.add(monthHeader, BorderLayout.NORTH);
 
-        // Note label with instructions.
-        JLabel noteLabel = new JLabel("Select any date to view that week's schedule", SwingConstants.CENTER);
+        // Diary note label with instructions.
+        JLabel noteLabel = new JLabel("Select a date to view diary entries", SwingConstants.CENTER);
         noteLabel.setFont(new Font("Arial", Font.ITALIC, 12));
         noteLabel.setForeground(Color.DARK_GRAY);
         headerPanel.add(noteLabel, BorderLayout.SOUTH);
@@ -97,7 +96,7 @@ public class MonthViewPanel extends CalendarViewPanel {
         YearMonth yearMonth = YearMonth.from(viewStartDate);
         int daysInMonth = yearMonth.lengthOfMonth();
         LocalDate firstOfMonth = viewStartDate.withDayOfMonth(1);
-        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue() - 1; // Monday=0
+        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue() - 1; // Monday = 0
 
         dayCells = new DayCellPanel[6][7];
         int totalCells = 42;
@@ -112,27 +111,18 @@ public class MonthViewPanel extends CalendarViewPanel {
                 LocalDate cellDate = viewStartDate.withDayOfMonth(dayCounter);
                 DayCellPanel cell = new DayCellPanel(dayCounter, cellDate);
                 // When the cell is clicked, notify the listener.
-                cell.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        onDayCellClicked(cell.getDate());
-                    }
-                });
+//                cell.addMouseListener(new MouseAdapter() {
+//                    @Override
+//                    public void mouseClicked(MouseEvent e) {
+//                        onDayCellClicked(cell.getDate());
+//                    }
+//                });
                 dayCells[i / 7][i % 7] = cell;
                 gridPanel.add(cell);
                 dayCounter++;
             }
         }
     }
-
-    /**
-     * Called when a day cell is clicked. It calls the listener's method.
-     */
-//    private void onDayCellClicked(LocalDate date) {
-//        if (listener != null) {
-//            listener.onDayCellClicked(date);
-//        }
-//    }
 
     @Override
     public void navigate(int direction) {
@@ -202,20 +192,11 @@ public class MonthViewPanel extends CalendarViewPanel {
         repaint();
     }
 
+
+
     // ---------------------------------------------------------
     // Inner class: DayCellPanel
     // ---------------------------------------------------------
-    /**
-     * Called when a day cell is clicked.
-     * It notifies the listener.
-     */
-    private void onDayCellClicked(LocalDate date) {
-        if (listener != null) {
-            listener.onDayCellClicked(date);
-        }
-    }
-
-    // Inner class: DayCellPanel (unchanged except that it calls MonthViewPanel.this.onDayCellClicked)
     public class DayCellPanel extends JPanel {
         private JLabel dayLabel;
         private JPanel eventsPanel;
@@ -241,13 +222,13 @@ public class MonthViewPanel extends CalendarViewPanel {
             eventsScroll.setBorder(null);
             add(eventsScroll, BorderLayout.CENTER);
 
-            // Add recursive mouse listener so that clicks anywhere trigger navigation.
-            addMouseListenerRecursively(this, new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    MonthViewPanel.this.onDayCellClicked(getDate());
-                }
-            });
+//            // Recursive mouse listener so that clicks anywhere trigger navigation.
+//            addMouseListenerRecursively(this, new MouseAdapter() {
+//                @Override
+//                public void mouseClicked(MouseEvent e) {
+//                    DairyPanel.this.onDayCellClicked(getDate());
+//                }
+//            });
         }
 
         public LocalDate getDate() {
@@ -272,7 +253,7 @@ public class MonthViewPanel extends CalendarViewPanel {
             repaint();
         }
 
-        private void addMouseListenerRecursively(Component comp, java.awt.event.MouseListener listener) {
+        private void addMouseListenerRecursively(Component comp, MouseAdapter listener) {
             comp.addMouseListener(listener);
             if (comp instanceof Container) {
                 for (Component child : ((Container) comp).getComponents()) {

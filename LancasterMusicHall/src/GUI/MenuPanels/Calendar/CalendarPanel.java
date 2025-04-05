@@ -83,24 +83,6 @@ public class CalendarPanel extends JPanel {
         revalidate();
         repaint();
     }
-
-//    private void switchToView(CalendarView view, LocalDate date) {
-//        currentView = view;
-//        if (currentViewPanel != null) {
-//            remove(currentViewPanel);
-//        }
-//        if (view == CalendarView.WEEK) {
-//            currentViewPanel = new WeekViewPanel(date, events, mainMenu.getSqlConnection());
-//        }
-//        // (Handle other views if needed)
-//        add(currentViewPanel, BorderLayout.CENTER);
-//        updateHeaderText();
-//        revalidate();
-//        repaint();
-//    }
-
-
-
     private void setupBottomPanel(MainMenuGUI mainMenu) {
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(Color.WHITE);

@@ -19,6 +19,7 @@ public class NewBookingForm extends JDialog {
     private SQLConnection sqlCon;
 
     // Date formatter for dd/MM/yyyy format.
+    // Date formatter for dd/MM/yyyy format.
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // --- Client Details Fields ---
@@ -29,6 +30,10 @@ public class NewBookingForm extends JDialog {
     private JCheckBox saveCompanyCheck;
     private JButton contractUploadButton;
     private File contractFile = null;
+
+    // --- Contract Details Fields ---
+    private JTextArea contractDetailsArea;
+    private JLabel contractFileLabel; // To display the name of the uploaded file
 
     // --- Booking Details Fields ---
     private JTextField eventNameField;
@@ -91,6 +96,17 @@ public class NewBookingForm extends JDialog {
         clientPanel.add(new JLabel("Contract Upload:"));
         clientPanel.add(contractUploadButton);
 
+        // --- Contract Details Panel ---
+        JPanel contractPanel = new JPanel(new BorderLayout(5, 5));
+        contractPanel.setBorder(BorderFactory.createTitledBorder("Contract Details"));
+        contractDetailsArea = new JTextArea(4, 20);
+        JScrollPane contractScrollPane = new JScrollPane(contractDetailsArea);
+        contractPanel.add(new JLabel("Enter contract details:"), BorderLayout.NORTH);
+        contractPanel.add(contractScrollPane, BorderLayout.CENTER);
+        // Label to show the uploaded file name.
+        contractFileLabel = new JLabel("No contract file uploaded.");
+        contractPanel.add(contractFileLabel, BorderLayout.SOUTH);
+
         // --- Booking Details Panel ---
         JPanel bookingPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         bookingPanel.setBorder(BorderFactory.createTitledBorder("Booking Details"));
@@ -130,9 +146,7 @@ public class NewBookingForm extends JDialog {
         customerBillTotalLabel = new JLabel("Customer Bill Total: £0.00");
         ticketPriceField = new JTextField();
         customerAccountField = new JTextField();
-
         customerSortCodeField = new JTextField();
-
         paymentDueDateField = new JTextField("10/04/2025");
         String[] paymentStatusOptions = {"Paid", "Pending", "Overdue"};
         paymentStatusCombo = new JComboBox<>(paymentStatusOptions);
@@ -143,11 +157,8 @@ public class NewBookingForm extends JDialog {
         pricingPanel.add(ticketPriceField);
         pricingPanel.add(new JLabel("Customer Account Number:"));
         pricingPanel.add(customerAccountField);
-
         pricingPanel.add(new JLabel("Customer Sort Code:"));
-
         pricingPanel.add(customerSortCodeField);
-
         pricingPanel.add(new JLabel("Payment Due Date (dd/MM/yyyy):"));
         pricingPanel.add(paymentDueDateField);
         pricingPanel.add(new JLabel("Payment Status:"));
@@ -159,6 +170,8 @@ public class NewBookingForm extends JDialog {
 
         // Add all panels to the main panel.
         mainPanel.add(clientPanel);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(contractPanel);
         mainPanel.add(Box.createVerticalStrut(10));
         mainPanel.add(bookingPanel);
         mainPanel.add(Box.createVerticalStrut(10));
@@ -187,7 +200,6 @@ public class NewBookingForm extends JDialog {
         customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
     }
 
-
     // Creates and adds a new EventDetailPanel to the events container.
     private void addNewEventPanel() {
         EventDetailPanel eventPanel = new EventDetailPanel();
@@ -200,11 +212,13 @@ public class NewBookingForm extends JDialog {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             contractFile = fileChooser.getSelectedFile();
+            // Update the label to display the selected file name.
+            contractFileLabel.setText("Uploaded: " + contractFile.getName());
             JOptionPane.showMessageDialog(this, "Selected contract: " + contractFile.getName());
         }
     }
 
-    // On submit, collect client, booking, and event details from all panels.
+    // On submit, collect client, booking, contract, and event details from all panels.
     private void handleSubmitBooking(ActionEvent e) {
         try {
             // Collect Client details.
@@ -239,8 +253,11 @@ public class NewBookingForm extends JDialog {
             LocalDate paymentDueDate = LocalDate.parse(paymentDueDateField.getText().trim(), DATE_FORMATTER);
             String paymentStatus = (String) paymentStatusCombo.getSelectedItem();
 
-            // Call the SQLConnection.insertFullBooking method (must be implemented in SQLConnection)
+            // Collect contract details.
+            String contractDetails = contractDetailsArea.getText().trim();
 
+            // Call the SQLConnection.insertFullBooking method.
+            // Notice the additional parameter: sqlCon.getCurrentStaffId() is passed as the staff id.
             boolean success = sqlCon.insertFullBooking(
                     bookingEventName,
                     bookingStartDate,
@@ -257,7 +274,9 @@ public class NewBookingForm extends JDialog {
                     customerSortCode,
                     paymentDueDate,
                     paymentStatus,
-                    contractFile
+                    contractDetails,
+                    contractFile,
+                    sqlCon.getCurrentStaffId() // Pass the logged-in staff id here.
             );
             if (success) {
                 JOptionPane.showMessageDialog(this, "Booking submitted successfully!");
@@ -306,7 +325,6 @@ public class NewBookingForm extends JDialog {
                 updateCustomerBillTotal();
             });
 
-
             add(new JLabel("Event Start Date (dd/MM/yyyy):"));
             add(eventStartDateField);
             add(new JLabel("Event End Date (dd/MM/yyyy):"));
@@ -324,7 +342,6 @@ public class NewBookingForm extends JDialog {
         }
 
         // Calculate price using SQLConnection pricing functions.
-
         // A simple class to store the rates for each room.
         class RoomRate {
             double hourly;
@@ -356,7 +373,6 @@ public class NewBookingForm extends JDialog {
                 case "Chekhov Chamber":
                     return new RoomRate(38, 110, 160, 850);
                 default:
-                    // You might throw an exception or return a default rate if room is not found.
                     return new RoomRate(0, 0, 0, 0);
             }
         }
@@ -449,7 +465,6 @@ public class NewBookingForm extends JDialog {
                         break;
 
                     default:
-                        // Fallback to main hall hourly
                         price = sqlCon.calculateMainHallCost(sqlDate, "hourly", (int) Math.max(hours, 3));
                         break;
                 }
@@ -466,12 +481,10 @@ public class NewBookingForm extends JDialog {
                     String priceStr = panel.eventPriceLabel.getText().replaceAll("[£]", "").trim();
                     totalBill += Double.parseDouble(priceStr);
                 } catch (NumberFormatException e) {
-                    // Ignore if parsing fails
                 }
             }
             customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
         }
-
 
         // Collect data from this panel and return an Event object.
         public Event getEvent() {
@@ -482,27 +495,27 @@ public class NewBookingForm extends JDialog {
                 String location = (String) locationCombo.getSelectedItem();
                 LocalTime startTime = LocalTime.parse(eventStartTimeField.getText().trim());
                 LocalTime endTime = LocalTime.parse(eventEndTimeField.getText().trim());
+                // Map the selected location to its corresponding venue_id.
                 int venueId = mapLocationToVenueId(location);
-                Venue venue = new Venue(venueId, location, "Type", 0);
-                // Parse the price (remove the currency symbol).
+                // Create a Venue object that matches the Venue table structure.
+                Venue venue = new Venue(venueId, location, location, 0, "N/A", false, false, 0.0);
                 double price = Double.parseDouble(eventPriceLabel.getText().replaceAll("[£]", ""));
-                // Create a new Event object.
                 return new Event(
-                        0,               // id
-                        "",              // name (could be set from the booking details)
-                        eventType,       // eventType
+                        0,              // id (to be generated)
+                        "",             // name (can be set later)
+                        eventType,
                         startDate,
                         endDate,
                         startTime,
                         endTime,
-                        false,           // held
-                        "",              // holdExpiryDate
+                        false,          // held flag
+                        "",
                         venue,
-                        null,            // seats (not set)
-                        "",              // bookedBy (set later)
-                        location,        // room (use location)
-                        "",              // companyName (set later)
-                        null,            // contactDetails (set later)
+                        null,
+                        "",
+                        location,
+                        "",
+                        null,
                         price
                 );
             } catch (Exception ex) {
@@ -539,4 +552,5 @@ public class NewBookingForm extends JDialog {
                 return 1;
         }
     }
+
 }

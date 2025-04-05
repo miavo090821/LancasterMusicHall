@@ -1,5 +1,6 @@
 package GUI;
 
+import GUI.DiaryPanel;
 import Database.SQLConnection;
 import GUI.MenuPanels.*;
 import GUI.MenuPanels.Calendar.CalendarPanel;
@@ -11,18 +12,19 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
 
-// Main class to run both Part 1 and Part 2
 public class MainMenuGUI {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainMenuGUI::new);
     }
-    // Create the navigation bar
-    private JButton activeButton = null; // Track the currently selected button
+
+    // Track the currently selected navigation button.
+    private JButton activeButton = null;
     private JPanel cardPanel;
     private CardLayout cardLayout;
     private SQLConnection sqlConnection = new SQLConnection();
-
 
     public MainMenuGUI() {
         JFrame frame = new JFrame("Main Menu");
@@ -30,22 +32,24 @@ public class MainMenuGUI {
         frame.setSize(800, 800);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
-        // Create navigation bar
+        // Create navigation bar.
         JPanel navBar = createNavBar();
 
-        // Create main content area using CardLayout
+        // Create main content area using CardLayout.
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
 
-        CalendarPanel calendar = new CalendarPanel(this );
+        // Create panels for different sections.
+        CalendarPanel calendar = new CalendarPanel(this);
         EventPanel event = new EventPanel(this, cardLayout, cardPanel);
         ReportPanel report = new ReportPanel(this, cardLayout, cardPanel);
         HomePanel home = new HomePanel(this);
         BookingPanel booking = new BookingPanel(this);
-        DiaryPanel diary = new DiaryPanel(this, cardLayout, cardPanel);
+        // Instantiate the diary panel using the updated constructor.
+        DiaryPanel diary = new DiaryPanel(LocalDate.now(), new ArrayList<>(), sqlConnection);
         SettingsPanel settings = new SettingsPanel(this);
 
-        // Add different sections (cards) to the panel
+        // Add panels (cards) to the cardPanel.
         cardPanel.add(home, "Home");
         cardPanel.add(calendar, "Calendar");
         cardPanel.add(diary, "Diary");
@@ -54,7 +58,7 @@ public class MainMenuGUI {
         cardPanel.add(report, "Reports");
         cardPanel.add(settings, "Settings");
 
-        // Add components to frame
+        // Add components to frame.
         frame.add(getTopPanel());
         frame.add(navBar);
         frame.add(cardPanel);
@@ -66,35 +70,35 @@ public class MainMenuGUI {
 
     private JPanel createNavBar() {
         JPanel navigationTab = new JPanel();
-        navigationTab.setPreferredSize(new Dimension(600, 70)); // Ensure consistent height
+        navigationTab.setPreferredSize(new Dimension(600, 70)); // Ensure consistent height.
         navigationTab.setBackground(Color.WHITE);
 
         JPanel navBar = new JPanel();
-        navBar.setLayout(new GridLayout(1, 6, 0, 0)); // 1 row, 5 columns
-        navBar.setPreferredSize(new Dimension(550, 50)); // Fixed width and height
-        navBar.setBackground(new Color(200, 170, 230)); // Purple background
-        navBar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Full black border
+        navBar.setLayout(new GridLayout(1, 6, 0, 0)); // 1 row, 6 columns.
+        navBar.setPreferredSize(new Dimension(550, 50)); // Fixed width and height.
+        navBar.setBackground(new Color(200, 170, 230)); // Purple background.
+        navBar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Full black border.
 
-        String[] tabs = {"Home", "Calendar", "Diary","Booking", "Reports", "Settings"};
+        String[] tabs = {"Home", "Calendar", "Diary", "Booking", "Reports", "Settings"};
 
         for (String tab : tabs) {
             JButton button = new JButton(tab);
             button.setFont(new Font("Arial", Font.BOLD, 16));
-            button.setPreferredSize(new Dimension(100, 70)); // Match navBar height
+            button.setPreferredSize(new Dimension(100, 70)); // Match navBar height.
 
-            // Default button styling
+            // Default button styling.
             button.setBackground(new Color(170, 136, 200));
             button.setFocusPainted(false);
             button.setContentAreaFilled(true);
-            button.setBorder(new EmptyBorder(0, 0, 0, 0)); // Remove extra padding
+            button.setBorder(new EmptyBorder(0, 0, 0, 0)); // Remove extra padding.
             button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            // Hover and selection colors
+            // Hover and selection colors.
             Color defaultColor = new Color(170, 136, 200);
-            Color hoverColor = new Color(210, 180, 255); // Light purple hover
-            Color borderColor = new Color(128, 0, 128); // Purple outline
+            Color hoverColor = new Color(210, 180, 255); // Light purple hover.
+            Color borderColor = new Color(128, 0, 128); // Purple outline.
 
-            // Hover effect
+            // Hover effect.
             button.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
@@ -113,20 +117,20 @@ public class MainMenuGUI {
                 }
             });
 
-            // Click action to switch tabs and highlight the active button
+            // Click action to switch tabs and highlight the active button.
             button.addActionListener(_ -> {
                 if (activeButton != null) {
-                    // Reset previous active button
+                    // Reset previous active button.
                     activeButton.setBackground(defaultColor);
                     activeButton.setBorder(BorderFactory.createEmptyBorder());
                 }
 
-                // Set new active button
+                // Set new active button.
                 activeButton = button;
                 button.setBackground(hoverColor);
                 button.setBorder(BorderFactory.createLineBorder(borderColor, 2));
 
-                // Switch to the selected panel
+                // Switch to the selected panel.
                 cardLayout.show(cardPanel, tab);
             });
 
@@ -137,10 +141,9 @@ public class MainMenuGUI {
         return navigationTab;
     }
 
-
     private JPanel getTopPanel() {
         JPanel topPanel = new JPanel();
-        topPanel.setBackground(Color.white);
+        topPanel.setBackground(Color.WHITE);
         topPanel.setPreferredSize(new Dimension(600, 40));
 
         JLabel titleLabel = new JLabel("Lancaster Music Hall");
@@ -153,7 +156,7 @@ public class MainMenuGUI {
     public void saveTextToFile(String text, String fileName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             writer.write(text);
-            System.out.println("Saved to: " + new File(fileName).getAbsolutePath()); // Debugging
+            System.out.println("Saved to: " + new File(fileName).getAbsolutePath()); // Debugging.
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -162,7 +165,7 @@ public class MainMenuGUI {
     public String loadTextFromFile(String fileName) {
         StringBuilder content = new StringBuilder();
         File file = new File(fileName);
-        System.out.println("Trying to load from: " + file.getAbsolutePath()); // Debugging
+        System.out.println("Trying to load from: " + file.getAbsolutePath()); // Debugging.
         if (!file.exists()) {
             System.out.println("No saved file found: " + file.getAbsolutePath());
             return "";
@@ -185,12 +188,12 @@ public class MainMenuGUI {
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
-    // Method to stylize dropdown menus
+    // Method to stylize dropdown menus.
     public void styleDropdown(JComboBox<String> dropdown) {
-        dropdown.setFont(new Font("Arial", Font.PLAIN, 14)); // Set font size
-        dropdown.setBackground(Color.white); // Set background color
-        dropdown.setForeground(Color.BLACK); // Set text color
-        dropdown.setBorder(new LineBorder(Color.BLACK, 1)); // Add border
+        dropdown.setFont(new Font("Arial", Font.PLAIN, 14)); // Set font size.
+        dropdown.setBackground(Color.WHITE); // Set background color.
+        dropdown.setForeground(Color.BLACK); // Set text color.
+        dropdown.setBorder(new LineBorder(Color.BLACK, 1)); // Add border.
     }
 
     public SQLConnection getSqlConnection() {
@@ -198,5 +201,6 @@ public class MainMenuGUI {
     }
 
     public void logout() {
+        // Implement logout functionality if needed.
     }
 }
