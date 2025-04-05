@@ -96,7 +96,8 @@ public class CalendarPanel extends JPanel {
 
         JLabel viewLabel = new JLabel("View:");
         viewLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        viewCombo = new JComboBox<>(new String[]{"Week", "Day", "Month"});
+        viewCombo = new JComboBox<>(new String[]{"Day", "Week", "Month"});
+        viewCombo.setSelectedItem("Week");
         viewCombo.setPreferredSize(new Dimension(100, 25));
         viewCombo.addActionListener(e -> switchView());
         viewPanel.add(viewLabel);

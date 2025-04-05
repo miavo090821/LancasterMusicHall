@@ -4,6 +4,8 @@ import GUI.MenuPanels.Event.EventDetailForm;
 import Database.SQLConnection;
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.PreparedStatement;
@@ -11,14 +13,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DayViewPanel extends CalendarViewPanel {
     private final String[] times = {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
-    // Array of panels for each time slot to hold event boxes.
     private JPanel[] eventSlots;
-
-    // SQL connection instance.
     private SQLConnection sqlCon;
+    private Map<Integer, Color> eventColors = new HashMap<>(); // Track colors by event ID
 
     public DayViewPanel(LocalDate startDate, java.util.List events, SQLConnection sqlCon) {
         super(startDate, events, sqlCon);
@@ -26,7 +30,6 @@ public class DayViewPanel extends CalendarViewPanel {
         this.viewStartDate = startDate;
         this.viewEndDate = startDate;
         initializeUI();
-        // Fetch and render events for the initially selected day.
         renderEvents(null);
     }
 
@@ -39,73 +42,83 @@ public class DayViewPanel extends CalendarViewPanel {
 
     private void initializeUI() {
         setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
 
-        // Create a container panel for the timeline (left: time labels, right: event boxes)
+        // Header panel (unchanged)
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(Color.WHITE);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+        // Format the date as "Monday 24th April 2025"
+        String dayName = viewStartDate.getDayOfWeek().toString();
+        dayName = dayName.charAt(0) + dayName.substring(1).toLowerCase();
+
+        int dayOfMonth = viewStartDate.getDayOfMonth();
+        String suffix = getDayOfMonthSuffix(dayOfMonth);
+
+        String monthName = viewStartDate.getMonth().toString();
+        monthName = monthName.charAt(0) + monthName.substring(1).toLowerCase();
+
+        int year = viewStartDate.getYear();
+
+        String formattedDate = String.format("Calendar for %s %d%s %s %d",
+                dayName, dayOfMonth, suffix, monthName, year);
+
+        JLabel diaryHeader = new JLabel(formattedDate, SwingConstants.CENTER);
+        diaryHeader.setFont(new Font("Arial", Font.BOLD, 14));
+        headerPanel.add(diaryHeader);
+        add(headerPanel, BorderLayout.NORTH);
+
+        // Timeline panel
         JPanel timelinePanel = new JPanel(new BorderLayout());
         timelinePanel.setBackground(Color.WHITE);
-        // Adjusted preferred size to leave room for the bottom navigation.
-        timelinePanel.setPreferredSize(new Dimension(550, 350));
-        timelinePanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
+        timelinePanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10)); // Reduced padding
 
-        // Create left panel for time labels with GridLayout (rows = number of times, 1 column)
-        JPanel leftPanel = new JPanel(new GridLayout(times.length, 1, 5, 5));
-        leftPanel.setBackground(Color.WHITE);
+        // Time labels panel
+        JPanel timeLabelsPanel = new JPanel(new GridLayout(times.length, 1, 5, 5));
+        timeLabelsPanel.setBackground(Color.WHITE);
+        timeLabelsPanel.setPreferredSize(new Dimension(50, 0));
 
-        // Create right panel for event slots with GridLayout (rows = number of times, 1 column)
-        JPanel rightPanel = new JPanel(new GridLayout(times.length, 1, 5, 5));
-        rightPanel.setBackground(Color.WHITE);
+        // Event slots panel
+        JPanel eventSlotsPanel = new JPanel(new GridLayout(times.length, 1, 5, 0));
+        eventSlotsPanel.setBackground(Color.WHITE);
 
+        // Initialize event slots with reduced height
         eventSlots = new JPanel[times.length];
-
         for (int i = 0; i < times.length; i++) {
-            // Time label
             JLabel timeLabel = new JLabel(times[i] + ":00", SwingConstants.RIGHT);
-            timeLabel.setFont(new Font("Arial", Font.PLAIN, 10));
-            leftPanel.add(timeLabel);
+            timeLabel.setFont(new Font("Arial", Font.PLAIN, 10)); // Smaller font
+            timeLabelsPanel.add(timeLabel);
 
-            // Event slot panel
-            JPanel eventSlotPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-            eventSlotPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-            eventSlotPanel.setBackground(Color.WHITE);
-            // Ensure each event slot has a consistent size.
-            eventSlotPanel.setPreferredSize(new Dimension(300, 60));
-            rightPanel.add(eventSlotPanel);
-
-            eventSlots[i] = eventSlotPanel;
+            JPanel eventSlot = new JPanel(new BorderLayout());
+            eventSlot.setBackground(Color.WHITE);
+            eventSlot.setPreferredSize(new Dimension(0, 40)); // Reduced from 60 to 40
+            eventSlots[i] = eventSlot;
+            eventSlotsPanel.add(eventSlot);
         }
 
-        // Add left and right panels to the timeline panel.
-        timelinePanel.add(leftPanel, BorderLayout.WEST);
-        timelinePanel.add(rightPanel, BorderLayout.CENTER);
+        timelinePanel.add(timeLabelsPanel, BorderLayout.WEST);
+        timelinePanel.add(eventSlotsPanel, BorderLayout.CENTER);
 
-        // Wrap the timelinePanel in a container.
-        JPanel container = new JPanel(new BorderLayout());
-        container.setBackground(Color.WHITE);
-        container.add(timelinePanel, BorderLayout.CENTER);
-
-        // Place the container in a scroll pane.
-        JScrollPane scrollPane = new JScrollPane(container);
+        JScrollPane scrollPane = new JScrollPane(timelinePanel);
         scrollPane.setBorder(null);
+        scrollPane.getViewport().setBackground(Color.WHITE);
         add(scrollPane, BorderLayout.CENTER);
     }
 
     @Override
     public void navigate(int direction) {
-        // Move the selected day forward or backward.
         viewStartDate = viewStartDate.plusDays(direction);
         viewEndDate = viewStartDate;
         refreshView();
     }
 
-    /**
-     * Render events for the currently selected day by querying the SQL connection.
-     * Only events with a start_date equal to viewStartDate are fetched and displayed.
-     */
     @Override
     public void renderEvents(java.util.List ignored) {
-        // Clear existing event boxes in each time slot panel.
+        // Clear all slots first
         for (JPanel slot : eventSlots) {
             slot.removeAll();
+            slot.setLayout(new BorderLayout());
             slot.setBackground(Color.WHITE);
         }
 
@@ -113,53 +126,145 @@ public class DayViewPanel extends CalendarViewPanel {
                 "e.`event_type`, e.description, e.booked_by, v.venue_name " +
                 "FROM Event e " +
                 "LEFT JOIN Venue v ON e.venue_id = v.venue_id " +
-                "WHERE e.start_date = ?";
+                "WHERE e.start_date = ? " +
+                "ORDER BY e.start_time";
 
         try {
             PreparedStatement ps = sqlCon.getConnection().prepareStatement(query);
             ps.setDate(1, java.sql.Date.valueOf(viewStartDate));
             ResultSet rs = ps.executeQuery();
 
+            List<EventInfo> events = new ArrayList<>();
             while (rs.next()) {
                 int eventId = rs.getInt("event_id");
                 String eventName = rs.getString("name");
                 String venueName = rs.getString("venue_name");
                 String bookedBy = rs.getString("booked_by");
-
-                // Retrieve start and end times.
                 LocalTime startTime = rs.getTime("start_time").toLocalTime();
                 LocalTime endTime = rs.getTime("end_time").toLocalTime();
 
-                // Determine the time slot index based on the event's start time.
-                int eventStartHour = startTime.getHour();
-                int baseHour = Integer.parseInt(times[0]);  // Base hour is 10.
-                int timeSlotIndex = eventStartHour - baseHour;
-                if (timeSlotIndex < 0 || timeSlotIndex >= times.length) {
-                    continue; // Skip events outside the time grid.
+                int startSlot = startTime.getHour() - Integer.parseInt(times[0]);
+                int endSlot = endTime.getHour() - Integer.parseInt(times[0]);
+
+                if (startSlot >= 0 && endSlot < times.length) {
+                    EventInfo event = new EventInfo(
+                            eventId, eventName, venueName, bookedBy,
+                            startTime, endTime, startSlot, endSlot
+                    );
+                    events.add(event);
+
+                    // Store the color in the eventColors map
+                    eventColors.put(eventId, determineEventColor(bookedBy));
                 }
-
-                // Create a label for the event.
-                JLabel eventLabel = new JLabel(String.format("<html><center>%s<br/>%s<br/>%s - %s</center></html>",
-                        eventName, venueName, startTime, endTime), SwingConstants.CENTER);
-                eventLabel.setFont(new Font("Arial", Font.PLAIN, 10));
-                eventLabel.setOpaque(true);
-                eventLabel.setBackground(determineEventColor(bookedBy));
-                eventLabel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
-
-                // Attach the mouse listener to open event details.
-                attachEventListeners(eventLabel, eventId);
-
-                // Add the event label to the corresponding time slot panel.
-                eventSlots[timeSlotIndex].add(eventLabel);
             }
             rs.close();
             ps.close();
+
+            // Sort events by start time
+            Collections.sort(events, Comparator.comparing(e -> e.startTime));
+
+            // Calculate maximum concurrent events at any time
+            int maxConcurrent = calculateMaxConcurrentEvents(events);
+
+            // Assign columns to events
+            assignEventColumns(events, maxConcurrent);
+
+            // Render events
+            for (EventInfo event : events) {
+                for (int slot = event.startSlot; slot <= event.endSlot; slot++) {
+                    JPanel timeSlotPanel = eventSlots[slot];
+
+                    if (timeSlotPanel.getComponentCount() == 0) {
+                        // If no panel exists for this time slot yet, create one
+                        JPanel containerPanel = new JPanel(new GridLayout(1, maxConcurrent, 2, 0));
+                        containerPanel.setBackground(Color.WHITE);
+                        timeSlotPanel.add(containerPanel, BorderLayout.CENTER);
+
+                        // Add empty panels for all columns
+                        for (int i = 0; i < maxConcurrent; i++) {
+                            JPanel emptyPanel = new JPanel();
+                            emptyPanel.setBackground(Color.WHITE);
+                            containerPanel.add(emptyPanel);
+                        }
+                    }
+
+                    // Get the container panel
+                    JPanel containerPanel = (JPanel) timeSlotPanel.getComponent(0);
+
+                    // Replace the panel at the assigned column with our event
+                    JPanel eventPanel = createEventPanel(event, slot == event.startSlot, slot == event.endSlot);
+                    containerPanel.remove(event.column);
+                    containerPanel.add(eventPanel, event.column);
+                }
+            }
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
         revalidate();
         repaint();
     }
+
+    private String getDayOfMonthSuffix(int n) {
+        if (n >= 11 && n <= 13) {
+            return "th";
+        }
+        switch (n % 10) {
+            case 1:  return "st";
+            case 2:  return "nd";
+            case 3:  return "rd";
+            default: return "th";
+        }
+    }
+
+    private JPanel createEventPanel(EventInfo event, boolean isFirstSlot, boolean isLastSlot) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(eventColors.get(event.eventId));
+
+        // Customize borders (unchanged)
+        if (isFirstSlot && isLastSlot) {
+            panel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.DARK_GRAY));
+        } else if (isFirstSlot) {
+            panel.setBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, Color.DARK_GRAY));
+        } else if (isLastSlot) {
+            panel.setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, Color.DARK_GRAY));
+        } else {
+            panel.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.DARK_GRAY));
+        }
+
+        if (isFirstSlot) {
+            JLabel label = new JLabel(
+                    String.format("<html><center>%s<br/>%s<br/>%s - %s</center></html>",
+                            event.eventName, event.venueName,
+                            event.startTime, event.endTime),
+                    SwingConstants.CENTER
+            );
+            label.setFont(new Font("Arial", Font.PLAIN, 9)); // Reduced from 10 to 9
+            panel.add(label, BorderLayout.CENTER);
+        }
+
+        attachEventListeners(panel, event.eventId);
+        return panel;
+    }
+
+//    private Color generateUniqueColor(int eventId) {
+//        // List of saturated colors
+//        Color[] saturatedColors = {
+//             new Color(200, 230, 255),  // Light blue
+//             new Color(255, 230, 200),  // Light orange
+//             new Color(255, 200, 230),  // Light pink
+//             new Color(230, 255, 200),  // Light green
+//             new Color(230, 200, 255),  // Light purple
+//             new Color(200, 255, 230),  // Mint green
+//             new Color(255, 200, 200),  // Light coral
+//             new Color(220, 220, 255),  // Lavender
+//             new Color(200, 255, 255),  // Light cyan
+//             new Color(255, 255, 200),  // Light yellow
+//             new Color(240, 240, 240),  // Default light gray
+//        };
+//
+//        return saturatedColors[Math.abs(eventId) % saturatedColors.length];
+//    }
 
     private Color determineEventColor(String bookedBy) {
         if (bookedBy != null) {
@@ -172,25 +277,64 @@ public class DayViewPanel extends CalendarViewPanel {
         return new Color(230, 255, 200);  // Default green.
     }
 
-    /**
-     * Attaches a mouse listener to the event label to open the event detail form.
-     */
-    private void attachEventListeners(JLabel cell, int eventId) {
-        Color baseColor = cell.getBackground();
-        cell.addMouseListener(new MouseAdapter() {
+    private int calculateMaxConcurrentEvents(List<EventInfo> events) {
+        if (events.isEmpty()) return 0;
+
+        List<TimePoint> points = new ArrayList<>();
+        for (EventInfo event : events) {
+            points.add(new TimePoint(event.startTime, true));
+            points.add(new TimePoint(event.endTime, false));
+        }
+
+        Collections.sort(points);
+
+        int maxConcurrent = 0;
+        int currentConcurrent = 0;
+
+        for (TimePoint point : points) {
+            if (point.isStart) {
+                currentConcurrent++;
+                if (currentConcurrent > maxConcurrent) {
+                    maxConcurrent = currentConcurrent;
+                }
+            } else {
+                currentConcurrent--;
+            }
+        }
+
+        return maxConcurrent;
+    }
+
+    private void assignEventColumns(List<EventInfo> events, int maxColumns) {
+        LocalTime[] columnAvailableAt = new LocalTime[maxColumns];
+
+        for (EventInfo event : events) {
+            for (int col = 0; col < maxColumns; col++) {
+                if (columnAvailableAt[col] == null ||
+                        !event.startTime.isBefore(columnAvailableAt[col])) {
+                    event.column = col;
+                    columnAvailableAt[col] = event.endTime;
+                    break;
+                }
+            }
+        }
+    }
+
+    private void attachEventListeners(JPanel panel, int eventId) {
+        Color baseColor = panel.getBackground();
+        panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                cell.setBackground(baseColor.darker());
+                panel.setBackground(baseColor.darker());
             }
             @Override
             public void mouseExited(MouseEvent e) {
-                cell.setBackground(baseColor);
+                panel.setBackground(baseColor);
             }
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Open the event detail form using the event's ID.
                 EventDetailForm eventDetailForm = new EventDetailForm(
-                        (Frame) SwingUtilities.getWindowAncestor(cell),
+                        (Frame) SwingUtilities.getWindowAncestor(panel),
                         getSQLConnection(),
                         String.valueOf(eventId)
                 );
@@ -207,5 +351,47 @@ public class DayViewPanel extends CalendarViewPanel {
     @Override
     protected SQLConnection getSQLConnection() {
         return sqlCon;
+    }
+
+    private static class TimePoint implements Comparable<TimePoint> {
+        LocalTime time;
+        boolean isStart;
+
+        TimePoint(LocalTime time, boolean isStart) {
+            this.time = time;
+            this.isStart = isStart;
+        }
+
+        @Override
+        public int compareTo(TimePoint other) {
+            int timeCompare = this.time.compareTo(other.time);
+            if (timeCompare != 0) return timeCompare;
+            return Boolean.compare(!this.isStart, !other.isStart);
+        }
+    }
+
+    private static class EventInfo {
+        int eventId;
+        String eventName;
+        String venueName;
+        String bookedBy;
+        LocalTime startTime;
+        LocalTime endTime;
+        int startSlot;
+        int endSlot;
+        int column;
+
+        public EventInfo(int eventId, String eventName, String venueName,
+                         String bookedBy, LocalTime startTime, LocalTime endTime,
+                         int startSlot, int endSlot) {
+            this.eventId = eventId;
+            this.eventName = eventName;
+            this.venueName = venueName;
+            this.bookedBy = bookedBy;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.startSlot = startSlot;
+            this.endSlot = endSlot;
+        }
     }
 }
