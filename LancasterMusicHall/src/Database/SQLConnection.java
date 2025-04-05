@@ -133,23 +133,16 @@ public class SQLConnection implements SQLInterface {
         }
         return updated;
     }
-
-    /**
-     * Inserts a new booking into the database.
-     */
-    // Field to store the current staff ID after login.
+// try to get staff id
     private Integer currentStaffId;
 
-    // Setter for currentStaffId.
     public void setCurrentStaffId(Integer staffId) {
         this.currentStaffId = staffId;
     }
 
-    // Getter for currentStaffId.
     public Integer getCurrentStaffId() {
         return currentStaffId;
     }
-
 
     /**
      * Returns a DefaultTableModel containing bookings data.
@@ -242,67 +235,9 @@ public class SQLConnection implements SQLInterface {
         return reportData;
     }
 
-// for new report panel
 
-    // --------------------------------------------------------------------------------
-    // NEW: Method to automatically calculate the report date range
-    // --------------------------------------------------------------------------------
-
-    /**
-     * Simple container class to hold a report date range.
-     */
-    public static class ReportDateRange {
-        private final LocalDate startDate;
-        private final LocalDate endDate;
-
-        public ReportDateRange(LocalDate startDate, LocalDate endDate) {
-            this.startDate = startDate;
-            this.endDate = endDate;
-        }
-
-        public LocalDate getStartDate() {
-            return startDate;
-        }
-
-        public LocalDate getEndDate() {
-            return endDate;
-        }
-    }
-
-    /**
-     * Calculates a report date range based on the current local date and report type.
-     * For a daily report, the range is just today.
-     * For a quarterly report, it calculates the first day of the current quarter.
-     * For a yearly report, it calculates the first day of the current year.
-     *
-     * @param reportType the report type ("daily", "quarterly", or "yearly").
-     * @return a ReportDateRange containing the start and end dates.
-     */
-    public ReportDateRange getReportDateRange(String reportType) {
-        LocalDate today = LocalDate.now();
-        LocalDate startDate;
-        switch (reportType.toLowerCase()) {
-            case "daily":
-                // Daily report covers today only.
-                startDate = today;
-                break;
-            case "quarterly":
-                int currentMonth = today.getMonthValue();
-                // Calculate the first month of the quarter.
-                int startMonth = ((currentMonth - 1) / 3) * 3 + 1;
-                startDate = LocalDate.of(today.getYear(), startMonth, 1);
-                break;
-            case "yearly":
-                startDate = LocalDate.of(today.getYear(), 1, 1);
-                break;
-            default:
-                // Fallback to today's date.
-                startDate = today;
-        }
-        return new ReportDateRange(startDate, today);
-    }
-
-
+    // this is for the new booking form in booking panel, it works!
+    // Updated method signature including Street Address, City, Postcode, and maxDiscount.
     public boolean insertFullBooking(String bookingEventName,
                                      LocalDate bookingStartDate,
                                      LocalDate bookingEndDate,
@@ -316,18 +251,22 @@ public class SQLConnection implements SQLInterface {
                                      double ticketPrice,
                                      String customerAccount,
                                      String customerSortCode,
+                                     String streetAddress,
+                                     String city,
+                                     String postcode,
                                      LocalDate paymentDueDate,
                                      String paymentStatus,
                                      String contractDetails,
                                      File contractFile,
-                                     Integer staffId) { // new parameter for staff id
+                                     double maxDiscount,
+                                     Integer staffId) {
         // Updated queries:
-        // 1. Booking: Now includes payment_due_date and staff_id.
-        String insertBooking = "INSERT INTO Booking (booking_DateStart, booking_DateEnd, booking_status, ticket_price, payment_status, payment_due_date, staff_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // 1. Booking: Now includes payment_due_date, staff_id, client_id, and max_discount.
+        String insertBooking = "INSERT INTO Booking (booking_DateStart, booking_DateEnd, booking_status, ticket_price, payment_status, payment_due_date, staff_id, client_id, max_discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         // 2. Event: remains the same.
         String insertEvent = "INSERT INTO Event (name, start_date, end_date, start_time, end_time, event_type, venue_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        // 3. Clients: Insert client details.
-        String insertClient = "INSERT INTO Clients (`Company Name`, `Contact Name`, `Phone Number`, `Contact Email`, `Customer Account Number`, `Customer Sort Code`, `Payment Due Date`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // 3. Clients: Now includes Street Address, City, Postcode.
+        String insertClient = "INSERT INTO Clients (`Company Name`, `Contact Name`, `Phone Number`, `Contact Email`, `Customer Account Number`, `Customer Sort Code`, `Payment Due Date`, `Street Address`, `City`, `Postcode`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         // 4. Contract: remains unchanged.
         String insertContract = "INSERT INTO Contract (details, client_id, booking_id, file_data) VALUES (?, ?, ?, ?)";
 
@@ -349,6 +288,9 @@ public class SQLConnection implements SQLInterface {
                 } else {
                     psClient.setDate(7, null);
                 }
+                psClient.setString(8, streetAddress);
+                psClient.setString(9, city);
+                psClient.setString(10, postcode);
                 psClient.executeUpdate();
                 try (ResultSet rs = psClient.getGeneratedKeys()) {
                     if (rs.next()) {
@@ -359,7 +301,7 @@ public class SQLConnection implements SQLInterface {
                 }
             }
 
-            // 2. Insert Booking details (including staff_id) and retrieve the generated booking_id.
+            // 2. Insert Booking details (including staff_id, client_id, and max_discount) and retrieve the generated booking_id.
             try (PreparedStatement psBooking = con.prepareStatement(insertBooking, Statement.RETURN_GENERATED_KEYS)) {
                 psBooking.setDate(1, java.sql.Date.valueOf(bookingStartDate));
                 psBooking.setDate(2, java.sql.Date.valueOf(bookingEndDate));
@@ -376,6 +318,8 @@ public class SQLConnection implements SQLInterface {
                 } else {
                     psBooking.setNull(7, java.sql.Types.INTEGER);
                 }
+                psBooking.setInt(8, clientId);
+                psBooking.setDouble(9, maxDiscount);
                 psBooking.executeUpdate();
                 try (ResultSet rs = psBooking.getGeneratedKeys()) {
                     if (rs.next()) {
@@ -401,7 +345,7 @@ public class SQLConnection implements SQLInterface {
                 }
             }
 
-            // 4. Insert Contract details.
+            // 4. Insert Contract details, linking to the new booking and client.
             if (contractFile != null) {
                 try (PreparedStatement psContract = con.prepareStatement(insertContract)) {
                     psContract.setString(1, contractDetails != null ? contractDetails : "N/A");
@@ -420,8 +364,6 @@ public class SQLConnection implements SQLInterface {
             return false;
         }
     }
-
-
 
 
     // handle the pricing functions:

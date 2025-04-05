@@ -27,18 +27,21 @@ public class NewBookingForm extends JDialog {
     private JTextField primaryContactField;
     private JTextField telephoneField;
     private JTextField emailField;
+    private JTextField streetAddressField; // new
+    private JTextField cityField;           // new
+    private JTextField postcodeField;       // new
     private JCheckBox saveCompanyCheck;
     private JButton contractUploadButton;
     private File contractFile = null;
 
     // --- Contract Details Fields ---
     private JTextArea contractDetailsArea;
-    private JLabel contractFileLabel; // To display the name of the uploaded file
+    private JLabel contractFileLabel;
 
     // --- Booking Details Fields ---
     private JTextField eventNameField;
-    private JTextField bookingStartDateField;  // dd/MM/yyyy
-    private JTextField bookingEndDateField;    // dd/MM/yyyy
+    private JTextField bookingStartDateField;
+    private JTextField bookingEndDateField;
     private JCheckBox confirmedCheck;
 
     // --- Container for multiple Event Details Panels ---
@@ -46,13 +49,14 @@ public class NewBookingForm extends JDialog {
     private JButton addEventButton;
     private List<EventDetailPanel> eventPanels;
 
-    // --- Pricing Panel Fields (for overall booking) ---
-    private JLabel customerBillTotalLabel;   // automatically calculated total
+    // --- Pricing Panel Fields ---
+    private JLabel customerBillTotalLabel;
     private JTextField ticketPriceField;
     private JTextField customerAccountField;
     private JTextField customerSortCodeField;
-    private JTextField paymentDueDateField;  // dd/MM/yyyy
-    private JComboBox<String> paymentStatusCombo; // Paid, Pending, Overdue
+    private JTextField paymentDueDateField;
+    private JComboBox<String> paymentStatusCombo;
+    private JTextField maxDiscountField; // new
 
     // --- Submit Booking Button ---
     private JButton submitButton;
@@ -67,7 +71,6 @@ public class NewBookingForm extends JDialog {
     }
 
     private void initComponents() {
-        // Main panel with vertical BoxLayout.
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -79,6 +82,9 @@ public class NewBookingForm extends JDialog {
         primaryContactField = new JTextField();
         telephoneField = new JTextField();
         emailField = new JTextField();
+        streetAddressField = new JTextField(); // new
+        cityField = new JTextField();           // new
+        postcodeField = new JTextField();       // new
         saveCompanyCheck = new JCheckBox("Save company details for future use");
         contractUploadButton = new JButton("Upload Contract");
         contractUploadButton.addActionListener(this::handleContractUpload);
@@ -91,8 +97,14 @@ public class NewBookingForm extends JDialog {
         clientPanel.add(telephoneField);
         clientPanel.add(new JLabel("Email:"));
         clientPanel.add(emailField);
+        clientPanel.add(new JLabel("Street Address:")); // new
+        clientPanel.add(streetAddressField);            // new
+        clientPanel.add(new JLabel("City:"));             // new
+        clientPanel.add(cityField);                       // new
+        clientPanel.add(new JLabel("Postcode:"));         // new
+        clientPanel.add(postcodeField);                   // new
         clientPanel.add(saveCompanyCheck);
-        clientPanel.add(new JLabel());  // placeholder
+        clientPanel.add(new JLabel());
         clientPanel.add(new JLabel("Contract Upload:"));
         clientPanel.add(contractUploadButton);
 
@@ -103,7 +115,6 @@ public class NewBookingForm extends JDialog {
         JScrollPane contractScrollPane = new JScrollPane(contractDetailsArea);
         contractPanel.add(new JLabel("Enter contract details:"), BorderLayout.NORTH);
         contractPanel.add(contractScrollPane, BorderLayout.CENTER);
-        // Label to show the uploaded file name.
         contractFileLabel = new JLabel("No contract file uploaded.");
         contractPanel.add(contractFileLabel, BorderLayout.SOUTH);
 
@@ -111,7 +122,6 @@ public class NewBookingForm extends JDialog {
         JPanel bookingPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         bookingPanel.setBorder(BorderFactory.createTitledBorder("Booking Details"));
         eventNameField = new JTextField();
-        // Set default text in dd/MM/yyyy format.
         bookingStartDateField = new JTextField("01/04/2025");
         bookingEndDateField = new JTextField("01/04/2025");
         confirmedCheck = new JCheckBox("Confirmed", true);
@@ -129,7 +139,6 @@ public class NewBookingForm extends JDialog {
         eventsContainer = new JPanel();
         eventsContainer.setLayout(new BoxLayout(eventsContainer, BoxLayout.Y_AXIS));
         eventsContainer.setBorder(BorderFactory.createTitledBorder("Event Details"));
-        // Add one event detail panel by default.
         addNewEventPanel();
 
         addEventButton = new JButton("Add Another Event");
@@ -148,6 +157,7 @@ public class NewBookingForm extends JDialog {
         customerAccountField = new JTextField();
         customerSortCodeField = new JTextField();
         paymentDueDateField = new JTextField("10/04/2025");
+        maxDiscountField = new JTextField(); // new
         String[] paymentStatusOptions = {"Paid", "Pending", "Overdue"};
         paymentStatusCombo = new JComboBox<>(paymentStatusOptions);
 
@@ -161,6 +171,8 @@ public class NewBookingForm extends JDialog {
         pricingPanel.add(customerSortCodeField);
         pricingPanel.add(new JLabel("Payment Due Date (dd/MM/yyyy):"));
         pricingPanel.add(paymentDueDateField);
+        pricingPanel.add(new JLabel("Max Discount:")); // new
+        pricingPanel.add(maxDiscountField);            // new
         pricingPanel.add(new JLabel("Payment Status:"));
         pricingPanel.add(paymentStatusCombo);
 
@@ -168,7 +180,7 @@ public class NewBookingForm extends JDialog {
         submitButton = new JButton("Submit Booking");
         submitButton.addActionListener(this::handleSubmitBooking);
 
-        // Add all panels to the main panel.
+        // Add all panels to main panel.
         mainPanel.add(clientPanel);
         mainPanel.add(Box.createVerticalStrut(10));
         mainPanel.add(contractPanel);
@@ -183,7 +195,6 @@ public class NewBookingForm extends JDialog {
         mainPanel.add(Box.createVerticalStrut(10));
         mainPanel.add(submitButton);
 
-        // Wrap the main panel in a scroll pane.
         JScrollPane scrollPane = new JScrollPane(mainPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setPreferredSize(new Dimension(500, 600));
         setContentPane(scrollPane);
@@ -200,7 +211,6 @@ public class NewBookingForm extends JDialog {
         customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
     }
 
-    // Creates and adds a new EventDetailPanel to the events container.
     private void addNewEventPanel() {
         EventDetailPanel eventPanel = new EventDetailPanel();
         eventPanels.add(eventPanel);
@@ -212,13 +222,11 @@ public class NewBookingForm extends JDialog {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             contractFile = fileChooser.getSelectedFile();
-            // Update the label to display the selected file name.
             contractFileLabel.setText("Uploaded: " + contractFile.getName());
             JOptionPane.showMessageDialog(this, "Selected contract: " + contractFile.getName());
         }
     }
 
-    // On submit, collect client, booking, contract, and event details from all panels.
     private void handleSubmitBooking(ActionEvent e) {
         try {
             // Collect Client details.
@@ -226,6 +234,9 @@ public class NewBookingForm extends JDialog {
             String primaryContact = primaryContactField.getText().trim();
             String telephone = telephoneField.getText().trim();
             String email = emailField.getText().trim();
+            String streetAddress = streetAddressField.getText().trim();  // new
+            String city = cityField.getText().trim();                      // new
+            String postcode = postcodeField.getText().trim();              // new
 
             // Collect Booking details.
             String bookingEventName = eventNameField.getText().trim();
@@ -233,7 +244,6 @@ public class NewBookingForm extends JDialog {
             LocalDate bookingEndDate = LocalDate.parse(bookingEndDateField.getText().trim(), DATE_FORMATTER);
             boolean confirmed = confirmedCheck.isSelected();
 
-            // Prepare a list for event objects and recalc total.
             List<Event> events = new ArrayList<>();
             double totalBill = 0.0;
             for (EventDetailPanel panel : eventPanels) {
@@ -243,21 +253,20 @@ public class NewBookingForm extends JDialog {
                     totalBill += event.getPrice();
                 }
             }
-            // Update the customer bill total label.
             customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
 
-            // Overall pricing details.
+            // Pricing and discount details.
             double ticketPrice = Double.parseDouble(ticketPriceField.getText().trim());
             String customerAccount = customerAccountField.getText().trim();
             String customerSortCode = customerSortCodeField.getText().trim();
             LocalDate paymentDueDate = LocalDate.parse(paymentDueDateField.getText().trim(), DATE_FORMATTER);
+            double maxDiscount = Double.parseDouble(maxDiscountField.getText().trim()); // new
             String paymentStatus = (String) paymentStatusCombo.getSelectedItem();
 
-            // Collect contract details.
+            // Contract details.
             String contractDetails = contractDetailsArea.getText().trim();
 
-            // Call the SQLConnection.insertFullBooking method.
-            // Notice the additional parameter: sqlCon.getCurrentStaffId() is passed as the staff id.
+            // Call insertFullBooking with the new values.
             boolean success = sqlCon.insertFullBooking(
                     bookingEventName,
                     bookingStartDate,
@@ -267,16 +276,20 @@ public class NewBookingForm extends JDialog {
                     primaryContact,
                     telephone,
                     email,
-                    events, // list of event objects
-                    totalBill, // total calculated from events
+                    events,
+                    totalBill,
                     ticketPrice,
                     customerAccount,
                     customerSortCode,
+                    streetAddress,
+                    city,
+                    postcode,
                     paymentDueDate,
                     paymentStatus,
                     contractDetails,
                     contractFile,
-                    sqlCon.getCurrentStaffId() // Pass the logged-in staff id here.
+                    maxDiscount,
+                    sqlCon.getCurrentStaffId() // Logged-in staff id
             );
             if (success) {
                 JOptionPane.showMessageDialog(this, "Booking submitted successfully!");
