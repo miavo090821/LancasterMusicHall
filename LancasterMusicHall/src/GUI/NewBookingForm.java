@@ -19,7 +19,6 @@ public class NewBookingForm extends JDialog {
     private SQLConnection sqlCon;
 
     // Date formatter for dd/MM/yyyy format.
-    // Date formatter for dd/MM/yyyy format.
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // --- Client Details Fields ---
@@ -313,15 +312,16 @@ public class NewBookingForm extends JDialog {
         private JComboBox<String> eventTypeCombo;
         private JButton calcPriceButton;
         private JLabel eventPriceLabel;
+        // New fields for event description and layout:
+        private JTextField descriptionField;
+        private JTextField layoutField;
 
         public EventDetailPanel() {
             setLayout(new GridLayout(0, 2, 5, 5));
             setBorder(BorderFactory.createTitledBorder("Event Detail"));
 
-            // Set default dates in dd/MM/yyyy format.
             eventStartDateField = new JTextField("01/04/2025");
             eventEndDateField = new JTextField("01/04/2025");
-            // Updated locations per your mapping.
             String[] locations = {"Venue", "The Green Room", "Room Brontë Boardroom", "Room Dickens Den", "Room Poe Parlor", "Room Globe Room", "Chekhov Chamber", "Main_Hall", "Small_Hall", "Rehearsal_Space"};
             locationCombo = new JComboBox<>(locations);
             eventStartTimeField = new JTextField("10:00");
@@ -331,10 +331,13 @@ public class NewBookingForm extends JDialog {
             calcPriceButton = new JButton("Calc Price");
             eventPriceLabel = new JLabel("£0.00");
 
+            // New input fields for Description and Layout.
+            descriptionField = new JTextField();
+            layoutField = new JTextField();
+
             calcPriceButton.addActionListener(e -> {
                 double price = calculateEventPrice();
                 eventPriceLabel.setText("£" + price);
-                // Optionally update the overall customer total here:
                 updateCustomerBillTotal();
             });
 
@@ -350,6 +353,10 @@ public class NewBookingForm extends JDialog {
             add(eventEndTimeField);
             add(new JLabel("Event Type:"));
             add(eventTypeCombo);
+            add(new JLabel("Description:"));  // new
+            add(descriptionField);              // new
+            add(new JLabel("Layout:"));         // new
+            add(layoutField);                   // new
             add(calcPriceButton);
             add(eventPriceLabel);
         }
@@ -494,12 +501,14 @@ public class NewBookingForm extends JDialog {
                     String priceStr = panel.eventPriceLabel.getText().replaceAll("[£]", "").trim();
                     totalBill += Double.parseDouble(priceStr);
                 } catch (NumberFormatException e) {
+                    // Ignore if parsing fails.
                 }
             }
             customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
         }
 
         // Collect data from this panel and return an Event object.
+        // Returns an Event object including the new description and layout fields.
         public Event getEvent() {
             try {
                 LocalDate startDate = LocalDate.parse(eventStartDateField.getText().trim(), DATE_FORMATTER);
@@ -508,61 +517,57 @@ public class NewBookingForm extends JDialog {
                 String location = (String) locationCombo.getSelectedItem();
                 LocalTime startTime = LocalTime.parse(eventStartTimeField.getText().trim());
                 LocalTime endTime = LocalTime.parse(eventEndTimeField.getText().trim());
-                // Map the selected location to its corresponding venue_id.
                 int venueId = mapLocationToVenueId(location);
-                // Create a Venue object that matches the Venue table structure.
                 Venue venue = new Venue(venueId, location, location, 0, "N/A", false, false, 0.0);
                 double price = Double.parseDouble(eventPriceLabel.getText().replaceAll("[£]", ""));
+                String description = descriptionField.getText().trim(); // new
+                String layout = layoutField.getText().trim();           // new
+
+                // Use the outer form's company name field for companyName
+                String companyName = NewBookingForm.this.companyNameField.getText().trim();
+
                 return new Event(
-                        0,              // id (to be generated)
-                        "",             // name (can be set later)
-                        eventType,
-                        startDate,
-                        endDate,
-                        startTime,
-                        endTime,
-                        false,          // held flag
-                        "",
-                        venue,
-                        null,
-                        "",
-                        location,
-                        "",
-                        null,
-                        price
+                        0,                 // id (to be generated)
+                        "",                // name (can be set later)
+                        eventType,         // eventType
+                        startDate,         // startDate
+                        endDate,           // endDate
+                        startTime,         // startTime
+                        endTime,           // endTime
+                        false,             // held flag
+                        "",                // holdExpiryDate (if not applicable)
+                        venue,             // venue
+                        null,              // seats (if not applicable)
+                        "",                // bookedBy (placeholder if needed)
+                        location,          // room (using location as room name)
+                        companyName,       // companyName (from outer form)
+                        null,              // contactDetails (if not applicable)
+                        price,             // price
+                        description,       // new description field
+                        layout             // new layout field
                 );
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error collecting event details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 return null;
             }
         }
+
     }
 
-    // Mapping method: returns unique venue ID based on location.
+    // Mapping method for venue ID remains unchanged.
     private int mapLocationToVenueId(String location) {
         switch (location) {
-            case "Venue":
-                return 1;
-            case "The Green Room":
-                return 2;
-            case "Room Brontë Boardroom":
-                return 3;
-            case "Room Dickens Den":
-                return 4;
-            case "Room Poe Parlor":
-                return 5;
-            case "Room Globe Room":
-                return 6;
-            case "Chekhov Chamber":
-                return 7;
-            case "Main_Hall":
-                return 8;
-            case "Small_Hall":
-                return 9;
-            case "Rehearsal_Space":
-                return 10;
-            default:
-                return 1;
+            case "Venue": return 1;
+            case "The Green Room": return 2;
+            case "Room Brontë Boardroom": return 3;
+            case "Room Dickens Den": return 4;
+            case "Room Poe Parlor": return 5;
+            case "Room Globe Room": return 6;
+            case "Chekhov Chamber": return 7;
+            case "Main_Hall": return 8;
+            case "Small_Hall": return 9;
+            case "Rehearsal_Space": return 10;
+            default: return 1;
         }
     }
 

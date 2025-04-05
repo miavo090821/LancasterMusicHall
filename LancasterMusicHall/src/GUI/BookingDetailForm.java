@@ -2,7 +2,6 @@ package GUI;
 
 import Database.SQLConnection;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -27,10 +26,9 @@ public class BookingDetailForm extends JDialog {
     // Contract Details UI Components
     private JLabel contractStatusLabel;
     private JButton downloadContractButton;
-    // Add these at the class level
+    // Store contract data and contract ID at the class level
     private byte[] contractData;
-    private String contractName;
-
+    private int contractId = -1;
 
     public BookingDetailForm(Frame owner, SQLConnection sqlCon, String bookingId) {
         super(owner, "Booking Details - " + bookingId, true);
@@ -134,13 +132,9 @@ public class BookingDetailForm extends JDialog {
         eventTable = new JTable(eventTableModel);
         eventTable.setFillsViewportHeight(true);
         JScrollPane eventScrollPane = new JScrollPane(eventTable);
-
-// Set the preferred size to a smaller height (for example, 150 pixels tall)
         eventScrollPane.setPreferredSize(new Dimension(550, 150));
-
         eventPanel.add(eventScrollPane, BorderLayout.CENTER);
         mainPanel.add(eventPanel);
-
 
         // --- Contract Details Panel ---
         JPanel contractPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -148,7 +142,6 @@ public class BookingDetailForm extends JDialog {
         contractStatusLabel = new JLabel("No contract uploaded.");
         downloadContractButton = new JButton("Download Contract");
         downloadContractButton.setEnabled(false);
-        // (Optionally add an ActionListener to download or view the contract)
         contractPanel.add(contractStatusLabel);
         contractPanel.add(downloadContractButton);
         mainPanel.add(contractPanel);
@@ -162,10 +155,12 @@ public class BookingDetailForm extends JDialog {
 
         setContentPane(new JScrollPane(mainPanel));
 
+        // Download button action listener
         downloadContractButton.addActionListener(e -> {
             if (contractData != null && contractData.length > 0) {
+                // Use a default file name based on contract ID
                 JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setSelectedFile(new File(contractName)); // Suggest the contract file name
+                fileChooser.setSelectedFile(new File("contract_" + contractId + ".dat"));
                 int option = fileChooser.showSaveDialog(BookingDetailForm.this);
                 if (option == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
@@ -180,7 +175,6 @@ public class BookingDetailForm extends JDialog {
                 JOptionPane.showMessageDialog(BookingDetailForm.this, "No contract data available to download.");
             }
         });
-
     }
 
     private void loadBookingDetails() {
@@ -217,22 +211,23 @@ public class BookingDetailForm extends JDialog {
                         rsEvent.getString("start_time"),
                         rsEvent.getString("end_time"),
                         rsEvent.getString("event_type"),
-                        rsEvent.getString("venue_name")  // Now retrieves venue name
+                        rsEvent.getString("venue_name")
                 };
                 eventTableModel.addRow(rowData);
             }
             rsEvent.close();
 
             // --- Load Contract Data ---
-            // --- Load Contract Data ---
-            // --- Load Contract Data ---
+            // The updated contract entity now includes only 'contract_id', 'details', and 'file_data'
             ResultSet rsContract = sqlCon.getContractDetails(Integer.parseInt(bookingId));
             if (rsContract.next()) {
-                int contractId = rsContract.getInt("contract_id");
-                contractName = rsContract.getString("file_name");  // store file name
-                contractData = rsContract.getBytes("file_data");    // store contract data
+                contractId = rsContract.getInt("contract_id");
+                String contractDetails = rsContract.getString("details");
+                contractData = rsContract.getBytes("file_data");    // store contract file data
+
                 if (contractData != null && contractData.length > 0) {
-                    contractStatusLabel.setText("Contract ID: " + contractId + " - " + contractName);
+                    contractStatusLabel.setText("<html>Contract ID: " + contractId +
+                            "<br/>Details: " + contractDetails + "</html>");
                     downloadContractButton.setEnabled(true);
                 } else {
                     contractStatusLabel.setText("No contract uploaded.");
@@ -243,7 +238,6 @@ public class BookingDetailForm extends JDialog {
                 downloadContractButton.setEnabled(false);
             }
             rsContract.close();
-
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error loading booking details: " + ex.getMessage());

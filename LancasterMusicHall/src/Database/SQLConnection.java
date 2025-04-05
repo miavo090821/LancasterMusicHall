@@ -260,11 +260,10 @@ public class SQLConnection implements SQLInterface {
                                      File contractFile,
                                      double maxDiscount,
                                      Integer staffId) {
-        // Updated queries:
         // 1. Booking: Now includes payment_due_date, staff_id, client_id, and max_discount.
         String insertBooking = "INSERT INTO Booking (booking_DateStart, booking_DateEnd, booking_status, ticket_price, payment_status, payment_due_date, staff_id, client_id, max_discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        // 2. Event: remains the same.
-        String insertEvent = "INSERT INTO Event (name, start_date, end_date, start_time, end_time, event_type, venue_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // 2. Event: Now includes booking_id, client_id, location, description, layout.
+        String insertEvent = "INSERT INTO Event (name, start_date, end_date, start_time, end_time, event_type, venue_id, booking_id, client_id, location, description, layout) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         // 3. Clients: Now includes Street Address, City, Postcode.
         String insertClient = "INSERT INTO Clients (`Company Name`, `Contact Name`, `Phone Number`, `Contact Email`, `Customer Account Number`, `Customer Sort Code`, `Payment Due Date`, `Street Address`, `City`, `Postcode`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         // 4. Contract: remains unchanged.
@@ -341,6 +340,11 @@ public class SQLConnection implements SQLInterface {
                     psEvent.setTime(5, java.sql.Time.valueOf(event.getEndTime()));
                     psEvent.setString(6, event.getEventType());
                     psEvent.setInt(7, event.getVenue().getVenueId());
+                    psEvent.setInt(8, bookingId);
+                    psEvent.setInt(9, clientId);
+                    psEvent.setString(10, event.getRoom());           // location from the event
+                    psEvent.setString(11, event.getDescription());      // new description field
+                    psEvent.setString(12, event.getLayout());           // new layout field
                     psEvent.executeUpdate();
                 }
             }
@@ -364,6 +368,7 @@ public class SQLConnection implements SQLInterface {
             return false;
         }
     }
+
 
 
     // handle the pricing functions:
@@ -550,11 +555,13 @@ public class SQLConnection implements SQLInterface {
     }
 
     /**
-     * Retrieves contract details from the Contract table for the given booking ID.
-     * Returns the contract_id, file_name, and file_data (the contract file as a BLOB).
+     * Retrieves contract details for the specified bookingId.
+     *
+     * @param bookingId The booking id to look up the contract.
+     * @return A ResultSet containing contract_id, details, and file_data; or null if an error occurs.
      */
     public ResultSet getContractDetails(int bookingId) {
-        String query = "SELECT contract_id, file_name, file_data FROM Contract WHERE booking_id = ?";
+        String query = "SELECT contract_id, details, file_data FROM Contract WHERE booking_id = ?";
         try {
             Connection con = getConnection();
             PreparedStatement ps = con.prepareStatement(query);
