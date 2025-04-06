@@ -374,10 +374,6 @@ public class SQLConnection implements SQLInterface {
     }
 
 
-
-
-    // handle the pricing functions:
-
     /**
      * Calls the MySQL stored function calculateMainHallCost.
      */
@@ -487,30 +483,6 @@ public class SQLConnection implements SQLInterface {
         return cost;
     }
 
-
-    /**
-     * Retrieves booking details for the given booking ID.
-     * This query joins the Booking and Clients tables so that company_name is retrieved from the Clients entity.
-     * Fields retrieved: booking_DateStart, booking_DateEnd, booking_status, total_cost, payment_status, client_id,
-     * and company_name (from Clients).
-     */
-//    public ResultSet getBookingDetails(int bookingId) {
-//        String query = "SELECT b.booking_DateStart, b.booking_DateEnd, b.booking_status, b.total_cost, b.payment_status, " +
-//                "b.client_id, c.`Company Name` AS company_name " +
-//                "FROM Booking b " +
-//                "JOIN Clients c ON b.client_id = c.client_id " +
-//                "WHERE b.booking_id = ?";
-//        try {
-//            Connection con = getConnection();
-//            PreparedStatement ps = con.prepareStatement(query);
-//            ps.setInt(1, bookingId);
-//            return ps.executeQuery();
-//            // Note: The calling code must close the ResultSet, the PreparedStatement, and the Connection.
-//        } catch (SQLException ex) {
-//            ex.printStackTrace();
-//            return null;
-//        }
-//    }
 
     /**
      * Retrieves event details from the Event table for the given booking ID.
@@ -663,35 +635,6 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
-    // ... [existing fields, constructor, and methods remain unchanged] ...
-
-    /**
-     * Returns a DefaultTableModel containing bookings data.
-     */
-//    public DefaultTableModel getBookingsTableModel() {
-//        String[] columnNames = {"ID No.", "Name", "Start Date", "End Date", "Status"};
-//        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-//        String query = "SELECT B.booking_id, C.`Company Name` AS clientName, " +
-//                "B.booking_DateStart, B.booking_DateEnd, B.booking_status " +
-//                "FROM Booking B " +
-//                "JOIN Clients C ON B.client_id = C.client_id";
-//        try (Connection con = getConnection();
-//             Statement stmt = con.createStatement();
-//             ResultSet rs = stmt.executeQuery(query)) {
-//            while (rs.next()){
-//                int bookingId = rs.getInt("booking_id");
-//                String clientName = rs.getString("clientName");
-//                String startDate = rs.getDate("booking_DateStart").toString();
-//                String endDate = rs.getDate("booking_DateEnd").toString();
-//                String status = rs.getString("booking_status");
-//                Object[] row = {bookingId, clientName, startDate, endDate, status};
-//                model.addRow(row);
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return model;
-//    }
 
     /**
      * Retrieves booking details for the given booking ID.
