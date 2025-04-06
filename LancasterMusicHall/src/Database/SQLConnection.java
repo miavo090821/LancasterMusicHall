@@ -10,8 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalTime;
+import java.util.*;
 import java.sql.Statement;
 
 
@@ -494,23 +494,23 @@ public class SQLConnection implements SQLInterface {
      * Fields retrieved: booking_DateStart, booking_DateEnd, booking_status, total_cost, payment_status, client_id,
      * and company_name (from Clients).
      */
-    public ResultSet getBookingDetails(int bookingId) {
-        String query = "SELECT b.booking_DateStart, b.booking_DateEnd, b.booking_status, b.total_cost, b.payment_status, " +
-                "b.client_id, c.`Company Name` AS company_name " +
-                "FROM Booking b " +
-                "JOIN Clients c ON b.client_id = c.client_id " +
-                "WHERE b.booking_id = ?";
-        try {
-            Connection con = getConnection();
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setInt(1, bookingId);
-            return ps.executeQuery();
-            // Note: The calling code must close the ResultSet, the PreparedStatement, and the Connection.
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
+//    public ResultSet getBookingDetails(int bookingId) {
+//        String query = "SELECT b.booking_DateStart, b.booking_DateEnd, b.booking_status, b.total_cost, b.payment_status, " +
+//                "b.client_id, c.`Company Name` AS company_name " +
+//                "FROM Booking b " +
+//                "JOIN Clients c ON b.client_id = c.client_id " +
+//                "WHERE b.booking_id = ?";
+//        try {
+//            Connection con = getConnection();
+//            PreparedStatement ps = con.prepareStatement(query);
+//            ps.setInt(1, bookingId);
+//            return ps.executeQuery();
+//            // Note: The calling code must close the ResultSet, the PreparedStatement, and the Connection.
+//        } catch (SQLException ex) {
+//            ex.printStackTrace();
+//            return null;
+//        }
+//    }
 
     /**
      * Retrieves event details from the Event table for the given booking ID.
@@ -595,6 +595,186 @@ public class SQLConnection implements SQLInterface {
         } catch (SQLException ex) {
             ex.printStackTrace();
             return null;
+        }
+    }
+
+// Additional methods for Marketing Interface:
+
+    /**
+     * Retrieves calendar bookings between the specified start and end dates.
+     * Used by the Marketing interface to show booking data on the calendar panel.
+     *
+     * @param startDate the start date of the query range.
+     * @param endDate the end date of the query range.
+     * @return a ResultSet containing booking_id, booking_DateStart, booking_DateEnd, and booking_status.
+     */
+    public ResultSet getCalendarBookings(LocalDate startDate, LocalDate endDate) {
+        String query = "SELECT booking_id, booking_DateStart, booking_DateEnd, booking_status FROM Booking " +
+                "WHERE booking_DateStart >= ? AND booking_DateEnd <= ?";
+        try {
+            Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setDate(1, java.sql.Date.valueOf(startDate));
+            ps.setDate(2, java.sql.Date.valueOf(endDate));
+            return ps.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves events for the specified date to generate a daily sheet.
+     * Used by the Marketing interface to display all events occurring on a particular day.
+     *
+     * @param date the date for which to retrieve events.
+     * @return a ResultSet containing event details such as event_id, name, start_date, end_date, start_time, end_time, event_type, and location.
+     */
+    public ResultSet getDailySheet(LocalDate date) {
+        String query = "SELECT event_id, name, start_date, end_date, start_time, end_time, event_type, location " +
+                "FROM Event WHERE start_date = ?";
+        try {
+            Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setDate(1, java.sql.Date.valueOf(date));
+            return ps.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves film showings (events with event_type 'Film') along with their room information.
+     * Used by the Marketing interface to list films currently showing in each room.
+     *
+     * @return a ResultSet containing film showing details including event_id, name, location, start_date, end_date, start_time, and end_time.
+     */
+    public ResultSet getFilmShowings() {
+        String query = "SELECT event_id, name, location, start_date, end_date, start_time, end_time " +
+                "FROM Event WHERE event_type = 'Film'";
+        try {
+            Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(query);
+            return ps.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    // ... [existing fields, constructor, and methods remain unchanged] ...
+
+    /**
+     * Returns a DefaultTableModel containing bookings data.
+     */
+//    public DefaultTableModel getBookingsTableModel() {
+//        String[] columnNames = {"ID No.", "Name", "Start Date", "End Date", "Status"};
+//        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+//        String query = "SELECT B.booking_id, C.`Company Name` AS clientName, " +
+//                "B.booking_DateStart, B.booking_DateEnd, B.booking_status " +
+//                "FROM Booking B " +
+//                "JOIN Clients C ON B.client_id = C.client_id";
+//        try (Connection con = getConnection();
+//             Statement stmt = con.createStatement();
+//             ResultSet rs = stmt.executeQuery(query)) {
+//            while (rs.next()){
+//                int bookingId = rs.getInt("booking_id");
+//                String clientName = rs.getString("clientName");
+//                String startDate = rs.getDate("booking_DateStart").toString();
+//                String endDate = rs.getDate("booking_DateEnd").toString();
+//                String status = rs.getString("booking_status");
+//                Object[] row = {bookingId, clientName, startDate, endDate, status};
+//                model.addRow(row);
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return model;
+//    }
+
+    /**
+     * Retrieves booking details for the given booking ID.
+     */
+    public ResultSet getBookingDetails(int bookingId) {
+        String query = "SELECT b.booking_DateStart, b.booking_DateEnd, b.booking_status, b.total_cost, b.payment_status, " +
+                "b.client_id, c.`Company Name` AS company_name " +
+                "FROM Booking b " +
+                "JOIN Clients c ON b.client_id = c.client_id " +
+                "WHERE b.booking_id = ?";
+        try {
+            Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, bookingId);
+            return ps.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    // -------------------------------------------------------------
+// New method for the schedule film functionality.
+// This method queries all film events on the given date, groups them by venue (location),
+// and calculates free time intervals for each venue based on fixed operating hours.
+// -------------------------------------------------------------
+    public Map<String, String> getFilmEventDetailsWithAvailability(LocalDate date) {
+        Map<String, List<Interval>> bookedSlotsByVenue = new HashMap<>();
+        Map<String, String> freeTimeByVenue = new HashMap<>();
+        String query = "SELECT location, start_time, end_time FROM Event " +
+                "WHERE event_type = 'Film' AND start_date = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setDate(1, java.sql.Date.valueOf(date));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()){
+                String venue = rs.getString("location");
+                java.sql.Time sqlStartTime = rs.getTime("start_time");
+                java.sql.Time sqlEndTime = rs.getTime("end_time");
+                LocalTime startTime = sqlStartTime.toLocalTime();
+                LocalTime endTime = sqlEndTime.toLocalTime();
+                bookedSlotsByVenue.computeIfAbsent(venue, k -> new ArrayList<>())
+                        .add(new Interval(startTime, endTime));
+            }
+            rs.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return freeTimeByVenue;
+        }
+        // Assume operating hours for each venue: 08:00 to 22:00.
+        LocalTime operatingStart = LocalTime.of(8, 0);
+        LocalTime operatingEnd = LocalTime.of(22, 0);
+        // For each venue, compute free intervals.
+        for (Map.Entry<String, List<Interval>> entry : bookedSlotsByVenue.entrySet()) {
+            String venue = entry.getKey();
+            List<Interval> intervals = entry.getValue();
+            intervals.sort(Comparator.comparing(i -> i.start));
+            List<String> freeIntervals = new ArrayList<>();
+            LocalTime current = operatingStart;
+            for (Interval interval : intervals) {
+                if (current.isBefore(interval.start)) {
+                    freeIntervals.add(current + " to " + interval.start);
+                }
+                if (current.isBefore(interval.end)) {
+                    current = interval.end;
+                }
+            }
+            if (current.isBefore(operatingEnd)) {
+                freeIntervals.add(current + " to " + operatingEnd);
+            }
+            freeTimeByVenue.put(venue, String.join(", ", freeIntervals));
+        }
+        // Optionally, for venues without any film events, you could add full operating hours.
+        return freeTimeByVenue;
+    }
+
+    // Helper class to represent a time interval.
+    private static class Interval {
+        LocalTime start;
+        LocalTime end;
+        Interval(LocalTime start, LocalTime end) {
+            this.start = start;
+            this.end = end;
         }
     }
 

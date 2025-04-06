@@ -1,10 +1,15 @@
 package marketing;
 
+import Database.SQLConnection;
+import com.sun.jdi.connect.spi.Connection;
 import operations.entities.Booking;
 import operations.module.CalendarModule;
 import operations.module.IncomeTracker;
 import operations.module.RoomConfigurationSystem;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -14,95 +19,128 @@ public class MarketingService implements MarketingInterface {
     private final CalendarModule calendarModule;
     private final RoomConfigurationSystem roomConfigSystem;
     private final IncomeTracker incomeTracker;
+    private final SQLConnection sqlCon; // SQL connection dependency
 
-    // Constructor to inject dependencies
-    public MarketingService(CalendarModule calendarModule, RoomConfigurationSystem roomConfigSystem, IncomeTracker incomeTracker) {
+    // Constructor with SQLConnection injection
+    public MarketingService(CalendarModule calendarModule, RoomConfigurationSystem roomConfigSystem, IncomeTracker incomeTracker, SQLConnection sqlCon) {
         this.calendarModule = calendarModule;
         this.roomConfigSystem = roomConfigSystem;
         this.incomeTracker = incomeTracker;
+        this.sqlCon = sqlCon;
     }
 
     // --- 1. Calendar Access ---
     @Override
     public String viewCalendar(LocalDate startDate, LocalDate endDate) {
-        // Fetch bookings within the specified date range
-        List<Booking> bookings = calendarModule.getBookingsForDate(startDate, endDate);
         StringBuilder calendarData = new StringBuilder();
-        for (Booking booking : bookings) {
-            calendarData.append("Booking ID: ").append(booking.getId())
-                    .append(", Activity: ").append(booking.getActivityName())
-                    .append(", Start Date: ").append(booking.getStartDate())
-                    .append(", End Date: ").append(booking.getEndDate())
-                    .append("\n");
+        try (ResultSet rs = sqlCon.getCalendarBookings(startDate, endDate)) {
+            if (rs != null) {
+                while (rs.next()) {
+                    calendarData.append("Booking ID: ").append(rs.getInt("booking_id")).append(", ");
+                    calendarData.append("Start Date: ").append(rs.getDate("booking_DateStart")).append(", ");
+                    calendarData.append("End Date: ").append(rs.getDate("booking_DateEnd")).append(", ");
+                    calendarData.append("Status: ").append(rs.getString("booking_status")).append("\n");
+                }
+            } else {
+                return "Error retrieving calendar data.";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "Error retrieving calendar data.";
         }
         return calendarData.toString();
     }
 
     @Override
     public void notifyCalendarChange(int bookingId, String changeType) {
-        // Notify Marketing of booking changes
         System.out.println("Booking " + bookingId + " has been " + changeType);
     }
 
-    // --- 2. Space Availability ---
     @Override
     public Map<String, String> getSpaceAvailability(LocalDate date) {
-        // Fetch room availability for the specified date
         return roomConfigSystem.getRoomAvailability(date);
     }
 
-    // --- 3. Seating Plans ---
     @Override
     public String getSeatingPlan(int activityId) {
-        // Fetch seating plan for the specified activity
         return roomConfigSystem.getSeatingPlan(activityId);
     }
 
+    // --- 4. Booking Details (Configuration Details) ---
     @Override
     public String getConfigurationDetails(int bookingId) {
-        // Fetch the booking details
-        Booking booking = calendarModule.getBookingById(bookingId);
-        if (booking == null) {
-            return "Booking not found for ID: " + bookingId;
+        StringBuilder details = new StringBuilder();
+        try {
+            // Use getBookingDetails method from SQLConnection.
+            ResultSet rsBooking = sqlCon.getBookingDetails(bookingId);
+            if (rsBooking.next()) {
+                details.append("Booking Start Date: ").append(rsBooking.getString("booking_DateStart")).append("\n");
+                details.append("Booking End Date: ").append(rsBooking.getString("booking_DateEnd")).append("\n");
+                details.append("Status: ").append(rsBooking.getString("booking_status")).append("\n");
+                details.append("Total Cost: ").append(rsBooking.getString("total_cost")).append("\n");
+                details.append("Payment Status: ").append(rsBooking.getString("payment_status")).append("\n");
+                details.append("Company Name: ").append(rsBooking.getString("company_name")).append("\n");
+            } else {
+                return "No booking found for ID: " + bookingId;
+            }
+            rsBooking.close();
+            // Optionally, you could also use getBookingsTableModel() to display a table.
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "Error retrieving booking configuration details.";
         }
-
-        // Fetch the configuration details for the booking
-        String configuration = roomConfigSystem.getConfiguration(booking);
-        return "Configuration details for booking ID " + bookingId + ":\n" + configuration;
+        return details.toString();
     }
 
     // --- 5. Revenue Information ---
     @Override
     public String getRevenueInfo(int activityId) {
-        // Fetch revenue information for the specified activity
         return incomeTracker.getRevenueForActivity(activityId);
     }
 
-    // --- 6. Usage Reports ---
     @Override
     public String getUsageReports(LocalDate startDate, LocalDate endDate) {
-        // Fetch usage reports for the specified date range
         return incomeTracker.getUsageReport(startDate, endDate);
     }
 
-    // --- 7. Communication on Held Spaces ---
     @Override
     public String getHeldSpaces() {
-        // Fetch held spaces and their expiry details
         return roomConfigSystem.getHeldSpaces();
     }
 
     // --- 8. Film Showings ---
     @Override
     public boolean scheduleFilm(int filmId, LocalDate proposedDate) {
-        // Schedule a film for the proposed date
+        // Use the new SQLConnection method to get film event details and availability.
+        Map<String, String> freeTime = sqlCon.getFilmEventDetailsWithAvailability(proposedDate);
+        System.out.println("Free time slots for venues on " + proposedDate + ":");
+        for (Map.Entry<String, String> entry : freeTime.entrySet()) {
+            System.out.println("Venue: " + entry.getKey() + " | Free Slots: " + entry.getValue());
+        }
+        // Delegate to the calendar module (or incorporate further scheduling logic as needed)
         return calendarModule.scheduleFilm(filmId, proposedDate);
     }
 
     // --- 9. Daily Sheets ---
     @Override
     public String getDailySheet(LocalDate date) {
-        // Fetch daily usage sheet for the specified date
-        return incomeTracker.getDailySheet(date);
+        StringBuilder sheet = new StringBuilder();
+        try (ResultSet rs = sqlCon.getDailySheet(date)) {
+            if (rs != null) {
+                while (rs.next()) {
+                    sheet.append("Event ID: ").append(rs.getInt("event_id")).append(", ");
+                    sheet.append("Name: ").append(rs.getString("name")).append(", ");
+                    sheet.append("Start Time: ").append(rs.getTime("start_time")).append(", ");
+                    sheet.append("End Time: ").append(rs.getTime("end_time")).append("\n");
+                }
+            } else {
+                return "Error retrieving daily sheet.";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "Error retrieving daily sheet.";
+        }
+        return sheet.toString();
     }
+
 }
