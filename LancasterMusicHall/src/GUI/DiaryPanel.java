@@ -195,7 +195,10 @@ public class DiaryPanel extends CalendarViewPanel {
                 "e.`event_type`, e.description, e.booked_by, v.venue_name " +
                 "FROM Event e " +
                 "LEFT JOIN Venue v ON e.venue_id = v.venue_id " +
-                "WHERE e.start_date = ?";
+                "JOIN Booking b ON e.booking_id = b.booking_id " +
+                "WHERE e.start_date = ? " +
+                "AND b.booking_status = 'held' " +
+                "ORDER BY e.start_time";
 
         try {
             PreparedStatement ps = sqlCon.getConnection().prepareStatement(query);
@@ -211,7 +214,7 @@ public class DiaryPanel extends CalendarViewPanel {
                 LocalTime endTime = rs.getTime("end_time").toLocalTime();
 
                 int eventStartHour = startTime.getHour();
-                int baseHour = Integer.parseInt(times[0]); // 10:00 is the first slot.
+                int baseHour = Integer.parseInt(times[0]); // For example, if times[0] is "10"
                 int timeSlotIndex = eventStartHour - baseHour;
                 if (timeSlotIndex < 0 || timeSlotIndex >= times.length) {
                     continue; // Skip events outside our defined time grid.
@@ -234,6 +237,7 @@ public class DiaryPanel extends CalendarViewPanel {
         }
         revalidate();
         repaint();
+
     }
 
     /**

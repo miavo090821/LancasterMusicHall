@@ -152,11 +152,14 @@ public class MonthViewPanel extends CalendarViewPanel {
             }
         }
 
-        String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
+        // Query now joins the Booking table and filters for confirmed bookings.
+        String query = "SELECT e.event_id, e.booking_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
                 "e.`event_type`, e.description, e.booked_by, v.venue_name " +
                 "FROM Event e " +
                 "LEFT JOIN Venue v ON e.venue_id = v.venue_id " +
-                "WHERE e.start_date BETWEEN ? AND ?";
+                "JOIN Booking b ON e.booking_id = b.booking_id " +
+                "WHERE e.start_date BETWEEN ? AND ? " +
+                "AND b.booking_status = 'confirmed'";
 
         try {
             PreparedStatement ps = getSQLConnection().getConnection().prepareStatement(query);
@@ -166,7 +169,7 @@ public class MonthViewPanel extends CalendarViewPanel {
 
             while (rs.next()) {
                 String eventName = rs.getString("name");
-                String venueName = rs.getString("venue_name");
+                int bookingId = rs.getInt("booking_id");
                 LocalDate eventDate = rs.getDate("start_date").toLocalDate();
 
                 int dayOfMonth = eventDate.getDayOfMonth();
@@ -176,7 +179,7 @@ public class MonthViewPanel extends CalendarViewPanel {
                 int row = cellIndex / 7;
                 int col = cellIndex % 7;
                 if (dayCells[row][col] != null) {
-                    dayCells[row][col].addEvent(String.format("%s (%s)", eventName, venueName));
+                    dayCells[row][col].addEvent(String.format("%s (Booking: %d)", eventName, bookingId));
                     dayCells[row][col].refresh();
                 }
             }

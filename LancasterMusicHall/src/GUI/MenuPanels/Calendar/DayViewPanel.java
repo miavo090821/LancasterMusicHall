@@ -119,11 +119,14 @@ public class DayViewPanel extends CalendarViewPanel {
             slot.setBackground(Color.WHITE);
         }
 
-        String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
+        // Adjusted query: join with Booking to filter confirmed bookings and retrieve booking_id.
+        String query = "SELECT e.event_id, e.booking_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
                 "e.`event_type`, e.description, e.booked_by, v.venue_name " +
                 "FROM Event e " +
                 "LEFT JOIN Venue v ON e.venue_id = v.venue_id " +
+                "JOIN Booking b ON e.booking_id = b.booking_id " +
                 "WHERE e.start_date = ? " +
+                "AND b.booking_status = 'confirmed' " +
                 "ORDER BY e.start_time";
 
         try {
@@ -134,7 +137,10 @@ public class DayViewPanel extends CalendarViewPanel {
             List<EventInfo> events = new ArrayList<>();
             while (rs.next()) {
                 int eventId = rs.getInt("event_id");
+                int bookingId = rs.getInt("booking_id");
                 String eventName = rs.getString("name");
+                // Append booking id to event name
+                eventName = eventName + " (Booking: " + bookingId + ")";
                 String venueName = rs.getString("venue_name");
                 String bookedBy = rs.getString("booked_by");
                 LocalTime startTime = rs.getTime("start_time").toLocalTime();
@@ -200,6 +206,7 @@ public class DayViewPanel extends CalendarViewPanel {
         }
         revalidate();
         repaint();
+
     }
 
     private String getDayOfMonthSuffix(int n) {

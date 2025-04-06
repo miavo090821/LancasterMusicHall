@@ -173,11 +173,13 @@ public class WeekViewPanel extends CalendarViewPanel {
         LocalDate weekStart = startOfWeek;
         LocalDate weekEnd = startOfWeek.plusDays(6);
 
-        String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
+        // Adjusted query: join with Booking to filter confirmed bookings and select booking_id.
+        String query = "SELECT e.event_id, e.booking_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
                 "e.`event_type`, e.description, e.booked_by, v.venue_name " +
                 "FROM Event e " +
                 "LEFT JOIN Venue v ON e.venue_id = v.venue_id " +
-                "WHERE e.start_date BETWEEN ? AND ?";
+                "JOIN Booking b ON e.booking_id = b.booking_id " +
+                "WHERE e.start_date BETWEEN ? AND ? AND b.booking_status = 'confirmed'";
 
         try {
             PreparedStatement ps = sqlCon.getConnection().prepareStatement(query);
@@ -193,7 +195,10 @@ public class WeekViewPanel extends CalendarViewPanel {
 
             while (rs.next()) {
                 int eventId = rs.getInt("event_id");
+                int bookingId = rs.getInt("booking_id");
                 String eventName = rs.getString("name");
+                // Append booking id to the event name.
+                eventName = eventName + " (Booking: " + bookingId + ")";
                 String venueName = rs.getString("venue_name");
                 String bookedBy = rs.getString("booked_by");
                 LocalTime startTime = rs.getTime("start_time").toLocalTime();
@@ -241,10 +246,9 @@ public class WeekViewPanel extends CalendarViewPanel {
 
                         if (timeSlotPanel.getComponentCount() == 0) {
                             // Create container panel with the correct number of columns
-                            JPanel containerPanel = new JPanel(new GridLayout(1, maxConcurrent, 1, 0)); // Added horizontal gap
+                            JPanel containerPanel = new JPanel(new GridLayout(1, maxConcurrent, 1, 0));
                             containerPanel.setBackground(Color.WHITE);
                             containerPanel.setBorder(BorderFactory.createEmptyBorder());
-                            timeSlotPanel.add(containerPanel, BorderLayout.CENTER);
                             timeSlotPanel.add(containerPanel, BorderLayout.CENTER);
 
                             // Add empty panels for all columns
@@ -280,6 +284,7 @@ public class WeekViewPanel extends CalendarViewPanel {
         }
         revalidate();
         repaint();
+
     }
 
     private Color determineEventColor(String bookedBy) {
