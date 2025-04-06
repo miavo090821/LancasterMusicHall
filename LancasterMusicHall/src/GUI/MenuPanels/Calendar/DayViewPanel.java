@@ -220,18 +220,9 @@ public class DayViewPanel extends CalendarViewPanel {
 
     private JPanel createEventPanel(EventInfo event, boolean isFirstSlot, boolean isLastSlot) {
         JPanel panel = new JPanel(new BorderLayout());
-
-        if (event == null) {
-            // This is an empty slot - show guidelines
-            panel.setBackground(Color.WHITE);
-            panel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(240, 240, 240))); // Light gray bottom border
-            return panel;
-        }
-
-        // Existing event panel code
         panel.setBackground(eventColors.get(event.eventId));
 
-        // Customize borders for events
+        // Customize borders (unchanged)
         if (isFirstSlot && isLastSlot) {
             panel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.DARK_GRAY));
         } else if (isFirstSlot) {
@@ -249,32 +240,13 @@ public class DayViewPanel extends CalendarViewPanel {
                             event.startTime, event.endTime),
                     SwingConstants.CENTER
             );
-            label.setFont(new Font("Arial", Font.PLAIN, 9));
+            label.setFont(new Font("Arial", Font.PLAIN, 9)); // Reduced from 10 to 9
             panel.add(label, BorderLayout.CENTER);
         }
 
         attachEventListeners(panel, event.eventId);
         return panel;
     }
-
-//    private Color generateUniqueColor(int eventId) {
-//        // List of saturated colors
-//        Color[] saturatedColors = {
-//             new Color(200, 230, 255),  // Light blue
-//             new Color(255, 230, 200),  // Light orange
-//             new Color(255, 200, 230),  // Light pink
-//             new Color(230, 255, 200),  // Light green
-//             new Color(230, 200, 255),  // Light purple
-//             new Color(200, 255, 230),  // Mint green
-//             new Color(255, 200, 200),  // Light coral
-//             new Color(220, 220, 255),  // Lavender
-//             new Color(200, 255, 255),  // Light cyan
-//             new Color(255, 255, 200),  // Light yellow
-//             new Color(240, 240, 240),  // Default light gray
-//        };
-//
-//        return saturatedColors[Math.abs(eventId) % saturatedColors.length];
-//    }
 
     private Color determineEventColor(String bookedBy) {
         if (bookedBy != null) {
