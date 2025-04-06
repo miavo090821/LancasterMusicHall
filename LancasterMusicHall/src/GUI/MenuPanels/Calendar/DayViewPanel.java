@@ -4,8 +4,7 @@ import GUI.MenuPanels.Event.EventDetailForm;
 import Database.SQLConnection;
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.PreparedStatement;
@@ -13,10 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class DayViewPanel extends CalendarViewPanel {
     private final String[] times = {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
@@ -262,25 +258,18 @@ public class DayViewPanel extends CalendarViewPanel {
     private int calculateMaxConcurrentEvents(List<EventInfo> events) {
         if (events.isEmpty()) return 0;
 
-        List<TimePoint> points = new ArrayList<>();
+        // Use times.length instead of numberOfSlots
+        int[] concurrentCounts = new int[times.length];
         for (EventInfo event : events) {
-            points.add(new TimePoint(event.startTime, true));
-            points.add(new TimePoint(event.endTime, false));
+            for (int slot = event.startSlot; slot <= event.endSlot; slot++) {
+                concurrentCounts[slot]++;
+            }
         }
 
-        Collections.sort(points);
-
         int maxConcurrent = 0;
-        int currentConcurrent = 0;
-
-        for (TimePoint point : points) {
-            if (point.isStart) {
-                currentConcurrent++;
-                if (currentConcurrent > maxConcurrent) {
-                    maxConcurrent = currentConcurrent;
-                }
-            } else {
-                currentConcurrent--;
+        for (int count : concurrentCounts) {
+            if (count > maxConcurrent) {
+                maxConcurrent = count;
             }
         }
 
@@ -288,14 +277,41 @@ public class DayViewPanel extends CalendarViewPanel {
     }
 
     private void assignEventColumns(List<EventInfo> events, int maxColumns) {
-        LocalTime[] columnAvailableAt = new LocalTime[maxColumns];
-
+        // Group events by their time slots
+        Map<Integer, List<EventInfo>> eventsBySlot = new HashMap<>();
         for (EventInfo event : events) {
+            for (int slot = event.startSlot; slot <= event.endSlot; slot++) {
+                eventsBySlot.computeIfAbsent(slot, k -> new ArrayList<>()).add(event);
+            }
+        }
+
+        // Track which columns are available at each time slot
+        Map<Integer, Set<Integer>> availableColumnsBySlot = new HashMap<>();
+        for (int slot = 0; slot < times.length; slot++) {  // Use times.length here
+            availableColumnsBySlot.put(slot, new HashSet<>());
             for (int col = 0; col < maxColumns; col++) {
-                if (columnAvailableAt[col] == null ||
-                        !event.startTime.isBefore(columnAvailableAt[col])) {
+                availableColumnsBySlot.get(slot).add(col);
+            }
+        }
+
+        // Assign columns to events
+        for (EventInfo event : events) {
+            // Find the first column that's available in all slots this event occupies
+            for (int col = 0; col < maxColumns; col++) {
+                boolean columnAvailable = true;
+                for (int slot = event.startSlot; slot <= event.endSlot; slot++) {
+                    if (!availableColumnsBySlot.get(slot).contains(col)) {
+                        columnAvailable = false;
+                        break;
+                    }
+                }
+
+                if (columnAvailable) {
                     event.column = col;
-                    columnAvailableAt[col] = event.endTime;
+                    // Mark this column as occupied for all slots this event covers
+                    for (int slot = event.startSlot; slot <= event.endSlot; slot++) {
+                        availableColumnsBySlot.get(slot).remove(col);
+                    }
                     break;
                 }
             }
