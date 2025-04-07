@@ -51,7 +51,7 @@ public class DailyEventsPanel extends JPanel {
         downloadButton = new JButton("Download as CSV");
         downloadButton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         downloadButton.setBackground(new Color(207, 185, 255)); // Lavender
-        downloadButton.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
+            downloadButton.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
         downloadButton.addActionListener(e -> downloadAsCSV());
 
         // Status label and progress bar

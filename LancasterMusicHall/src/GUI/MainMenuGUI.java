@@ -32,15 +32,16 @@ public class MainMenuGUI {
     private JPanel cardPanel;
     private CardLayout cardLayout;
     private int fontSize = 18;
+    private JFrame frame;
 //    private SQLConnection sqlConnection = new SQLConnection();
 
     public MainMenuGUI(int staffId, SQLConnection sqlConnection) {
 
         this.sqlConnection = sqlConnection;
 
-        JFrame frame = new JFrame("Main Menu");
+        frame = new JFrame("Main Menu");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 800);
+        frame.setSize(1000, 800);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
         // Create navigation bar.
@@ -214,7 +215,8 @@ public class MainMenuGUI {
     }
 
     public void logout() {
-        // Implement logout functionality if needed.
+        new StaffLoginGUI();
+        frame.dispose(); // Close login window.
     }
 
     public int getFontSize() {
