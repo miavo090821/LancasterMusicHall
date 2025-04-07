@@ -25,18 +25,17 @@ public class MainMenuGUI {
         this(0, new SQLConnection());
     }
 
-    private int staffId;
     private SQLConnection sqlConnection;
 
     // Track the currently selected navigation button.
     private JButton activeButton = null;
     private JPanel cardPanel;
     private CardLayout cardLayout;
-    private int fontSize;
+    private int fontSize = 18;
 //    private SQLConnection sqlConnection = new SQLConnection();
 
     public MainMenuGUI(int staffId, SQLConnection sqlConnection) {
-        this.staffId = staffId;
+
         this.sqlConnection = sqlConnection;
 
         JFrame frame = new JFrame("Main Menu");
@@ -83,7 +82,7 @@ public class MainMenuGUI {
     private JPanel createNavBar() {
         JPanel navigationTab = new JPanel();
         navigationTab.setPreferredSize(new Dimension(600, 100)); // Ensure consistent height.
-        navigationTab.setBackground(Color.blue);
+        navigationTab.setBackground(Color.white);
 
         JPanel navBar = new JPanel();
         navBar.setLayout(new GridLayout(1, 6, 0, 0)); // 1 row, 6 columns.

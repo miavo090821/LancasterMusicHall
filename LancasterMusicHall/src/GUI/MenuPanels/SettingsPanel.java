@@ -1,10 +1,8 @@
 package GUI.MenuPanels;
 
 import GUI.MainMenuGUI;
-
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
+import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,184 +10,186 @@ import java.awt.event.ActionListener;
 public class SettingsPanel extends JPanel {
     private int fontSize;
     private MainMenuGUI mainMenu;
-    private JLabel titleLabel, fontLabel, colourLabel, generalLabel, logoutLabel;
+
+    // Color scheme matching HomePanel
+    private final Color PRIMARY_COLOR = new Color(200, 170, 250); // Lavender
+    private final Color TEXT_COLOR = new Color(60, 60, 60); // Dark gray for text
+    private final Color BORDER_COLOR = new Color(0, 0, 0); // Light gray for borders
+    private final Color BUTTON_COLOR = new Color(220, 220, 220); // Light gray for borders
 
     public SettingsPanel(MainMenuGUI mainMenu) {
         this.mainMenu = mainMenu;
-        fontSize = mainMenu.getFontSize();
-        setPreferredSize(new Dimension(700, 350));
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.fontSize = mainMenu.getFontSize();
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
+        setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Main container panel
-        JPanel mainPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        mainPanel.setPreferredSize(new Dimension(700, 500));
-        mainPanel.setBackground(Color.white);
-        add(mainPanel);
+        // === Title Panel ===
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBackground(Color.WHITE);
+        titlePanel.setBorder(new EmptyBorder(0, 0, 15, 0));
 
-        // Panel for text elements
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setBorder(new LineBorder(Color.black));
-        textPanel.setPreferredSize(new Dimension(750, 550));
-        textPanel.setBackground(Color.white);
-        mainPanel.add(textPanel);
+        JLabel titleLabel = new JLabel("Settings");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4));
+        titleLabel.setForeground(TEXT_COLOR);
+        titlePanel.add(titleLabel, BorderLayout.WEST);
 
-        // Accessibility title panel
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        titlePanel.setPreferredSize(new Dimension(700, 30));
-        titlePanel.setBackground(Color.white);
-        textPanel.add(titlePanel);
+        JButton logoutButton = createStyledButton("Log Out", PRIMARY_COLOR, fontSize);
+        logoutButton.addActionListener(e -> mainMenu.logout());
+        titlePanel.add(logoutButton, BorderLayout.EAST);
 
-        titleLabel = new JLabel("Accessibility");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titlePanel.add(titleLabel);
+        add(titlePanel, BorderLayout.NORTH);
 
-        titlePanel.add(Box.createHorizontalStrut(480));
-        JButton logoutButton = new JButton("Log Out");
-        logoutButton.setFont(new Font("Arial", Font.BOLD, 16));
-        logoutButton.setBackground(Color.WHITE);
-        logoutButton.setFocusPainted(false);
-        logoutButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        titlePanel.add(logoutButton);
+        // === Main Content Panel ===
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER_COLOR),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
 
-        // Font size panel
-        JPanel fontPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10,0));
-        fontPanel.setPreferredSize(new Dimension(700, 30));
-        fontPanel.add(Box.createHorizontalStrut(10));
-        fontPanel.setBackground(Color.white);
-        textPanel.add(fontPanel);
+        // Accessibility Section
+        contentPanel.add(createSectionPanel("Accessibility", new String[]{
+                "Font Size:",
+                "Colour Blind Filters:"
+        }, new String[][]{
+                {"10", "12", "14", "16", "18", "20"},
+                {"Off", "Protanopia", "Deuteranopia", "Tritanopia"}
+        }, fontSize));
 
-        fontLabel = new JLabel("Font Size:");
-        fontLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        // General Section
+        contentPanel.add(Box.createVerticalStrut(20));
+        contentPanel.add(createSectionPanel("General", new String[]{
+                "Auto Logout:"
+        }, new String[][]{
+                {"5 minutes", "10 minutes", "30 minutes", "1 hour"}
+        }, fontSize));
 
-        String[] fontSizes = {"10", "12", "14", "16", "18", "20"};
-        JComboBox<String> fontSizeDropdown = new JComboBox<>(fontSizes);
-        mainMenu.styleDropdown(fontSizeDropdown);
-        fontSizeDropdown.setSelectedItem(String.valueOf(fontSize)); // Set current font size
+        // Wrap in scroll pane
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        add(scrollPane, BorderLayout.CENTER);
 
-        // Add ActionListener to the dropdown
-        fontSizeDropdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int newFontSize = Integer.parseInt((String) fontSizeDropdown.getSelectedItem());
-                updateFontSizes(newFontSize);
+        // === Action Buttons ===
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        actionPanel.setBackground(Color.WHITE);
+        actionPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
+
+        JButton revertButton = createStyledButton("Revert", BUTTON_COLOR, fontSize);
+        JButton saveButton = createStyledButton("Save Changes", PRIMARY_COLOR, fontSize);
+
+        actionPanel.add(revertButton);
+        actionPanel.add(saveButton);
+        add(actionPanel, BorderLayout.SOUTH);
+    }
+
+    private JPanel createSectionPanel(String title, String[] labels, String[][] options, int fontSize) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+
+        // Section title
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 2));
+        titleLabel.setForeground(TEXT_COLOR);
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        titleLabel.setBorder(new EmptyBorder(0, 0, 10, 0));
+        panel.add(titleLabel);
+
+        // Add each setting row
+        for (int i = 0; i < labels.length; i++) {
+            JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+            rowPanel.setBackground(Color.WHITE);
+            rowPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+
+            JLabel label = new JLabel(labels[i]);
+            label.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+            label.setForeground(TEXT_COLOR);
+            rowPanel.add(label);
+
+            JComboBox<String> comboBox = new JComboBox<>(options[i]);
+            styleComboBox(comboBox, fontSize);
+            rowPanel.add(comboBox);
+
+            panel.add(rowPanel);
+            panel.add(Box.createVerticalStrut(5));
+        }
+
+        return panel;
+    }
+
+    private void styleComboBox(JComboBox<String> comboBox, int fontSize) {
+        comboBox.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+        comboBox.setBackground(Color.WHITE);
+        comboBox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER_COLOR),
+                BorderFactory.createEmptyBorder(3, 5, 3, 5)
+        ));
+        comboBox.setMaximumSize(new Dimension(200, 30));
+    }
+
+    private JButton createStyledButton(String text, Color color, int fontSize) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        button.setBackground(color);
+        button.setForeground(TEXT_COLOR);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(color.darker(), 1),
+                BorderFactory.createEmptyBorder(5, 15, 5, 15)
+        ));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // Add hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(color.brighter());
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(color);
             }
         });
 
-        fontPanel.add(fontLabel);
-        fontPanel.add(fontSizeDropdown);
-
-        // Colour blind filter panel
-        JPanel colourPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,10,0));
-        colourPanel.add(Box.createHorizontalStrut(10));
-        colourPanel.setPreferredSize(new Dimension(700, 30));
-        colourPanel.setBackground(Color.white);
-        textPanel.add(colourPanel);
-
-        colourLabel = new JLabel("Colour Blind Filters:");
-        colourLabel.setFont(new Font("Arial", Font.PLAIN, 18));
-        String[] colourFilters = {"Off", "Protanopia", "Deuteranopia", "Tritanopia"};
-        JComboBox<String> colourDropdown = new JComboBox<>(colourFilters);
-        mainMenu.styleDropdown(colourDropdown);
-        colourPanel.add(colourLabel);
-        colourPanel.add(colourDropdown);
-
-        // General section panel
-        JPanel generalPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        generalPanel.setPreferredSize(new Dimension(700, 30));
-        generalPanel.setBackground(Color.white);
-        textPanel.add(generalPanel);
-
-        generalLabel = new JLabel("General");
-        generalLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        generalLabel.setBorder(new EmptyBorder(0, 5, 20, 0));
-        generalPanel.add(generalLabel);
-
-        // Auto logout panel
-        JPanel logoutPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10,0));
-        logoutPanel.setPreferredSize(new Dimension(700, 30));
-        logoutPanel.setBackground(Color.white);
-        logoutPanel.add(Box.createHorizontalStrut(10));
-        textPanel.add(logoutPanel);
-
-        logoutLabel = new JLabel("Auto Logout:");
-        logoutLabel.setFont(new Font("Arial", Font.PLAIN, 18));
-        String[] logoutTimes = {"5 minutes", "10 minutes", "30 minutes", "1 hour"};
-        JComboBox<String> logoutDropdown = new JComboBox<>(logoutTimes);
-        logoutDropdown.setSelectedItem("10 minutes");
-        mainMenu.styleDropdown(logoutDropdown);
-        logoutPanel.add(logoutLabel);
-        logoutPanel.add(logoutDropdown);
-
-        //empty panel
-        JPanel panel = new JPanel();
-        panel.setPreferredSize(new Dimension(700, 260));
-        panel.setBackground(Color.white);
-        textPanel.add(panel);
-
-        // === Bottom Panel ===
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
-        bottomPanel.setBackground(Color.WHITE);
-
-        // Add glue to both sides for centering
-        bottomPanel.add(Box.createHorizontalGlue());
-
-        // Left column
-        JPanel leftColumn = new JPanel();
-        leftColumn.setLayout(new FlowLayout(FlowLayout.CENTER));
-        leftColumn.setBackground(Color.WHITE);
-        leftColumn.setPreferredSize(new Dimension(260, 100));
-
-        bottomPanel.add(leftColumn);
-
-        // Middle column
-        JPanel middle = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 40));
-        middle.setBackground(Color.white);
-        middle.setPreferredSize(new Dimension(260, 100));
-
-        JButton saveButton = new JButton("Save Changes");
-        mainMenu.stylizeButton(saveButton);
-        middle.add(saveButton);
-        bottomPanel.add(middle);
-
-        // Right column
-        JPanel rightColumn = new JPanel();
-        rightColumn.setLayout(new FlowLayout(FlowLayout.RIGHT, 60, 40));
-        rightColumn.setBackground(Color.white);
-        rightColumn.setPreferredSize(new Dimension(260, 100));
-
-        JButton revertButton = new JButton("Revert");
-        mainMenu.stylizeButton(revertButton);
-        rightColumn.add(revertButton);
-        bottomPanel.add(rightColumn);
-
-        bottomPanel.add(Box.createHorizontalGlue()); // Add glue to the other side
-
-        mainPanel.add(bottomPanel);
+        return button;
     }
 
-    private void updateFontSizes(int newFontSize) {
-        // Update the font size of all relevant labels
-        titleLabel.setFont(new Font("Arial", Font.BOLD, newFontSize + 6)); // Title is slightly larger
-        fontLabel.setFont(new Font("Arial", Font.PLAIN, newFontSize));
-        colourLabel.setFont(new Font("Arial", Font.PLAIN, newFontSize));
-        generalLabel.setFont(new Font("Arial", Font.BOLD, newFontSize + 6)); // Title is slightly larger
-        logoutLabel.setFont(new Font("Arial", Font.PLAIN, newFontSize));
-
-        // You may also want to update the font size of buttons and other components
-        // For example:
-        // logoutButton.setFont(new Font("Arial", Font.BOLD, newFontSize));
-
-        // Store the new font size
+    public void updateFontSizes(int newFontSize) {
         this.fontSize = newFontSize;
-        mainMenu.setFontSize(newFontSize); // Update in MainMenuGUI if needed
+
+        // Update all components that need font size changes
+        Component[] components = getComponents();
+        for (Component component : components) {
+            if (component instanceof JPanel) {
+                updatePanelFonts((JPanel) component);
+            }
+        }
+
+        revalidate();
+        repaint();
     }
 
-    private JPanel createFixedHeightPanel(int height) {
-        JPanel panel = new JPanel();
-        panel.setPreferredSize(new Dimension(700, height));
-        panel.setMaximumSize(new Dimension(700, height));
-        return panel;
+    private void updatePanelFonts(JPanel panel) {
+        for (Component component : panel.getComponents()) {
+            if (component instanceof JLabel) {
+                JLabel label = (JLabel) component;
+                if (label.getText().equals("Settings")) {
+                    label.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4));
+                } else if (label.getText().equals("Accessibility") || label.getText().equals("General")) {
+                    label.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 2));
+                } else {
+                    label.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+                }
+            } else if (component instanceof JButton) {
+                ((JButton) component).setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+            } else if (component instanceof JComboBox) {
+                ((JComboBox<?>) component).setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+            } else if (component instanceof JPanel) {
+                updatePanelFonts((JPanel) component);
+            }
+        }
     }
 }

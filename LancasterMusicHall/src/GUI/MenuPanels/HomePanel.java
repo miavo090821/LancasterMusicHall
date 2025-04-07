@@ -2,6 +2,7 @@ package GUI.MenuPanels;
 
 import GUI.MainMenuGUI;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
@@ -9,6 +10,7 @@ import java.awt.*;
 public class HomePanel extends JPanel {
     private static final String FILE_NAME = "reminders.txt";
     private static final String NOTIFICATIONS_FILE = "notifications.txt";
+    private int fontSize;
 
     // Color scheme
     private final Color PRIMARY_COLOR = new Color(200, 170, 250); // Lavender
@@ -16,7 +18,13 @@ public class HomePanel extends JPanel {
     private final Color TEXT_COLOR = new Color(60, 60, 60); // Dark gray for text
     private final Color BORDER_COLOR = new Color(220, 220, 220); // Light gray for borders
 
+    // Components that need font size updates
+    private JLabel titleLabel;
+    private JTextArea textReminder, textNotification;
+    private JButton editButton, saveButton, undoButton, notifyEditButton, notifySaveButton, notifyUndoButton, logoutButton;
+
     public HomePanel(MainMenuGUI mainMenu) {
+        this.fontSize = mainMenu.getFontSize();
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(900, 500));
         setBackground(Color.WHITE);
@@ -28,8 +36,8 @@ public class HomePanel extends JPanel {
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
         titlePanel.setBackground(Color.WHITE);
 
-        JLabel titleLabel = new JLabel("Dashboard");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel = new JLabel("Dashboard");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4)); // Title is larger
         titleLabel.setForeground(TEXT_COLOR);
         titlePanel.add(titleLabel);
 
@@ -69,7 +77,7 @@ public class HomePanel extends JPanel {
                 "Important Reminders",
                 TitledBorder.LEFT,
                 TitledBorder.TOP,
-                new Font("Segoe UI", Font.BOLD, 16),
+                new Font("Segoe UI", Font.BOLD, fontSize),
                 TEXT_COLOR
         );
         titledBorder.setTitleJustification(TitledBorder.LEFT);
@@ -78,8 +86,8 @@ public class HomePanel extends JPanel {
                 titledBorder
         ));
 
-        JTextArea textReminder = new JTextArea(mainMenu.loadTextFromFile(FILE_NAME));
-        textReminder.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        textReminder = new JTextArea(mainMenu.loadTextFromFile(FILE_NAME));
+        textReminder.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
         textReminder.setLineWrap(true);
         textReminder.setWrapStyleWord(true);
         textReminder.setEditable(false);
@@ -94,9 +102,9 @@ public class HomePanel extends JPanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         buttonPanel.setBackground(Color.WHITE);
 
-        JButton editButton = createStyledButton("Edit", PRIMARY_COLOR);
-        JButton saveButton = createStyledButton("Save", PRIMARY_COLOR);
-        JButton undoButton = createStyledButton("Undo", BORDER_COLOR);
+        editButton = createStyledButton("Edit", PRIMARY_COLOR, fontSize);
+        saveButton = createStyledButton("Save", PRIMARY_COLOR, fontSize);
+        undoButton = createStyledButton("Undo", BORDER_COLOR, fontSize);
         undoButton.setVisible(false);
 
         editButton.addActionListener(e -> {
@@ -144,7 +152,7 @@ public class HomePanel extends JPanel {
                 "Notifications",
                 TitledBorder.LEFT,
                 TitledBorder.TOP,
-                new Font("Segoe UI", Font.BOLD, 16),
+                new Font("Segoe UI", Font.BOLD, fontSize),
                 TEXT_COLOR
         );
         titledBorder.setTitleJustification(TitledBorder.LEFT);
@@ -153,8 +161,8 @@ public class HomePanel extends JPanel {
                 titledBorder
         ));
 
-        JTextArea textNotification = new JTextArea(mainMenu.loadTextFromFile(NOTIFICATIONS_FILE));
-        textNotification.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        textNotification = new JTextArea(mainMenu.loadTextFromFile(NOTIFICATIONS_FILE));
+        textNotification.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
         textNotification.setLineWrap(true);
         textNotification.setWrapStyleWord(true);
         textNotification.setEditable(false);
@@ -169,9 +177,9 @@ public class HomePanel extends JPanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         buttonPanel.setBackground(Color.WHITE);
 
-        JButton notifyEditButton = createStyledButton("Edit", PRIMARY_COLOR);
-        JButton notifySaveButton = createStyledButton("Save", PRIMARY_COLOR);
-        JButton notifyUndoButton = createStyledButton("Undo", BORDER_COLOR);
+        notifyEditButton = createStyledButton("Edit", PRIMARY_COLOR, fontSize);
+        notifySaveButton = createStyledButton("Save", PRIMARY_COLOR, fontSize);
+        notifyUndoButton = createStyledButton("Undo", BORDER_COLOR, fontSize);
         notifyUndoButton.setVisible(false);
 
         notifyEditButton.addActionListener(e -> {
@@ -210,16 +218,16 @@ public class HomePanel extends JPanel {
         actionPanel.setBackground(Color.WHITE);
         actionPanel.setBorder(new EmptyBorder(10, 20, 0, 20));
 
-        JButton logoutButton = createStyledButton("Log Out", PRIMARY_COLOR);
+        logoutButton = createStyledButton("Log Out", PRIMARY_COLOR, fontSize);
         logoutButton.addActionListener(e -> mainMenu.logout());
         actionPanel.add(logoutButton);
 
         return actionPanel;
     }
 
-    private JButton createStyledButton(String text, Color color) {
+    private JButton createStyledButton(String text, Color color, int fontSize) {
         JButton button = new JButton(text);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        button.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
         button.setBackground(color);
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createCompoundBorder(
@@ -240,5 +248,51 @@ public class HomePanel extends JPanel {
         });
 
         return button;
+    }
+
+    // Method to update font sizes throughout the panel
+    public void updateFontSizes(int newFontSize) {
+        this.fontSize = newFontSize;
+
+        // Update title font
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4));
+
+        // Update text areas
+        textReminder.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+        textNotification.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+
+        // Update buttons
+        editButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        saveButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        undoButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        notifyEditButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        notifySaveButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        notifyUndoButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        logoutButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+
+        // Update titled borders
+        Component[] components = getComponents();
+        for (Component component : components) {
+            if (component instanceof JPanel) {
+                updatePanelBorders((JPanel) component);
+            }
+        }
+
+        revalidate();
+        repaint();
+    }
+
+    private void updatePanelBorders(JPanel panel) {
+        Border border = panel.getBorder();
+        if (border instanceof TitledBorder titledBorder) {
+            titledBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        }
+
+        // Recursively check child components
+        for (Component component : panel.getComponents()) {
+            if (component instanceof JPanel) {
+                updatePanelBorders((JPanel) component);
+            }
+        }
     }
 }
