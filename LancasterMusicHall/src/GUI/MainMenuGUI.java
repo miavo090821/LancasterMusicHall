@@ -57,9 +57,9 @@ public class MainMenuGUI {
         HomePanel home = new HomePanel(this);
         BookingPanel booking = new BookingPanel(this);
         // Instantiate the diary panel using the updated constructor.
-        DiaryPanel diary = new DiaryPanel(LocalDate.now(), sqlConnection);
+        DiaryPanel diary = new DiaryPanel(this, sqlConnection);
         SettingsPanel settings = new SettingsPanel(this);
-        ReviewsPanel reviews = new ReviewsPanel();
+        ReviewsPanel reviews = new ReviewsPanel(sqlConnection);
 
         // Add panels (cards) to the cardPanel.
         cardPanel.add(home, "Home");
@@ -92,7 +92,7 @@ public class MainMenuGUI {
         navBar.setBackground(new Color(200, 170, 230)); // Purple background.
         navBar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Full black border.
 
-        String[] tabs = {"Home", "Calendar", "Diary", "Booking", "Reports", "Settings"};
+        String[] tabs = {"Home", "Calendar", "Diary", "Booking" ,"Reports", "Reviews", "Settings"};
 
         for (String tab : tabs) {
             JButton button = new JButton(tab);

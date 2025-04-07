@@ -1,5 +1,6 @@
 package GUI.MenuPanels.Diary;
 
+import GUI.MainMenuGUI;
 import GUI.MenuPanels.Calendar.*;
 import GUI.MenuPanels.Event.EventDetailForm;
 import GUI.MenuPanels.Event.NewEventForm;
@@ -17,6 +18,7 @@ public class DiaryPanel extends JPanel {
     private DiaryView currentView = DiaryView.DAY;
     private CalendarViewPanel currentViewPanel;
     private SQLConnection sqlCon;
+    private MainMenuGUI mainMenu;
     private LocalDate currentDate = LocalDate.now();
     private List<operations.entities.Event> events = new ArrayList<>(); // Start empty
 
@@ -29,9 +31,9 @@ public class DiaryPanel extends JPanel {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private final DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
 
-    public DiaryPanel(LocalDate date, SQLConnection sqlCon) {
+    public DiaryPanel(MainMenuGUI mainMenu, SQLConnection sqlCon) {
+        this.mainMenu = mainMenu;
         this.sqlCon = sqlCon;
-        this.currentDate = date;
         setLayout(new BorderLayout());
         switchToView(DiaryView.DAY);
         setupBottomPanel();
@@ -120,6 +122,9 @@ public class DiaryPanel extends JPanel {
 
         JButton nextButton = new JButton(">");
         nextButton.addActionListener(e -> navigate(1));
+
+        mainMenu.stylizeButton(prevButton);
+        mainMenu.stylizeButton(nextButton);
 
         navPanel.add(prevButton);
         navPanel.add(nextButton);
