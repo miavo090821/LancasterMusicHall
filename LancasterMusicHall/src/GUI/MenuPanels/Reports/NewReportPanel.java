@@ -10,111 +10,112 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
+import javax.swing.border.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-
+import java.awt.event.ActionListener;
 import java.time.LocalDate;
 
 public class NewReportPanel extends JPanel {
+    // Color scheme matching other panels
+    private final Color PRIMARY_COLOR = new Color(200, 170, 250); // Lavender
+    private final Color ACCENT_COLOR = new Color(230, 210, 250); // Lighter lavender
+    private final Color TEXT_COLOR = new Color(60, 60, 60); // Dark gray for text
+    private final Color BORDER_COLOR = new Color(0, 0, 0); // Black for borders
+
     private SQLConnection sqlCon;
+    private int fontSize = 16;
 
     public NewReportPanel(MainMenuGUI mainMenu) {
-        sqlCon = new SQLConnection();
-        setPreferredSize(new Dimension(600, 350));
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.fontSize = mainMenu.getFontSize();
+        this.sqlCon = new SQLConnection();
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
+        setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Main container panel
-        JPanel mainPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 20));
-        mainPanel.setPreferredSize(new Dimension(600, 350));
-        mainPanel.setBackground(Color.white);
-        add(mainPanel);
+        // === Title Panel ===
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBackground(Color.WHITE);
+        titlePanel.setBorder(new EmptyBorder(0, 0, 15, 0));
 
-        // Panel for text elements
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setBorder(new LineBorder(Color.black));
-        textPanel.setPreferredSize(new Dimension(750, 600));
-        textPanel.setBackground(Color.white);
-        mainPanel.add(textPanel);
+        JLabel titleLabel = new JLabel("Generate New Report");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4));
+        titleLabel.setForeground(TEXT_COLOR);
+        titlePanel.add(titleLabel, BorderLayout.WEST);
 
-        // Main panel 1
-        JPanel panel1 = new JPanel();
-        panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));
-        panel1.setPreferredSize(new Dimension(600, 120));
-        panel1.setBackground(Color.white);
-        textPanel.add(panel1);
+        add(titlePanel, BorderLayout.NORTH);
 
-        // Main panel 2
-        JPanel panel2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 0));
-        panel2.setPreferredSize(new Dimension(600, 200));
-        panel2.setBackground(Color.white);
-        textPanel.add(panel2);
+        // === Main Content Panel ===
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER_COLOR),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
 
-        // Title
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        titlePanel.setPreferredSize(new Dimension(600, 30));
-        titlePanel.setBackground(Color.white);
+        // Instruction label
+        JLabel instructionLabel = new JLabel("Select report type to generate:");
+        instructionLabel.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+        instructionLabel.setForeground(TEXT_COLOR);
+        instructionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        instructionLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
+        contentPanel.add(instructionLabel);
 
-        JLabel titleLabel = new JLabel("Generate New Report:");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titlePanel.add(titleLabel);
+        // Report type buttons
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
+        buttonsPanel.setBackground(Color.WHITE);
+        buttonsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Daily report panel
-        JPanel dailyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 0));
-        dailyPanel.setPreferredSize(new Dimension(600, 30));
-        dailyPanel.setBackground(Color.white);
+        // Daily Report
+        JPanel dailyPanel = createReportOptionPanel("Daily Report:",
+                e -> generateReport("daily"));
+        buttonsPanel.add(dailyPanel);
+        buttonsPanel.add(Box.createVerticalStrut(15));
 
-        JLabel dailyLabel = new JLabel("Daily Report:");
-        dailyLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        JButton dailyButton = new JButton("Generate and Preview");
-        mainMenu.stylizeButton(dailyButton);
-        dailyButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        dailyButton.addActionListener(e -> generateReport("daily"));
-        dailyPanel.add(dailyLabel);
-        dailyPanel.add(dailyButton);
+        // Quarterly Report
+        JPanel quarterlyPanel = createReportOptionPanel("Quarterly Report:",
+                e -> generateReport("quarterly"));
+        buttonsPanel.add(quarterlyPanel);
+        buttonsPanel.add(Box.createVerticalStrut(15));
 
-        // Quarterly report panel
-        JPanel quarterlyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 0));
-        quarterlyPanel.setPreferredSize(new Dimension(600, 30));
-        quarterlyPanel.setBackground(Color.white);
+        // Yearly Report
+        JPanel yearlyPanel = createReportOptionPanel("Yearly Report:",
+                e -> generateReport("yearly"));
+        buttonsPanel.add(yearlyPanel);
 
-        JLabel quarterlyLabel = new JLabel("Quarterly Report:");
-        quarterlyLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        JButton quarterlyButton = new JButton("Generate and Preview");
-        mainMenu.stylizeButton(quarterlyButton);
-        quarterlyButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        quarterlyButton.addActionListener(e -> generateReport("quarterly"));
-        quarterlyPanel.add(quarterlyLabel);
-        quarterlyPanel.add(quarterlyButton);
+        contentPanel.add(buttonsPanel);
 
-        // Yearly report panel
-        JPanel yearlyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 0));
-        yearlyPanel.setPreferredSize(new Dimension(600, 30));
-        yearlyPanel.setBackground(Color.white);
+        // Empty space panel
+        JPanel emptyPanel = new JPanel();
+        emptyPanel.setPreferredSize(new Dimension(700, 100));
+        emptyPanel.setBackground(Color.WHITE);
+        emptyPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        contentPanel.add(emptyPanel);
 
-        JLabel yearlyLabel = new JLabel("Yearly Report:");
-        yearlyLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        JButton yearlyButton = new JButton("Generate and Preview");
-        mainMenu.stylizeButton(yearlyButton);
-        yearlyButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        yearlyButton.addActionListener(e -> generateReport("yearly"));
-        yearlyPanel.add(yearlyLabel);
-        yearlyPanel.add(yearlyButton);
+        // Wrap in scroll pane
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setPreferredSize(new Dimension(700, 800));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        add(scrollPane, BorderLayout.CENTER);
+    }
 
-        // Add components to panel1
-        panel1.add(titlePanel);
-        panel1.add(dailyPanel);
-        panel1.add(quarterlyPanel);
-        panel1.add(yearlyPanel);
+    private JPanel createReportOptionPanel(String labelText, ActionListener action) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        panel.setBackground(Color.WHITE);
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Bottom panel
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 25, 0));
-        bottomPanel.setPreferredSize(new Dimension(600, 50));
-        bottomPanel.setBackground(Color.white);
-        add(bottomPanel);
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+        label.setForeground(TEXT_COLOR);
+        panel.add(label);
 
-        mainPanel.add(bottomPanel);
+        JButton button = createStyledButton("Generate", PRIMARY_COLOR, fontSize);
+        button.addActionListener(action);
+        panel.add(button);
+
+        return panel;
     }
 
     private void generateReport(String reportType) {
@@ -162,15 +163,80 @@ public class NewReportPanel extends JPanel {
                 dataset
         );
 
+        // Style the chart
         CategoryPlot plot = barChart.getCategoryPlot();
-        plot.getRangeAxis().setRange(0.0, 100000000.0);
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setRangeGridlinePaint(BORDER_COLOR);
 
         ChartPanel chartPanel = new ChartPanel(barChart);
         chartPanel.setPreferredSize(new Dimension(600, 400));
+        chartPanel.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+
         JDialog dialog = new JDialog((Frame) null, "Report Preview", true);
         dialog.getContentPane().add(chartPanel);
         dialog.pack();
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
+    }
+
+    private JButton createStyledButton(String text, Color color, int fontSize) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        button.setBackground(color);
+        button.setForeground(TEXT_COLOR);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(color.darker(), 1),
+                BorderFactory.createEmptyBorder(8, 20, 8, 20)
+        ));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // Add hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(color.brighter());
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(color);
+            }
+        });
+
+        return button;
+    }
+
+    public void updateFontSizes(int newFontSize) {
+        this.fontSize = newFontSize;
+
+        Component[] components = getComponents();
+        for (Component component : components) {
+            if (component instanceof JLabel) {
+                JLabel label = (JLabel) component;
+                if (label.getText().equals("Generate New Report")) {
+                    label.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4));
+                } else {
+                    label.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+                }
+            } else if (component instanceof JButton) {
+                ((JButton) component).setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+            } else if (component instanceof JPanel) {
+                updatePanelFonts((JPanel) component);
+            }
+        }
+
+        revalidate();
+        repaint();
+    }
+
+    private void updatePanelFonts(JPanel panel) {
+        for (Component component : panel.getComponents()) {
+            if (component instanceof JLabel) {
+                ((JLabel) component).setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+            } else if (component instanceof JButton) {
+                ((JButton) component).setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+            } else if (component instanceof JPanel) {
+                updatePanelFonts((JPanel) component);
+            }
+        }
     }
 }

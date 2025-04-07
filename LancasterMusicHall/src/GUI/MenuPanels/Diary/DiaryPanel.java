@@ -77,7 +77,7 @@ public class DiaryPanel extends JPanel {
         viewPanel.setBackground(Color.WHITE);
         viewPanel.add(new JLabel("View:"));
         viewCombo = new JComboBox<>(new String[]{"Day", "Week", "Month"});
-        viewCombo.setSelectedItem("Week");
+        viewCombo.setSelectedItem("Day");
         viewCombo.setPreferredSize(new Dimension(100, 25));
         viewCombo.addActionListener(e -> {
             String selected = (String) viewCombo.getSelectedItem();

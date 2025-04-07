@@ -8,6 +8,7 @@ import operations.entities.Event;
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,34 +16,49 @@ import java.util.List;
 public class CalendarPanel extends JPanel {
     private enum CalendarView {WEEK, DAY, MONTH}
     private LocalDate currentDate = LocalDate.now();
-
     private CalendarView currentView = CalendarView.WEEK;
     private CalendarViewPanel currentViewPanel;
-    private List<Event> events = new ArrayList<>(); // Start empty
+    private List<Event> events = new ArrayList<>();
+    private MainMenuGUI mainMenu;
 
     // UI Components
     private JComboBox<String> viewCombo;
-
-    // Date formatting
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private final DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
-
-    private JLabel viewRangeLabel = new JLabel();
-
-    // Reference to MainMenuGUI (to get SQLConnection)
-    private MainMenuGUI mainMenu;
+    private JLabel viewRangeLabel;
+    private JDateChooser datePicker;
 
     public CalendarPanel(MainMenuGUI mainMenu) {
         this.mainMenu = mainMenu;
         setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
 
-        // Create initial view (Week view by default)
+        // Initialize UI components
+        initializeUI();
+
+        // Create initial view
         switchToView(CalendarView.WEEK);
-        setupBottomPanel(mainMenu);
+        setupBottomPanel();
+    }
+
+    private void initializeUI() {
+        // Header panel
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(Color.WHITE);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+        viewRangeLabel = new JLabel("", SwingConstants.CENTER);
+        viewRangeLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        headerPanel.add(viewRangeLabel);
+
+        add(headerPanel, BorderLayout.NORTH);
     }
 
     private void switchToView(CalendarView view) {
+        switchToView(view, currentDate);
+    }
+
+    private void switchToView(CalendarView view, LocalDate date) {
         currentView = view;
+        currentDate = date;
 
         if (currentViewPanel != null) {
             remove(currentViewPanel);
@@ -50,125 +66,110 @@ public class CalendarPanel extends JPanel {
 
         switch (view) {
             case WEEK:
-                currentViewPanel = new WeekViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection());
+                currentViewPanel = new WeekViewPanel(date, events, mainMenu.getSqlConnection());
+                if (viewCombo != null) viewCombo.setSelectedItem("Week");
                 break;
             case DAY:
-                currentViewPanel = new DayViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection());
+                currentViewPanel = new DayViewPanel(date, events, mainMenu.getSqlConnection());
+                if (viewCombo != null) viewCombo.setSelectedItem("Day");
                 break;
             case MONTH:
-                currentViewPanel = new MonthViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection(), new MonthViewListener() {
-                    @Override
-                    public void onDayCellClicked(LocalDate date) {
-                        switchToView(CalendarView.WEEK, date);
-                    }
-                });
+                currentViewPanel = new MonthViewPanel(date, events, mainMenu.getSqlConnection(),
+                        d -> switchToView(CalendarView.WEEK, d));
+                if (viewCombo != null) viewCombo.setSelectedItem("Month");
                 break;
         }
 
         add(currentViewPanel, BorderLayout.CENTER);
+        updateHeaderText();
         revalidate();
         repaint();
+
+        // Update date picker if it exists
+        if (datePicker != null) {
+            datePicker.setDate(java.sql.Date.valueOf(currentDate));
+        }
     }
-    private void setupBottomPanel(MainMenuGUI mainMenu) {
+
+    private void setupBottomPanel() {
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Left side controls
-        JPanel leftColumn = new JPanel();
-        leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
-        leftColumn.setBackground(Color.WHITE);
-
-        // View options
-        JPanel viewPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 20));
+        // View selection panel
+        JPanel viewPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         viewPanel.setBackground(Color.WHITE);
 
         JLabel viewLabel = new JLabel("View:");
         viewLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+
         viewCombo = new JComboBox<>(new String[]{"Day", "Week", "Month"});
         viewCombo.setSelectedItem("Week");
-        viewCombo.setPreferredSize(new Dimension(100, 25));
         viewCombo.addActionListener(e -> switchView());
+
         viewPanel.add(viewLabel);
         viewPanel.add(viewCombo);
 
-        leftColumn.add(viewPanel);
-
-        // Center: New Event button
-        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 35));
-        centerPanel.setBackground(Color.white);
+        // New Event button
         JButton newEventButton = new JButton("New Event");
         newEventButton.setFont(new Font("Arial", Font.BOLD, 16));
         newEventButton.setBackground(new Color(200, 170, 250));
         newEventButton.setPreferredSize(new Dimension(120, 50));
         newEventButton.addActionListener(e -> showNewBookingForm());
-        centerPanel.add(newEventButton);
-        bottomPanel.add(centerPanel, BorderLayout.CENTER);
 
-        // Right side: Date picker and navigation
-        JPanel rightColumn = new JPanel();
-        rightColumn.setLayout(new BoxLayout(rightColumn, BoxLayout.Y_AXIS));
-        rightColumn.setBackground(Color.WHITE);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.add(newEventButton);
+
+        // Date navigation panel
+        JPanel dateNavPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        dateNavPanel.setBackground(Color.WHITE);
 
         // Date picker
-        JPanel datePickerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 20));
-        datePickerPanel.setBackground(Color.WHITE);
-
-        JLabel dateLabel = new JLabel("Date:");
-        dateLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        JDateChooser datePicker = new JDateChooser();
+        datePicker = new JDateChooser();
         datePicker.setDateFormatString("dd/MM/yyyy");
         datePicker.setPreferredSize(new Dimension(100, 25));
-        datePicker.setDate(new java.util.Date());
-
+        datePicker.setDate(java.sql.Date.valueOf(currentDate));
         datePicker.addPropertyChangeListener("date", e -> {
             java.util.Date selectedDate = datePicker.getDate();
             if (selectedDate != null) {
-                currentDate = LocalDate.of(
-                        selectedDate.getYear() + 1900,
-                        selectedDate.getMonth() + 1,
-                        selectedDate.getDate()
-                );
-                currentViewPanel.setViewDate(currentDate);
-                updateView();
+                currentDate = selectedDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                switchToView(currentView, currentDate);
             }
         });
-        datePickerPanel.add(dateLabel);
-        datePickerPanel.add(datePicker);
-        rightColumn.add(datePickerPanel);
 
         // Navigation buttons
-        JPanel navButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        navButtonPanel.setBackground(Color.WHITE);
-
-        JButton leftArrow = new JButton("<");
-        leftArrow.setFont(new Font("Arial", Font.BOLD, 16));
-        leftArrow.setPreferredSize(new Dimension(50, 30));
-        leftArrow.addActionListener(e -> navigate(-1));
+        JButton prevButton = new JButton("<");
+        prevButton.setFont(new Font("Arial", Font.BOLD, 16));
+        prevButton.setPreferredSize(new Dimension(50, 30));
+        prevButton.addActionListener(e -> navigate(-1));
 
         JButton todayButton = new JButton("Today");
         todayButton.addActionListener(e -> navigateToToday());
 
-        JButton rightArrow = new JButton(">");
-        rightArrow.setFont(new Font("Arial", Font.BOLD, 16));
-        rightArrow.setPreferredSize(new Dimension(50, 30));
-        rightArrow.addActionListener(e -> navigate(1));
+        JButton nextButton = new JButton(">");
+        nextButton.setFont(new Font("Arial", Font.BOLD, 16));
+        nextButton.setPreferredSize(new Dimension(50, 30));
+        nextButton.addActionListener(e -> navigate(1));
 
-        mainMenu.stylizeButton(leftArrow);
-        mainMenu.stylizeButton(rightArrow);
+        // Style buttons
+        mainMenu.stylizeButton(prevButton);
+        mainMenu.stylizeButton(nextButton);
         mainMenu.stylizeButton(todayButton);
 
-        navButtonPanel.add(leftArrow);
-        navButtonPanel.add(todayButton);
-        navButtonPanel.add(rightArrow);
-        rightColumn.add(navButtonPanel);
+        // Add components to navigation panel
+        dateNavPanel.add(prevButton);
+        dateNavPanel.add(todayButton);
+        dateNavPanel.add(nextButton);
+        dateNavPanel.add(datePicker);
 
-        // Set preferred sizes for layout balance
-        leftColumn.setPreferredSize(new Dimension(300, 120));
-        rightColumn.setPreferredSize(new Dimension(300, 120));
-        centerPanel.setPreferredSize(new Dimension(300, 120));
+        // Add components to bottom panel
+        bottomPanel.add(viewPanel, BorderLayout.WEST);
+        bottomPanel.add(buttonPanel, BorderLayout.CENTER);
+        bottomPanel.add(dateNavPanel, BorderLayout.EAST);
 
-        bottomPanel.add(leftColumn, BorderLayout.WEST);
-        bottomPanel.add(rightColumn, BorderLayout.EAST);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
@@ -181,35 +182,77 @@ public class CalendarPanel extends JPanel {
     }
 
     private void navigate(int direction) {
-        currentViewPanel.navigate(direction);
-        updateView();
+        switch (currentView) {
+            case DAY:
+                currentDate = currentDate.plusDays(direction);
+                break;
+            case WEEK:
+                currentDate = currentDate.plusWeeks(direction);
+                break;
+            case MONTH:
+                currentDate = currentDate.plusMonths(direction);
+                break;
+        }
+        switchToView(currentView, currentDate);
     }
 
     private void navigateToToday() {
-        currentViewPanel.setViewDate(LocalDate.now());
-        updateView();
-    }
-
-    private void updateView() {
-        currentViewPanel.refreshView();
-        updateHeaderText();
+        currentDate = LocalDate.now();
+        switchToView(currentView, currentDate);
     }
 
     private void updateHeaderText() {
         String headerText = "";
-        switch (currentView) {
-            case WEEK:
-                headerText = currentViewPanel.getViewStartDate().format(dateFormatter) + " to " +
-                        currentViewPanel.getViewEndDate().format(dateFormatter);
-                break;
-            case DAY:
-                headerText = currentViewPanel.getViewStartDate().format(dateFormatter);
-                break;
-            case MONTH:
-                headerText = currentViewPanel.getViewStartDate().format(monthYearFormatter);
-                break;
+        if (currentViewPanel != null) {
+            headerText = switch (currentView) {
+                case WEEK -> formatWeekHeader(
+                        currentViewPanel.getViewStartDate(),
+                        currentViewPanel.getViewEndDate()
+                );
+                case MONTH -> currentViewPanel.getViewStartDate()
+                        .format(DateTimeFormatter.ofPattern("MMMM yyyy"));
+                default -> headerText;
+            };
         }
         viewRangeLabel.setText(headerText);
+    }
+
+    private String formatDayHeader(LocalDate date) {
+        String dayName = date.getDayOfWeek().toString();
+        dayName = dayName.substring(0, 1) + dayName.substring(1).toLowerCase();
+
+        int day = date.getDayOfMonth();
+        String suffix = getDaySuffix(day);
+
+        String month = date.getMonth().toString();
+        month = month.substring(0, 1) + month.substring(1).toLowerCase();
+
+        return String.format("%s %d%s %s %d",
+                dayName, day, suffix, month, date.getYear());
+    }
+
+    private String formatWeekHeader(LocalDate start, LocalDate end) {
+        if (start.getMonth() == end.getMonth()) {
+            return String.format("%s %d - %d %s %d",
+                    start.getDayOfWeek().toString().charAt(0) +
+                            start.getDayOfWeek().toString().substring(1).toLowerCase(),
+                    start.getDayOfMonth(),
+                    end.getDayOfMonth(),
+                    start.getMonth().toString().charAt(0) +
+                            start.getMonth().toString().substring(1).toLowerCase(),
+                    start.getYear());
+        }
+        return formatDayHeader(start) + " to " + formatDayHeader(end);
+    }
+
+    private String getDaySuffix(int day) {
+        if (day >= 11 && day <= 13) return "th";
+        switch (day % 10) {
+            case 1: return "st";
+            case 2: return "nd";
+            case 3: return "rd";
+            default: return "th";
+        }
     }
 
     private void showNewBookingForm() {
@@ -217,21 +260,5 @@ public class CalendarPanel extends JPanel {
         Frame ownerFrame = (ownerWindow instanceof Frame) ? (Frame) ownerWindow : null;
         NewBookingForm newBookingDialog = new NewBookingForm(ownerFrame, mainMenu.getSqlConnection());
         newBookingDialog.setVisible(true);
-    }
-
-    // Overload switchToView to accept a date for Week view:
-    private void switchToView(CalendarView view, LocalDate date) {
-        currentView = view;
-        if (currentViewPanel != null) {
-            remove(currentViewPanel);
-        }
-        if (view == CalendarView.WEEK) {
-            currentViewPanel = new WeekViewPanel(date, events, mainMenu.getSqlConnection());
-        }
-        // Handle other views if needed.
-        add(currentViewPanel, BorderLayout.CENTER);
-        updateHeaderText();
-        revalidate();
-        repaint();
     }
 }

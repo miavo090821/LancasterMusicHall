@@ -21,6 +21,7 @@ public class DiaryDayViewPanel extends CalendarViewPanel {
     private final String[] times = {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
     private JPanel[] eventSlots;
     private SQLConnection sqlCon;
+    private JLabel diaryHeader;
     private Map<Integer, Color> eventColors = new HashMap<>(); // Track colors by event ID
 
     public DiaryDayViewPanel(LocalDate startDate, java.util.List events, SQLConnection sqlCon) {
@@ -48,25 +49,12 @@ public class DiaryDayViewPanel extends CalendarViewPanel {
         headerPanel.setBackground(Color.WHITE);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-        // Format the date as "Sunday 6th April 2025"
-        String dayName = viewStartDate.getDayOfWeek().toString();
-        dayName = dayName.charAt(0) + dayName.substring(1).toLowerCase();
-
-        int dayOfMonth = viewStartDate.getDayOfMonth();
-        String suffix = getDayOfMonthSuffix(dayOfMonth);
-
-        String monthName = viewStartDate.getMonth().toString();
-        monthName = monthName.charAt(0) + monthName.substring(1).toLowerCase();
-
-        int year = viewStartDate.getYear();
-
-        String formattedDate = String.format("Calendar for %s %d%s %s %d",
-                dayName, dayOfMonth, suffix, monthName, year);
-
-        JLabel diaryHeader = new JLabel(formattedDate, SwingConstants.CENTER);
+        diaryHeader = new JLabel("", SwingConstants.CENTER); // Initialize empty
         diaryHeader.setFont(new Font("Arial", Font.BOLD, 14));
         headerPanel.add(diaryHeader);
         add(headerPanel, BorderLayout.NORTH);
+
+        updateDateHeader(); // Set initial date
 
         // Timeline panel for the single day
         JPanel timelinePanel = new JPanel(new BorderLayout());
@@ -110,7 +98,27 @@ public class DiaryDayViewPanel extends CalendarViewPanel {
     public void navigate(int direction) {
         viewStartDate = viewStartDate.plusDays(direction);
         viewEndDate = viewStartDate;
+        updateDateHeader(); 
         refreshView();
+    }
+
+    private void updateDateHeader() {
+        // Format the date as "Sunday 6th April 2025"
+        String dayName = viewStartDate.getDayOfWeek().toString();
+        dayName = dayName.charAt(0) + dayName.substring(1).toLowerCase();
+
+        int dayOfMonth = viewStartDate.getDayOfMonth();
+        String suffix = getDayOfMonthSuffix(dayOfMonth);
+
+        String monthName = viewStartDate.getMonth().toString();
+        monthName = monthName.charAt(0) + monthName.substring(1).toLowerCase();
+
+        int year = viewStartDate.getYear();
+
+        String formattedDate = String.format("Diary for %s %d%s %s %d",
+                dayName, dayOfMonth, suffix, monthName, year);
+
+        diaryHeader.setText(formattedDate); // Update the header text
     }
 
     @Override

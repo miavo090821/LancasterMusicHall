@@ -133,14 +133,14 @@ public class PastReportPanel extends JPanel {
 
         // Report Type Selection
         JPanel EmptyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 5));
-        EmptyPanel.setPreferredSize(new Dimension(800, 100));
+        EmptyPanel.setPreferredSize(new Dimension(700, 100));
         EmptyPanel.setBackground(Color.WHITE);
         EmptyPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         contentPanel.add(EmptyPanel);
 
         // Wrap in scroll pane
         JScrollPane scrollPane = new JScrollPane(contentPanel);
-        scrollPane.setPreferredSize(new Dimension(750, 800));
+        scrollPane.setPreferredSize(new Dimension(700, 800));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);

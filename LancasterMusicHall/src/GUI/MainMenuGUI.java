@@ -59,12 +59,14 @@ public class MainMenuGUI {
         // Instantiate the diary panel using the updated constructor.
         DiaryPanel diary = new DiaryPanel(LocalDate.now(), sqlConnection);
         SettingsPanel settings = new SettingsPanel(this);
+        ReviewsPanel reviews = new ReviewsPanel();
 
         // Add panels (cards) to the cardPanel.
         cardPanel.add(home, "Home");
         cardPanel.add(calendar, "Calendar");
         cardPanel.add(diary, "Diary");
         cardPanel.add(event, "VenueDetails");
+        cardPanel.add(reviews, "Reviews");
         cardPanel.add(booking, "Booking");
         cardPanel.add(report, "Reports");
         cardPanel.add(settings, "Settings");

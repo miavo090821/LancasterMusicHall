@@ -152,7 +152,7 @@ public class BookingPanel extends JPanel {
             }
         });
 
-        // Optionally: add a mouse listener to refresh the table when the panel is clicked.
+        // add a mouse listener to refresh the table when the panel is clicked.
         contentPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {

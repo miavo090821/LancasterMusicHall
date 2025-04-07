@@ -8,7 +8,6 @@ import java.awt.*;
 public class ReportPanel extends JPanel {
     // Color scheme matching other panels
     private final Color PRIMARY_COLOR = new Color(207, 185, 255); // Lavender
-    private final Color ACCENT_COLOR = new Color(230, 210, 250); // Lighter lavender
     private final Color TEXT_COLOR = new Color(60, 60, 60); // Dark gray for text
     private final Color BORDER_COLOR = new Color(0, 0, 0); // Light gray for borders
 
@@ -112,7 +111,6 @@ public class ReportPanel extends JPanel {
         return button;
     }
 
-    // Method to update font sizes if needed
     public void updateFontSizes(int newFontSize) {
         Component[] components = getComponents();
         for (Component component : components) {
