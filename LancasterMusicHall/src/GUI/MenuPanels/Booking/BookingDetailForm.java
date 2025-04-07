@@ -8,7 +8,16 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ArrayList;
+
 
 public class BookingDetailForm extends JDialog {
 
@@ -29,6 +38,9 @@ public class BookingDetailForm extends JDialog {
     // Store contract data and contract ID at the class level
     private byte[] contractData;
     private int contractId = -1;
+
+    private String bookingStatus;
+
 
     public BookingDetailForm(Frame owner, SQLConnection sqlCon, String bookingId) {
         super(owner, "Booking Details - " + bookingId, true);
@@ -122,11 +134,14 @@ public class BookingDetailForm extends JDialog {
         JPanel eventPanel = new JPanel(new BorderLayout());
         eventPanel.setBorder(new TitledBorder("Event Details"));
 
+        // Replace the creation of eventTableModel in BookingDetailForm.java with the following code:
+
         String[] eventColumns = {"Event ID", "Name", "Start Date", "End Date", "Start Time", "End Time", "Event Type", "Venue Name"};
         eventTableModel = new DefaultTableModel(eventColumns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;  // Make table non-editable
+                // Make all columns editable except the Event ID column.
+                return column != 0;
             }
         };
         eventTable = new JTable(eventTableModel);
@@ -134,6 +149,7 @@ public class BookingDetailForm extends JDialog {
         JScrollPane eventScrollPane = new JScrollPane(eventTable);
         eventScrollPane.setPreferredSize(new Dimension(550, 150));
         eventPanel.add(eventScrollPane, BorderLayout.CENTER);
+
         mainPanel.add(eventPanel);
 
         // --- Contract Details Panel ---
@@ -175,6 +191,18 @@ public class BookingDetailForm extends JDialog {
                 JOptionPane.showMessageDialog(BookingDetailForm.this, "No contract data available to download.");
             }
         });
+
+
+        // Create the Delete Booking button.
+        JButton deleteButton = new JButton("Delete Booking");
+        deleteButton.setBackground(Color.RED);
+//        deleteButton.setForeground(Color.WHITE);
+        deleteButton.addActionListener(e -> deleteBookingAction());
+        buttonPanel.add(deleteButton);
+
+        mainPanel.add(buttonPanel);
+
+
     }
 
     private void loadBookingDetails() {
@@ -186,10 +214,13 @@ public class BookingDetailForm extends JDialog {
                 bookingEndDateField.setText(rsBooking.getString("booking_DateEnd"));
                 totalCostField.setText(rsBooking.getString("total_cost"));
                 paymentStatusField.setText(rsBooking.getString("payment_status"));
-                // Company name retrieved via join (alias "company_name")
                 companyNameField.setText(rsBooking.getString("company_name"));
+                // Capture booking_status; allowed values: "confirmed" or "held"
+                bookingStatus = rsBooking.getString("booking_status");
             }
             rsBooking.close();
+
+
 
             // --- Load Client Data ---
             ResultSet rsClient = sqlCon.getClientDetails(Integer.parseInt(bookingId));
@@ -245,7 +276,159 @@ public class BookingDetailForm extends JDialog {
     }
 
     private void updateBooking() {
-        // Implement your update logic to persist any changes.
-        JOptionPane.showMessageDialog(this, "Booking updated successfully!");
+        try {
+            // Helper function: treat blank as null.
+            java.util.function.Function<String, String> emptyToNull = s -> s.trim().isEmpty() ? null : s.trim();
+
+            String bId = bookingId; // bookingId is already stored as a class field.
+            String bookingEventName = ""; // Not used when each event has its own name.
+
+            // Parse dates; if blank, pass null.
+            LocalDate bookingStartDate = emptyToNull.apply(bookingStartDateField.getText()) != null
+                    ? LocalDate.parse(bookingStartDateField.getText().trim()) : null;
+            LocalDate bookingEndDate = emptyToNull.apply(bookingEndDateField.getText()) != null
+                    ? LocalDate.parse(bookingEndDateField.getText().trim()) : null;
+
+            // Instead of reading booking_status from a field (which may contain an invalid value),
+            // we pass null so that the current database value is kept.
+            String bookingStatus = null;
+
+            String companyName = emptyToNull.apply(companyNameField.getText());
+            String primaryContact = emptyToNull.apply(contactNameField.getText());
+            String telephone = emptyToNull.apply(telephoneField.getText());
+            String email = emptyToNull.apply(emailField.getText());
+
+            // Build the list of updated events from the event table.
+            List<operations.entities.Event> events = new ArrayList<>();
+            int rowCount = eventTableModel.getRowCount();
+            for (int i = 0; i < rowCount; i++) {
+                int eventId = (int) eventTableModel.getValueAt(i, 0);
+                String eventName = emptyToNull.apply((String) eventTableModel.getValueAt(i, 1));
+                LocalDate eventStartDate = emptyToNull.apply((String) eventTableModel.getValueAt(i, 2)) != null
+                        ? LocalDate.parse((String) eventTableModel.getValueAt(i, 2)) : null;
+                LocalDate eventEndDate = emptyToNull.apply((String) eventTableModel.getValueAt(i, 3)) != null
+                        ? LocalDate.parse((String) eventTableModel.getValueAt(i, 3)) : null;
+                LocalTime eventStartTime = emptyToNull.apply((String) eventTableModel.getValueAt(i, 4)) != null
+                        ? LocalTime.parse((String) eventTableModel.getValueAt(i, 4)) : null;
+                LocalTime eventEndTime = emptyToNull.apply((String) eventTableModel.getValueAt(i, 5)) != null
+                        ? LocalTime.parse((String) eventTableModel.getValueAt(i, 5)) : null;
+                String eventType = emptyToNull.apply((String) eventTableModel.getValueAt(i, 6));
+                String venueName = emptyToNull.apply((String) eventTableModel.getValueAt(i, 7));
+
+                // Create a simple Venue object (adjust details as needed).
+                operations.entities.Venue venue = new operations.entities.Venue(0, venueName, venueName, 0, "N/A", false, false, 0.0);
+
+                operations.entities.Event event = new operations.entities.Event(
+                        eventId,
+                        eventName,
+                        eventType,
+                        eventStartDate,
+                        eventEndDate,
+                        eventStartTime,
+                        eventEndTime,
+                        false,
+                        "",
+                        venue,
+                        null,
+                        "",
+                        venueName,
+                        companyName,
+                        null,
+                        0.0,
+                        "", // description
+                        ""  // layout
+                );
+                events.add(event);
+            }
+
+            double customerBillTotal = emptyToNull.apply(totalCostField.getText()) != null
+                    ? Double.parseDouble(totalCostField.getText().trim()) : 0.0;
+            // For fields not editable in this form, pass null (to keep current value).
+            Double ticketPrice = null;
+            String customerAccount = null;
+            String customerSortCode = null;
+            String streetAddress = null;
+            String city = null;
+            String postcode = null;
+            LocalDate paymentDueDate = bookingStartDate; // Default to booking start date.
+
+            // Validate payment_status: allow only "paid" or "unpaid"; if invalid or blank, default to "unpaid".
+            String paymentStatus = emptyToNull.apply(paymentStatusField.getText());
+            if (paymentStatus != null) {
+                paymentStatus = paymentStatus.toLowerCase();
+                if (!paymentStatus.equals("paid") && !paymentStatus.equals("unpaid")) {
+                    paymentStatus = "unpaid";
+                }
+            }
+
+            String contractDetails = null; // Not editable in this form.
+            File contractFile = null;      // Not updated here.
+            Double maxDiscount = null;     // Pass null if not provided.
+            Integer staffId = sqlCon.getCurrentStaffId();
+            if (staffId == null) {
+                staffId = 0;
+            }
+
+            // Call the SQLConnection updateFullBooking method.
+            boolean success = sqlCon.updateFullBooking(
+                    bId,
+                    bookingEventName,
+                    bookingStartDate,
+                    bookingEndDate,
+                    bookingStatus,
+                    companyName,
+                    primaryContact,
+                    telephone,
+                    email,
+                    events,
+                    customerBillTotal,
+                    ticketPrice,
+                    customerAccount,
+                    customerSortCode,
+                    streetAddress,
+                    city,
+                    postcode,
+                    paymentDueDate,
+                    paymentStatus,
+                    contractDetails,
+                    contractFile,
+                    (maxDiscount != null) ? maxDiscount : 0.0,
+                    staffId
+            );
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Booking updated successfully!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to update booking.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error updating booking: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
+
+
+
+    private void deleteBookingAction() {
+        try {
+            // Only allow deletion if the booking_status is "held"
+            if (!"held".equalsIgnoreCase(bookingStatus)) {
+                JOptionPane.showMessageDialog(this, "Only held bookings can be deleted.");
+                return;
+            }
+            int bId = Integer.parseInt(bookingId);
+            boolean success = sqlCon.deleteFullBooking(bId);
+            if (success) {
+                System.out.println("Booking " + bookingId + " has been deleted.");
+                JOptionPane.showMessageDialog(this, "Booking " + bookingId + " has been deleted.");
+                dispose(); // Close the form
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to delete booking.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error deleting booking: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 }

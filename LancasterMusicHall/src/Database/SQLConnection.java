@@ -238,6 +238,20 @@ public class SQLConnection implements SQLInterface {
 
     // this is for the new booking form in booking panel, it works!
     // Updated method signature including Street Address, City, Postcode, and maxDiscount.
+
+
+    /**
+     * Inserts a full booking along with its client, events, contract, and a corresponding Invoice record.
+     *
+     * In addition to existing behavior:
+     * - A new Invoice record is inserted after the Booking record. The Invoice table receives:
+     *     - invoice_id (auto-incremented),
+     *     - booking_id (generated from the Booking insert),
+     *     - date (from bookingStartDate),
+     *     - total (from the total bill),
+     *     - client_id (from the inserted client).
+     * - Each Event record uses the event's own name (removing any fallback to a booking-level event name).
+     */
     public boolean insertFullBooking(String bookingEventName,
                                      LocalDate bookingStartDate,
                                      LocalDate bookingEndDate,
@@ -268,6 +282,8 @@ public class SQLConnection implements SQLInterface {
         String insertClient = "INSERT INTO Clients (`Company Name`, `Contact Name`, `Phone Number`, `Contact Email`, `Customer Account Number`, `Customer Sort Code`, `Payment Due Date`, `Street Address`, `City`, `Postcode`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         // 4. Contract: remains unchanged.
         String insertContract = "INSERT INTO Contract (details, client_id, booking_id, file_data) VALUES (?, ?, ?, ?)";
+        // 5. NEW: Invoice insertion.
+        String insertInvoice = "INSERT INTO Invoice (booking_id, date, total, client_id) VALUES (?, ?, ?, ?)";
 
         try (Connection con = getConnection()) {
             con.setAutoCommit(false);
@@ -300,7 +316,6 @@ public class SQLConnection implements SQLInterface {
                 }
             }
 
-            // 2. Insert Booking details (including staff_id, client_id, and max_discount) and retrieve the generated booking_id.
             // 2. Insert Booking details (including staff_id, client_id, total_cost, and max_discount) and retrieve the generated booking_id.
             try (PreparedStatement psBooking = con.prepareStatement(insertBooking, Statement.RETURN_GENERATED_KEYS)) {
                 psBooking.setDate(1, java.sql.Date.valueOf(bookingStartDate));
@@ -331,11 +346,20 @@ public class SQLConnection implements SQLInterface {
                 }
             }
 
+            // 5. NEW: Insert Invoice record.
+            try (PreparedStatement psInvoice = con.prepareStatement(insertInvoice)) {
+                psInvoice.setInt(1, bookingId);
+                psInvoice.setDate(2, java.sql.Date.valueOf(bookingStartDate));
+                psInvoice.setDouble(3, customerBillTotal);
+                psInvoice.setInt(4, clientId);
+                psInvoice.executeUpdate();
+            }
 
             // 3. Insert each Event.
             for (Event event : events) {
                 try (PreparedStatement psEvent = con.prepareStatement(insertEvent)) {
-                    String eventName = (event.getName() == null || event.getName().isEmpty()) ? bookingEventName : event.getName();
+                    // Use the event's own name (do not fallback to bookingEventName).
+                    String eventName = (event.getName() != null && !event.getName().isEmpty()) ? event.getName() : "";
                     psEvent.setString(1, eventName);
                     psEvent.setDate(2, java.sql.Date.valueOf(event.getStartDate()));
                     psEvent.setDate(3, java.sql.Date.valueOf(event.getEndDate()));
@@ -372,6 +396,7 @@ public class SQLConnection implements SQLInterface {
             return false;
         }
     }
+
 
 
     /**
@@ -720,6 +745,277 @@ public class SQLConnection implements SQLInterface {
             this.end = end;
         }
     }
+
+
+    // this is for the update on booking details
+    public boolean updateFullBooking(String bookingId,
+                                     String bookingEventName,
+                                     LocalDate bookingStartDate,
+                                     LocalDate bookingEndDate,
+                                     String bookingStatus,
+                                     String companyName,
+                                     String primaryContact,
+                                     String telephone,
+                                     String email,
+                                     List<Event> events,
+                                     double customerBillTotal,
+                                     Double ticketPrice,
+                                     String customerAccount,
+                                     String customerSortCode,
+                                     String streetAddress,
+                                     String city,
+                                     String postcode,
+                                     LocalDate paymentDueDate,
+                                     String paymentStatus,
+                                     String contractDetails,
+                                     File contractFile,
+                                     Double maxDiscount,
+                                     Integer staffId) {
+        // Use COALESCE so that if the passed parameter is null, the current value remains.
+        String updateBooking = "UPDATE Booking SET " +
+                "booking_DateStart = COALESCE(?, booking_DateStart), " +
+                "booking_DateEnd = COALESCE(?, booking_DateEnd), " +
+                "booking_status = COALESCE(?, booking_status), " +
+                "ticket_price = COALESCE(?, ticket_price), " +
+                "total_cost = COALESCE(?, total_cost), " +
+                "payment_status = COALESCE(?, payment_status), " +
+                "payment_due_date = COALESCE(?, payment_due_date), " +
+                "staff_id = COALESCE(?, staff_id), " +
+                "max_discount = COALESCE(?, max_discount) " +
+                "WHERE booking_id = ?";
+
+        String updateInvoice = "UPDATE Invoice SET " +
+                "date = COALESCE(?, date), " +
+                "total = COALESCE(?, total) " +
+                "WHERE booking_id = ?";
+
+        String updateClient = "UPDATE Clients SET " +
+                "`Company Name` = COALESCE(?, `Company Name`), " +
+                "`Contact Name` = COALESCE(?, `Contact Name`), " +
+                "`Phone Number` = COALESCE(?, `Phone Number`), " +
+                "`Contact Email` = COALESCE(?, `Contact Email`), " +
+                "`Customer Account Number` = COALESCE(?, `Customer Account Number`), " +
+                "`Customer Sort Code` = COALESCE(?, `Customer Sort Code`), " +
+                "`Payment Due Date` = COALESCE(?, `Payment Due Date`), " +
+                "`Street Address` = COALESCE(?, `Street Address`), " +
+                "`City` = COALESCE(?, `City`), " +
+                "`Postcode` = COALESCE(?, `Postcode`) " +
+                "WHERE client_id = (SELECT client_id FROM Booking WHERE booking_id = ?)";
+
+        // NOTE: Removed event_type update.
+        String updateEvent = "UPDATE Event SET " +
+                "name = COALESCE(?, name), " +
+                "start_date = COALESCE(?, start_date), " +
+                "end_date = COALESCE(?, end_date), " +
+                "start_time = COALESCE(?, start_time), " +
+                "end_time = COALESCE(?, end_time), " +
+                "venue_id = COALESCE(?, venue_id), " +
+                "location = COALESCE(?, location), " +
+                "description = COALESCE(?, description), " +
+                "layout = COALESCE(?, layout), " +
+                "max_discount = COALESCE(?, max_discount) " +
+                "WHERE event_id = ?";
+
+        String updateContract = "UPDATE Contract SET " +
+                "details = COALESCE(?, details), " +
+                "file_data = COALESCE(?, file_data) " +
+                "WHERE booking_id = ?";
+
+        Connection con = null;
+        try {
+            con = getConnection();
+            con.setAutoCommit(false);
+
+            // 1. Update Booking record.
+            try (PreparedStatement psBooking = con.prepareStatement(updateBooking)) {
+                psBooking.setDate(1, (bookingStartDate != null) ? java.sql.Date.valueOf(bookingStartDate) : null);
+                psBooking.setDate(2, (bookingEndDate != null) ? java.sql.Date.valueOf(bookingEndDate) : null);
+                psBooking.setString(3, bookingStatus); // if null, remains unchanged.
+                psBooking.setObject(4, ticketPrice, java.sql.Types.DOUBLE);
+                psBooking.setDouble(5, customerBillTotal);
+                psBooking.setString(6, paymentStatus);
+                psBooking.setDate(7, (paymentDueDate != null) ? java.sql.Date.valueOf(paymentDueDate) : null);
+                psBooking.setObject(8, staffId, java.sql.Types.INTEGER);
+                psBooking.setObject(9, maxDiscount, java.sql.Types.DOUBLE);
+                psBooking.setInt(10, Integer.parseInt(bookingId));
+                psBooking.executeUpdate();
+            }
+
+            // 2. Update Invoice record.
+            try (PreparedStatement psInvoice = con.prepareStatement(updateInvoice)) {
+                psInvoice.setDate(1, (bookingStartDate != null) ? java.sql.Date.valueOf(bookingStartDate) : null);
+                psInvoice.setDouble(2, customerBillTotal);
+                psInvoice.setInt(3, Integer.parseInt(bookingId));
+                psInvoice.executeUpdate();
+            }
+
+            // 3. Update Client record.
+            try (PreparedStatement psClient = con.prepareStatement(updateClient)) {
+                psClient.setString(1, companyName);
+                psClient.setString(2, primaryContact);
+                psClient.setString(3, telephone);
+                psClient.setString(4, email);
+                psClient.setString(5, customerAccount);
+                psClient.setString(6, customerSortCode);
+                psClient.setDate(7, (paymentDueDate != null) ? java.sql.Date.valueOf(paymentDueDate) : null);
+                psClient.setString(8, streetAddress);
+                psClient.setString(9, city);
+                psClient.setString(10, postcode);
+                psClient.setInt(11, Integer.parseInt(bookingId));
+                psClient.executeUpdate();
+            }
+
+            // 4. Update each Event record.
+            for (Event event : events) {
+                try (PreparedStatement psEvent = con.prepareStatement(updateEvent)) {
+                    psEvent.setString(1, event.getName());
+                    psEvent.setDate(2, (event.getStartDate() != null) ? java.sql.Date.valueOf(event.getStartDate()) : null);
+                    psEvent.setDate(3, (event.getEndDate() != null) ? java.sql.Date.valueOf(event.getEndDate()) : null);
+                    psEvent.setTime(4, (event.getStartTime() != null) ? java.sql.Time.valueOf(event.getStartTime()) : null);
+                    psEvent.setTime(5, (event.getEndTime() != null) ? java.sql.Time.valueOf(event.getEndTime()) : null);
+                    // Skip event_type update (it remains unchanged)
+                    // Instead of directly setting event.getVenue().getVenueId(), check if it's valid (non-zero).
+                    Integer venueId = (event.getVenue() != null && event.getVenue().getVenueId() != 0)
+                            ? event.getVenue().getVenueId() : null;
+                    psEvent.setObject(6, venueId, java.sql.Types.INTEGER);
+                    psEvent.setString(7, event.getRoom());
+                    psEvent.setString(8, event.getDescription());
+                    psEvent.setString(9, event.getLayout());
+                    psEvent.setObject(10, maxDiscount, java.sql.Types.DOUBLE);
+                    psEvent.setInt(11, event.getId()); // Ensure event id is set correctly.
+                    psEvent.executeUpdate();
+                }
+            }
+
+
+            // 5. Update Contract details.
+            if (contractFile != null) {
+                try (PreparedStatement psContract = con.prepareStatement(updateContract)) {
+                    psContract.setString(1, contractDetails != null ? contractDetails : "N/A");
+                    psContract.setBlob(2, new java.io.FileInputStream(contractFile));
+                    psContract.setInt(3, Integer.parseInt(bookingId));
+                    psContract.executeUpdate();
+                }
+            } else {
+                try (PreparedStatement psContract = con.prepareStatement("UPDATE Contract SET details = COALESCE(?, details) WHERE booking_id = ?")) {
+                    psContract.setString(1, contractDetails != null ? contractDetails : "N/A");
+                    psContract.setInt(2, Integer.parseInt(bookingId));
+                    psContract.executeUpdate();
+                }
+            }
+
+            con.commit();
+            notifyUpdateListeners("bookingUpdated", bookingId);
+            return true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            if (con != null) {
+                try {
+                    con.rollback();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            return false;
+        } finally {
+            if (con != null) {
+                try {
+                    con.setAutoCommit(true);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+
+
+    // delete booking button in the booking detail form
+
+    public boolean deleteFullBooking(int bookingId) {
+        Connection con = null;
+        try {
+            con = getConnection();
+            con.setAutoCommit(false);
+
+            // 1. Check if the booking exists and that its status is "held"
+            String checkQuery = "SELECT booking_status, client_id FROM Booking WHERE booking_id = ?";
+            int clientId = 0;
+            try (PreparedStatement psCheck = con.prepareStatement(checkQuery)) {
+                psCheck.setInt(1, bookingId);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next()) {
+                        String status = rs.getString("booking_status");
+                        if (!"held".equalsIgnoreCase(status)) {
+                            System.out.println("Booking " + bookingId + " is not held and cannot be deleted.");
+                            return false;
+                        }
+                        clientId = rs.getInt("client_id");
+                    } else {
+                        System.out.println("Booking " + bookingId + " not found.");
+                        return false;
+                    }
+                }
+            }
+
+            // 2. Delete Contract record.
+            try (PreparedStatement psContract = con.prepareStatement("DELETE FROM Contract WHERE booking_id = ?")) {
+                psContract.setInt(1, bookingId);
+                psContract.executeUpdate();
+            }
+
+            // 3. Delete Invoice record.
+            try (PreparedStatement psInvoice = con.prepareStatement("DELETE FROM Invoice WHERE booking_id = ?")) {
+                psInvoice.setInt(1, bookingId);
+                psInvoice.executeUpdate();
+            }
+
+            // 4. Delete Event records.
+            try (PreparedStatement psEvent = con.prepareStatement("DELETE FROM Event WHERE booking_id = ?")) {
+                psEvent.setInt(1, bookingId);
+                psEvent.executeUpdate();
+            }
+
+            // 5. Delete Booking record.
+            try (PreparedStatement psBooking = con.prepareStatement("DELETE FROM Booking WHERE booking_id = ?")) {
+                psBooking.setInt(1, bookingId);
+                psBooking.executeUpdate();
+            }
+
+            // 6. Delete Client record.
+            // Optionally, you might want to check if the client is linked to other bookings.
+            // Here, we assume each booking has a unique client record.
+            try (PreparedStatement psClient = con.prepareStatement("DELETE FROM Clients WHERE client_id = ?")) {
+                psClient.setInt(1, clientId);
+                psClient.executeUpdate();
+            }
+
+            con.commit();
+            System.out.println("Booking " + bookingId + " has been deleted.");
+            return true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            if (con != null) {
+                try {
+                    con.rollback();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            return false;
+        } finally {
+            if (con != null) {
+                try {
+                    con.setAutoCommit(true);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
 
 
 

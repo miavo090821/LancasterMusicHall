@@ -19,6 +19,7 @@ public class NewBookingForm extends JDialog {
     private SQLConnection sqlCon;
 
     // Date formatter for dd/MM/yyyy format.
+    // Date formatter for dd/MM/yyyy format.
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // --- Client Details Fields ---
@@ -38,7 +39,7 @@ public class NewBookingForm extends JDialog {
     private JLabel contractFileLabel;
 
     // --- Booking Details Fields ---
-    private JTextField eventNameField;
+// Removed the booking-level event name field as each event now supplies its own name.
     private JTextField bookingStartDateField;
     private JTextField bookingEndDateField;
     private JCheckBox confirmedCheck;
@@ -120,13 +121,14 @@ public class NewBookingForm extends JDialog {
         // --- Booking Details Panel ---
         JPanel bookingPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         bookingPanel.setBorder(BorderFactory.createTitledBorder("Booking Details"));
-        eventNameField = new JTextField();
+        // Removed booking-level event name field.
         bookingStartDateField = new JTextField("01/04/2025");
         bookingEndDateField = new JTextField("01/04/2025");
         confirmedCheck = new JCheckBox("Confirmed", true);
 
-        bookingPanel.add(new JLabel("Event Name:"));
-        bookingPanel.add(eventNameField);
+        // Removed these two lines:
+        // bookingPanel.add(new JLabel("Event Name:"));
+        // bookingPanel.add(eventNameField);
         bookingPanel.add(new JLabel("Booking Start Date (dd/MM/yyyy):"));
         bookingPanel.add(bookingStartDateField);
         bookingPanel.add(new JLabel("Booking End Date (dd/MM/yyyy):"));
@@ -238,7 +240,8 @@ public class NewBookingForm extends JDialog {
             String postcode = postcodeField.getText().trim();
 
             // Collect Booking details.
-            String bookingEventName = eventNameField.getText().trim();
+            // Since each event now has its own name, we pass an empty string here.
+            String bookingEventName = "";
             LocalDate bookingStartDate = LocalDate.parse(bookingStartDateField.getText().trim(), DATE_FORMATTER);
             LocalDate bookingEndDate = LocalDate.parse(bookingEndDateField.getText().trim(), DATE_FORMATTER);
             boolean confirmed = confirmedCheck.isSelected();
@@ -311,6 +314,8 @@ public class NewBookingForm extends JDialog {
 
     // --- Inner Class: EventDetailPanel ---
     private class EventDetailPanel extends JPanel {
+        // New text field for per-event name.
+        private JTextField eventNameField;
         private JTextField eventStartDateField;
         private JTextField eventEndDateField;
         private JComboBox<String> locationCombo;
@@ -326,6 +331,11 @@ public class NewBookingForm extends JDialog {
         public EventDetailPanel() {
             setLayout(new GridLayout(0, 2, 5, 5));
             setBorder(BorderFactory.createTitledBorder("Event Detail"));
+
+            // Add the new Event Name field.
+            eventNameField = new JTextField();
+            add(new JLabel("Event Name:"));
+            add(eventNameField);
 
             eventStartDateField = new JTextField("01/04/2025");
             eventEndDateField = new JTextField("01/04/2025");
@@ -511,6 +521,8 @@ public class NewBookingForm extends JDialog {
         // Returns an Event object including the new description and layout fields.
         public Event getEvent() {
             try {
+                // Get the event name from the new text field.
+                String eventName = eventNameField.getText().trim();
                 LocalDate startDate = LocalDate.parse(eventStartDateField.getText().trim(), DATE_FORMATTER);
                 LocalDate endDate = LocalDate.parse(eventEndDateField.getText().trim(), DATE_FORMATTER);
                 String eventType = (String) eventTypeCombo.getSelectedItem();
@@ -520,15 +532,15 @@ public class NewBookingForm extends JDialog {
                 int venueId = mapLocationToVenueId(location);
                 Venue venue = new Venue(venueId, location, location, 0, "N/A", false, false, 0.0);
                 double price = Double.parseDouble(eventPriceLabel.getText().replaceAll("[£]", ""));
-                String description = descriptionField.getText().trim(); // new
-                String layout = layoutField.getText().trim();           // new
+                String description = descriptionField.getText().trim(); // new description field
+                String layout = layoutField.getText().trim();           // new layout field
 
                 // Use the outer form's company name field for companyName.
                 String companyName = NewBookingForm.this.companyNameField.getText().trim();
 
                 return new Event(
                         0,                 // id (to be generated)
-                        "",                // name (can be set later)
+                        eventName,         // event name from this panel
                         eventType,         // eventType
                         startDate,         // startDate
                         endDate,           // endDate
@@ -569,4 +581,5 @@ public class NewBookingForm extends JDialog {
             default: return 1;
         }
     }
+
 }
