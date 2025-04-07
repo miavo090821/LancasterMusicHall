@@ -36,14 +36,6 @@ public class CalendarPanel extends JPanel {
         this.mainMenu = mainMenu;
         setLayout(new BorderLayout());
 
-        // Create header panel
-        JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(Color.white);
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        viewRangeLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        headerPanel.add(viewRangeLabel);
-        add(headerPanel, BorderLayout.NORTH);
-
         // Create initial view (Week view by default)
         switchToView(CalendarView.WEEK);
         setupBottomPanel(mainMenu);
@@ -64,12 +56,9 @@ public class CalendarPanel extends JPanel {
                 currentViewPanel = new DayViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection());
                 break;
             case MONTH:
-                // Pass the MonthViewListener callback.
                 currentViewPanel = new MonthViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection(), new MonthViewListener() {
                     @Override
                     public void onDayCellClicked(LocalDate date) {
-                        // Switch to WeekViewPanel for the week containing the clicked date.
-                        // For example, call an overloaded switchToView that accepts a date:
                         switchToView(CalendarView.WEEK, date);
                     }
                 });
@@ -77,7 +66,6 @@ public class CalendarPanel extends JPanel {
         }
 
         add(currentViewPanel, BorderLayout.CENTER);
-        updateHeaderText();
         revalidate();
         repaint();
     }
@@ -229,22 +217,6 @@ public class CalendarPanel extends JPanel {
         Frame ownerFrame = (ownerWindow instanceof Frame) ? (Frame) ownerWindow : null;
         NewBookingForm newBookingDialog = new NewBookingForm(ownerFrame, mainMenu.getSqlConnection());
         newBookingDialog.setVisible(true);
-    }
-
-    private void switchToMonthView() {
-        // When switching to Month view, pass a MonthViewListener that calls switchToView(WEEK) with the clicked date.
-        currentViewPanel = new MonthViewPanel(LocalDate.now(), events, mainMenu.getSqlConnection(), new MonthViewListener() {
-            @Override
-            public void onDayCellClicked(LocalDate date) {
-                // Switch to Week view for the week containing the clicked date.
-                // For example:
-                switchToView(CalendarView.WEEK, date);
-            }
-        });
-        add(currentViewPanel, BorderLayout.CENTER);
-        updateHeaderText();
-        revalidate();
-        repaint();
     }
 
     // Overload switchToView to accept a date for Week view:

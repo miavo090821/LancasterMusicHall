@@ -4,6 +4,7 @@ import Database.SQLConnection;
 import GUI.MenuPanels.*;
 import GUI.MenuPanels.Booking.BookingPanel;
 import GUI.MenuPanels.Calendar.CalendarPanel;
+import GUI.MenuPanels.Diary.DiaryPanel;
 import GUI.MenuPanels.Event.EventPanel;
 import GUI.MenuPanels.Reports.ReportPanel;
 
@@ -57,7 +58,7 @@ public class MainMenuGUI {
         HomePanel home = new HomePanel(this);
         BookingPanel booking = new BookingPanel(this);
         // Instantiate the diary panel using the updated constructor.
-        DiaryPanel diary = new DiaryPanel(LocalDate.now(), new ArrayList<>(), sqlConnection);
+        DiaryPanel diary = new DiaryPanel(LocalDate.now(), sqlConnection);
         SettingsPanel settings = new SettingsPanel(this);
 
         // Add panels (cards) to the cardPanel.
@@ -81,8 +82,8 @@ public class MainMenuGUI {
 
     private JPanel createNavBar() {
         JPanel navigationTab = new JPanel();
-        navigationTab.setPreferredSize(new Dimension(600, 70)); // Ensure consistent height.
-        navigationTab.setBackground(Color.WHITE);
+        navigationTab.setPreferredSize(new Dimension(600, 100)); // Ensure consistent height.
+        navigationTab.setBackground(Color.blue);
 
         JPanel navBar = new JPanel();
         navBar.setLayout(new GridLayout(1, 6, 0, 0)); // 1 row, 6 columns.
