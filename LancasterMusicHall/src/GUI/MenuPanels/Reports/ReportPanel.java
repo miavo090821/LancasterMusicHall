@@ -67,10 +67,17 @@ public class ReportPanel extends JPanel {
         newReportButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         newReportButton.setMaximumSize(new Dimension(300, 40));
         buttonPanel.add(newReportButton);
+        buttonPanel.add(Box.createVerticalStrut(buttonGap));
+
+        // Daily Events button (new third button)
+        JButton dailyEventsButton = createStyledButton("Daily Events Sheet", PRIMARY_COLOR, 18);
+        dailyEventsButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        dailyEventsButton.setMaximumSize(new Dimension(300, 40));
+        buttonPanel.add(dailyEventsButton);
 
         contentPanel.add(buttonPanel);
 
-        // Wrap in scroll pane (though it may not be needed here)
+        // Wrap in scroll pane
         JScrollPane scrollPane = new JScrollPane(contentPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
@@ -79,10 +86,12 @@ public class ReportPanel extends JPanel {
         // === Card Panel Setup ===
         cardPanel.add(new NewReportPanel(mainMenu), "Generate New Report");
         cardPanel.add(new PastReportPanel(mainMenu), "Preview Past Reports");
+        cardPanel.add(new DailyEventsPanel(mainMenu.getSqlConnection()), "Daily Events Sheet");
 
         // Action listeners
         pastReportButton.addActionListener(_ -> cardLayout.show(cardPanel, "Preview Past Reports"));
         newReportButton.addActionListener(_ -> cardLayout.show(cardPanel, "Generate New Report"));
+        dailyEventsButton.addActionListener(_ -> cardLayout.show(cardPanel, "Daily Events Sheet"));
     }
 
     private JButton createStyledButton(String text, Color color, int fontSize) {

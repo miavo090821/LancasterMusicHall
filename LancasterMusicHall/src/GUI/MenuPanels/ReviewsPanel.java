@@ -248,7 +248,7 @@ public class ReviewsPanel extends JPanel {
             this.eventId = eventId;
         }
 
-        // Getters and setters
+        // Getters and setters.
         public int getId() { return id; }
         public String getText() { return text; }
         public String getReply() { return reply; }
@@ -274,7 +274,7 @@ public class ReviewsPanel extends JPanel {
                 Review review = (Review) value;
                 setText(review.toString());
                 if (review.getReply() != null) {
-                    setForeground(new Color(0, 128, 0)); // Green for replied reviews
+                    setForeground(new Color(0, 128, 0));
                 } else {
                 }
             }
