@@ -830,7 +830,7 @@ public class SQLConnection implements SQLInterface {
             try (PreparedStatement psBooking = con.prepareStatement(updateBooking)) {
                 psBooking.setDate(1, (bookingStartDate != null) ? java.sql.Date.valueOf(bookingStartDate) : null);
                 psBooking.setDate(2, (bookingEndDate != null) ? java.sql.Date.valueOf(bookingEndDate) : null);
-                psBooking.setString(3, bookingStatus); // if null, remains unchanged.
+                psBooking.setString(3, bookingStatus);
                 psBooking.setObject(4, ticketPrice, java.sql.Types.DOUBLE);
                 psBooking.setDouble(5, customerBillTotal);
                 psBooking.setString(6, paymentStatus);
@@ -873,8 +873,7 @@ public class SQLConnection implements SQLInterface {
                     psEvent.setDate(3, (event.getEndDate() != null) ? java.sql.Date.valueOf(event.getEndDate()) : null);
                     psEvent.setTime(4, (event.getStartTime() != null) ? java.sql.Time.valueOf(event.getStartTime()) : null);
                     psEvent.setTime(5, (event.getEndTime() != null) ? java.sql.Time.valueOf(event.getEndTime()) : null);
-                    // Skip event_type update (it remains unchanged)
-                    // Instead of directly setting event.getVenue().getVenueId(), check if it's valid (non-zero).
+                    // Skipping event_type update.
                     Integer venueId = (event.getVenue() != null && event.getVenue().getVenueId() != 0)
                             ? event.getVenue().getVenueId() : null;
                     psEvent.setObject(6, venueId, java.sql.Types.INTEGER);
@@ -882,11 +881,10 @@ public class SQLConnection implements SQLInterface {
                     psEvent.setString(8, event.getDescription());
                     psEvent.setString(9, event.getLayout());
                     psEvent.setObject(10, maxDiscount, java.sql.Types.DOUBLE);
-                    psEvent.setInt(11, event.getId()); // Ensure event id is set correctly.
+                    psEvent.setInt(11, event.getId());
                     psEvent.executeUpdate();
                 }
             }
-
 
             // 5. Update Contract details.
             if (contractFile != null) {
@@ -905,6 +903,9 @@ public class SQLConnection implements SQLInterface {
             }
 
             con.commit();
+            // Print message to the terminal.
+            System.out.println("Booking " + bookingId + " updated successfully.");
+            // Notify listeners (e.g., Box Office) that the booking has been updated.
             notifyUpdateListeners("bookingUpdated", bookingId);
             return true;
         } catch (Exception ex) {
@@ -927,6 +928,7 @@ public class SQLConnection implements SQLInterface {
             }
         }
     }
+
 
 
 
