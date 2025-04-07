@@ -200,9 +200,7 @@ public class SQLConnection implements SQLInterface {
     }
 
     /**
-     * Retrieves total revenue and total profit for invoices within the given date range.
-     * This method uses a SQL query that sums the total column and calculates profit as:
-     * total_profit = SUM(total) - SUM(CAST(costs AS DECIMAL(10,2))).
+     * Retrieves total revenue and total profit for financial records within the given date range.
      *
      * @param startDate The start date for the report.
      * @param endDate The end date for the report.
@@ -210,12 +208,11 @@ public class SQLConnection implements SQLInterface {
      */
     public ReportData getReportData(LocalDate startDate, LocalDate endDate) {
         ReportData reportData = null;
-        // Note: costs is stored as VARCHAR, so we cast it to DECIMAL for proper calculation.
         String query = "SELECT " +
-                "SUM(total) AS total_revenue, " +
-                "SUM(total) - SUM(CAST(costs AS DECIMAL(10,2))) AS total_profit " +
-                "FROM Invoice " +
-                "WHERE date BETWEEN ? AND ?";
+                "SUM(revenue) AS total_revenue, " +
+                "SUM(profit) AS total_profit " +
+                "FROM FinancialRecord " +
+                "WHERE financial_record_date BETWEEN ? AND ?";
         try (Connection con = DriverManager.getConnection(url, dbUser, dbPassword);
              PreparedStatement ps = con.prepareStatement(query)) {
 
@@ -234,6 +231,7 @@ public class SQLConnection implements SQLInterface {
         }
         return reportData;
     }
+
 
 
     // this is for the new booking form in booking panel, it works!
@@ -595,70 +593,6 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
-// Additional methods for Marketing Interface:
-
-    /**
-     * Retrieves calendar bookings between the specified start and end dates.
-     * Used by the Marketing interface to show booking data on the calendar panel.
-     *
-     * @param startDate the start date of the query range.
-     * @param endDate the end date of the query range.
-     * @return a ResultSet containing booking_id, booking_DateStart, booking_DateEnd, and booking_status.
-     */
-    public ResultSet getCalendarBookings(LocalDate startDate, LocalDate endDate) {
-        String query = "SELECT booking_id, booking_DateStart, booking_DateEnd, booking_status FROM Booking " +
-                "WHERE booking_DateStart >= ? AND booking_DateEnd <= ?";
-        try {
-            Connection con = getConnection();
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setDate(1, java.sql.Date.valueOf(startDate));
-            ps.setDate(2, java.sql.Date.valueOf(endDate));
-            return ps.executeQuery();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Retrieves events for the specified date to generate a daily sheet.
-     * Used by the Marketing interface to display all events occurring on a particular day.
-     *
-     * @param date the date for which to retrieve events.
-     * @return a ResultSet containing event details such as event_id, name, start_date, end_date, start_time, end_time, event_type, and location.
-     */
-    public ResultSet getDailySheet(LocalDate date) {
-        String query = "SELECT event_id, name, start_date, end_date, start_time, end_time, event_type, location " +
-                "FROM Event WHERE start_date = ?";
-        try {
-            Connection con = getConnection();
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setDate(1, java.sql.Date.valueOf(date));
-            return ps.executeQuery();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Retrieves film showings (events with event_type 'Film') along with their room information.
-     * Used by the Marketing interface to list films currently showing in each room.
-     *
-     * @return a ResultSet containing film showing details including event_id, name, location, start_date, end_date, start_time, and end_time.
-     */
-    public ResultSet getFilmShowings() {
-        String query = "SELECT event_id, name, location, start_date, end_date, start_time, end_time " +
-                "FROM Event WHERE event_type = 'Film'";
-        try {
-            Connection con = getConnection();
-            PreparedStatement ps = con.prepareStatement(query);
-            return ps.executeQuery();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
 
 
     /**
