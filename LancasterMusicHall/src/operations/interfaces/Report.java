@@ -5,19 +5,62 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A simple concrete implementation of IReport
- * with fields for title, date, etc.
+ * A concrete implementation of the {@link IReport} interface that represents
+ * a report with details such as title, date, start time, pricing, and ticket sales information.
  */
 public class Report implements IReport {
+    /**
+     * The title of the report.
+     */
     private final String title;
+
+    /**
+     * The date of the report.
+     */
     private final Date date;
-    private final int startTime;    // e.g. 1300 for 1 PM
-    private final int price;        // e.g. 999 for £9.99
-    private final double discount;  // e.g. 0.85 for 15% off
+
+    /**
+     * The start time of the event in military time (e.g., 1300 for 1 PM).
+     */
+    private final int startTime;
+
+    /**
+     * The price in integer form (e.g., 999 represents £9.99).
+     */
+    private final int price;
+
+    /**
+     * The discount factor (e.g., 0.85 represents a 15% discount).
+     */
+    private final double discount;
+
+    /**
+     * A map representing the number of seats sold for each ticket type.
+     */
     private final Map<ETicketType, Integer> seats;
+
+    /**
+     * A map representing the number of refunded seats for each ticket type.
+     */
     private final Map<ETicketType, Integer> refundedSeats;
+
+    /**
+     * A list of refund complaint notes.
+     */
     private final List<String> refundComplaints;
 
+    /**
+     * Constructs a Report instance with all required details.
+     *
+     * @param title            the title of the report
+     * @param date             the date of the report
+     * @param startTime        the event start time in military format (e.g., 1300 for 1 PM)
+     * @param price            the ticket price in integer format (e.g., 999 represents £9.99)
+     * @param discount         the discount factor applied to certain ticket types (e.g., 0.85 for 15% off)
+     * @param seats            a map of seats sold per {@link ETicketType}
+     * @param refundedSeats    a map of refunded seats per {@link ETicketType}
+     * @param refundComplaints a list of refund complaint notes
+     */
     public Report(String title,
                   Date date,
                   int startTime,
@@ -25,8 +68,7 @@ public class Report implements IReport {
                   double discount,
                   Map<ETicketType, Integer> seats,
                   Map<ETicketType, Integer> refundedSeats,
-                  List<String> refundComplaints)
-    {
+                  List<String> refundComplaints) {
         this.title = title;
         this.date = date;
         this.startTime = startTime;
@@ -37,43 +79,91 @@ public class Report implements IReport {
         this.refundComplaints = refundComplaints;
     }
 
+    /**
+     * Returns the title of the report.
+     *
+     * @return the report title
+     */
     @Override
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Returns the date of the report.
+     *
+     * @return the report date
+     */
     @Override
     public Date getDate() {
         return date;
     }
 
+    /**
+     * Returns the start time of the event as a double.
+     * <p>
+     * This converts an integer start time (e.g., 1300) into a more readable double (e.g., 13.00).
+     * </p>
+     *
+     * @return the start time as a double
+     */
     @Override
     public double getStartTime() {
-        // Convert 1300 to 13.00, etc.
         return (double) startTime / 100.0;
     }
 
+    /**
+     * Returns the price as an integer.
+     *
+     * @return the price in integer format
+     */
     @Override
     public int getPrice() {
         return price;
     }
 
+    /**
+     * Returns the ticket price as a double.
+     * <p>
+     * This converts the integer price (e.g., 999) to a double representing the actual monetary value (e.g., 9.99).
+     * </p>
+     *
+     * @return the price as a double value
+     */
     @Override
     public double getDoublePrice() {
-        // e.g. price=999 -> 9.99
         return price / 100.0;
     }
 
+    /**
+     * Returns the map of seats sold per ticket type.
+     *
+     * @return a map with ticket types and the corresponding seats sold
+     */
     @Override
     public Map<ETicketType, Integer> getSeatsSold() {
         return seats;
     }
 
+    /**
+     * Returns the map of refunded seats per ticket type.
+     *
+     * @return a map with ticket types and the corresponding refunded seats
+     */
     @Override
     public Map<ETicketType, Integer> getRefundSeats() {
         return refundedSeats;
     }
 
+    /**
+     * Calculates and returns the total refund sum.
+     * <p>
+     * The refund sum is computed based on the number of refunded seats multiplied by the ticket price,
+     * taking into account any discounts for discounted or disabled ticket types.
+     * </p>
+     *
+     * @return the total refund sum as a double
+     */
     @Override
     public double getRefundSum() {
         double sum = 0;
@@ -84,14 +174,27 @@ public class Report implements IReport {
         return sum;
     }
 
+    /**
+     * Returns the list of refund complaint notes.
+     *
+     * @return a list of strings representing refund complaints
+     */
     @Override
     public List<String> getRefundNotes() {
         return refundComplaints;
     }
 
+    /**
+     * Calculates and returns the total revenue from all sold seats.
+     * <p>
+     * This calculation multiplies the number of seats sold for each ticket type with the ticket price,
+     * applying a discount where necessary.
+     * </p>
+     *
+     * @return the total revenue as a double
+     */
     @Override
     public double getTotalRevenue() {
-        // Example: total seats sold * price, minus discount for certain types
         double revenue = 0;
         for (ETicketType type : ETicketType.values()) {
             int soldCount = seats.getOrDefault(type, 0);
@@ -104,6 +207,15 @@ public class Report implements IReport {
         return revenue;
     }
 
+    /**
+     * Generates and returns a detailed report as a formatted string.
+     * <p>
+     * The report includes information such as title, date, start time, price, discount,
+     * seats sold, refunded seats, total revenue, refund sum, and refund complaints.
+     * </p>
+     *
+     * @return the generated report as a string
+     */
     @Override
     public String generateReport() {
         StringBuilder sb = new StringBuilder();
