@@ -15,10 +15,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The NewEventForm class represents a dialog form used for creating a new event.
+ * It contains fields for client details, event details, multiple event panels, and pricing.
+ * The form connects to a SQL database via the provided SQLConnection.
+ */
 public class NewEventForm extends JDialog {
     private SQLConnection sqlCon;
 
-    // Date formatter for dd/MM/yyyy format.
+    /**
+     * Date formatter for dd/MM/yyyy format.
+     */
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // --- Client Details Fields ---
@@ -30,7 +37,7 @@ public class NewEventForm extends JDialog {
     private JButton contractUploadButton;
     private File contractFile = null;
 
-    // --- event Details Fields ---
+    // --- Event Details Fields ---
     private JTextField bookingIDField;
     private JTextField eventStartDateField;  // dd/MM/yyyy
     private JTextField eventEndDateField;    // dd/MM/yyyy
@@ -52,6 +59,12 @@ public class NewEventForm extends JDialog {
     // --- Submit event Button ---
     private JButton submitButton;
 
+    /**
+     * Constructs a new NewEventForm dialog with the specified owner and SQL connection.
+     *
+     * @param owner  the Frame that owns this dialog
+     * @param sqlCon the SQLConnection to communicate with the database
+     */
     public NewEventForm(Frame owner, SQLConnection sqlCon) {
         super(owner, "New event", true);
         this.sqlCon = sqlCon;
@@ -61,6 +74,9 @@ public class NewEventForm extends JDialog {
         setLocationRelativeTo(owner);
     }
 
+    /**
+     * Initializes the GUI components of the form, sets up layout and event listeners.
+     */
     private void initComponents() {
         // Main panel with vertical BoxLayout.
         JPanel mainPanel = new JPanel();
@@ -91,7 +107,7 @@ public class NewEventForm extends JDialog {
         clientPanel.add(new JLabel("Contract Upload:"));
         clientPanel.add(contractUploadButton);
 
-        // --- event Details Panel ---
+        // --- Event Details Panel ---
         JPanel eventPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         eventPanel.setBorder(BorderFactory.createTitledBorder("Booking Details"));
         bookingIDField = new JTextField();
@@ -126,9 +142,7 @@ public class NewEventForm extends JDialog {
         customerBillTotalLabel = new JLabel("Customer Bill Total: £0.00");
         ticketPriceField = new JTextField();
         customerAccountField = new JTextField();
-
         customerSortCodeField = new JTextField();
-
         paymentDueDateField = new JTextField("10/04/2025");
         String[] paymentStatusOptions = {"Paid", "Pending", "Overdue"};
         paymentStatusCombo = new JComboBox<>(paymentStatusOptions);
@@ -139,19 +153,16 @@ public class NewEventForm extends JDialog {
         pricingPanel.add(ticketPriceField);
         pricingPanel.add(new JLabel("Customer Account Number:"));
         pricingPanel.add(customerAccountField);
-
         pricingPanel.add(new JLabel("Customer Sort Code:"));
-
         pricingPanel.add(customerSortCodeField);
-
         pricingPanel.add(new JLabel("Payment Due Date (dd/MM/yyyy):"));
         pricingPanel.add(paymentDueDateField);
         pricingPanel.add(new JLabel("Payment Status:"));
         pricingPanel.add(paymentStatusCombo);
 
-        // --- Submit event Button ---
+        // --- Submit Event Button ---
         submitButton = new JButton("Submit event");
-//        submitButton.addActionListener(this::handleSubmitevent);
+        // submitButton.addActionListener(this::handleSubmitevent); // Uncomment when implementing submit logic
 
         // Add all panels to the main panel.
         mainPanel.add(clientPanel);
@@ -172,6 +183,9 @@ public class NewEventForm extends JDialog {
         setContentPane(scrollPane);
     }
 
+    /**
+     * Updates the customer bill total based on the prices of the individual event panels.
+     */
     private void updateCustomerBillTotal() {
         double totalBill = 0.0;
         for (EventDetailPanel panel : eventPanels) {
@@ -183,14 +197,20 @@ public class NewEventForm extends JDialog {
         customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
     }
 
-
-    // Creates and adds a new EventDetailPanel to the events container.
+    /**
+     * Creates and adds a new EventDetailPanel to the events container.
+     */
     private void addNewEventPanel() {
         EventDetailPanel eventPanel = new EventDetailPanel();
         eventPanels.add(eventPanel);
         eventsContainer.add(eventPanel);
     }
 
+    /**
+     * Handles the contract file upload action by showing a JFileChooser dialog.
+     *
+     * @param e the ActionEvent triggered by the upload button
+     */
     private void handleContractUpload(ActionEvent e) {
         JFileChooser fileChooser = new JFileChooser();
         int result = fileChooser.showOpenDialog(this);
@@ -200,74 +220,46 @@ public class NewEventForm extends JDialog {
         }
     }
 
-    // On submit, collect client, event, and event details from all panels.
-//    private void handleSubmitevent(ActionEvent e) {
-//        try {
-//            // Collect Client details.
-//            String companyName = companyNameField.getText().trim();
-//            String primaryContact = primaryContactField.getText().trim();
-//            String telephone = telephoneField.getText().trim();
-//            String email = emailField.getText().trim();
-//
-//            // Collect event details.
-//            String eventEventName = eventNameField.getText().trim();
-//            LocalDate eventStartDate = LocalDate.parse(eventStartDateField.getText().trim(), DATE_FORMATTER);
-//            LocalDate eventEndDate = LocalDate.parse(eventEndDateField.getText().trim(), DATE_FORMATTER);
-//            boolean confirmed = confirmedCheck.isSelected();
-//
-//            // Prepare a list for event objects and recalc total.
-//            List<Event> events = new ArrayList<>();
-//            double totalBill = 0.0;
-//            for (EventDetailPanel panel : eventPanels) {
-//                Event event = panel.getEvent();
-//                if (event != null) {
-//                    events.add(event);
-//                    totalBill += event.getPrice();
-//                }
-//            }
-//            // Update the customer bill total label.
-//            customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
-//
-//            // Overall pricing details.
-//            double ticketPrice = Double.parseDouble(ticketPriceField.getText().trim());
-//            String customerAccount = customerAccountField.getText().trim();
-//            String customerSortCode = customerSortCodeField.getText().trim();
-//            LocalDate paymentDueDate = LocalDate.parse(paymentDueDateField.getText().trim(), DATE_FORMATTER);
-//            String paymentStatus = (String) paymentStatusCombo.getSelectedItem();
-//
-//            // Call the SQLConnection.insertFullevent method (must be implemented in SQLConnection)
-//
-//            boolean success = sqlCon.insertFullevent(
-//                    eventEventName,
-//                    eventStartDate,
-//                    eventEndDate,
-//                    confirmed ? "confirmed" : "held",
-//                    companyName,
-//                    primaryContact,
-//                    telephone,
-//                    email,
-//                    events, // list of event objects
-//                    totalBill, // total calculated from events
-//                    ticketPrice,
-//                    customerAccount,
-//                    customerSortCode,
-//                    paymentDueDate,
-//                    paymentStatus,
-//                    contractFile
-//            );
-//            if (success) {
-//                JOptionPane.showMessageDialog(this, "event submitted successfully!");
-//                dispose();
-//            } else {
-//                JOptionPane.showMessageDialog(this, "Failed to submit event.", "Error", JOptionPane.ERROR_MESSAGE);
-//            }
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//            JOptionPane.showMessageDialog(this, "Error submitting event: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//        }
-//    }
+
+    /**
+     * Maps a given location string to a unique venue ID.
+     *
+     * @param location the location string
+     * @return the corresponding venue ID
+     */
+    private int mapLocationToVenueId(String location) {
+        switch (location) {
+            case "Venue":
+                return 1;
+            case "The Green Room":
+                return 2;
+            case "Room Brontë Boardroom":
+                return 3;
+            case "Room Dickens Den":
+                return 4;
+            case "Room Poe Parlor":
+                return 5;
+            case "Room Globe Room":
+                return 6;
+            case "Chekhov Chamber":
+                return 7;
+            case "Main_Hall":
+                return 8;
+            case "Small_Hall":
+                return 9;
+            case "Rehearsal_Space":
+                return 10;
+            default:
+                return 1;
+        }
+    }
 
     // --- Inner Class: EventDetailPanel ---
+
+    /**
+     * The EventDetailPanel class represents an individual panel containing the details
+     * for a single event, such as dates, times, location, event type, description, and layout.
+     */
     private class EventDetailPanel extends JPanel {
         private JTextField eventStartDateField;
         private JTextField eventEndDateField;
@@ -281,6 +273,9 @@ public class NewEventForm extends JDialog {
         private JTextField descriptionField;
         private JTextField layoutField;
 
+        /**
+         * Constructs a new EventDetailPanel with default values and layout.
+         */
         public EventDetailPanel() {
             setLayout(new GridLayout(0, 2, 5, 5));
             setBorder(BorderFactory.createTitledBorder("Event Detail"));
@@ -309,7 +304,6 @@ public class NewEventForm extends JDialog {
                 updateCustomerBillTotal();
             });
 
-
             add(new JLabel("Event Start Date (dd/MM/yyyy):"));
             add(eventStartDateField);
             add(new JLabel("Event End Date (dd/MM/yyyy):"));
@@ -329,15 +323,23 @@ public class NewEventForm extends JDialog {
             add(eventPriceLabel);
         }
 
-        // Calculate price using SQLConnection pricing functions.
-
-        // A simple class to store the rates for each room.
+        /**
+         * Represents rates for a given room.
+         */
         class RoomRate {
             double hourly;
             double morningAfternoon;
             double allDay;
             double week;
 
+            /**
+             * Constructs a RoomRate with specified rates.
+             *
+             * @param hourly          the hourly rate
+             * @param morningAfternoon the rate for morning/afternoon sessions
+             * @param allDay          the rate for a full day
+             * @param week            the weekly rate
+             */
             public RoomRate(double hourly, double morningAfternoon, double allDay, double week) {
                 this.hourly = hourly;
                 this.morningAfternoon = morningAfternoon;
@@ -346,6 +348,12 @@ public class NewEventForm extends JDialog {
             }
         }
 
+        /**
+         * Returns the RoomRate for a given room name.
+         *
+         * @param roomName the name of the room
+         * @return the RoomRate object for that room
+         */
         private RoomRate getRoomRate(String roomName) {
             // Return the correct RoomRate based on roomName.
             switch (roomName) {
@@ -367,6 +375,11 @@ public class NewEventForm extends JDialog {
             }
         }
 
+        /**
+         * Calculates the price of the event based on dates, times, location, and room rates.
+         *
+         * @return the calculated price as a double
+         */
         private double calculateEventPrice() {
             double price = 0.0;
             try {
@@ -465,6 +478,9 @@ public class NewEventForm extends JDialog {
             return price;
         }
 
+        /**
+         * Updates the overall customer bill total based on the prices in each EventDetailPanel.
+         */
         private void updateCustomerBillTotal() {
             double totalBill = 0.0;
             for (EventDetailPanel panel : eventPanels) {
@@ -478,8 +494,11 @@ public class NewEventForm extends JDialog {
             customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
         }
 
-
-        // Collect data from this panel and return an Event object.
+        /**
+         * Collects data from the panel and returns an Event object.
+         *
+         * @return the Event object representing the event details from this panel, or null if an error occurs
+         */
         public Event getEvent() {
             try {
                 LocalDate startDate = LocalDate.parse(eventStartDateField.getText().trim(), DATE_FORMATTER);
@@ -514,41 +533,13 @@ public class NewEventForm extends JDialog {
                         companyName,       // companyName (from outer form)
                         null,              // contactDetails (if not applicable)
                         price,             // price
-                        description,       // new description field
-                        layout             // new layout field
+                        description,       // description field
+                        layout             // layout field
                 );
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error collecting event details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 return null;
             }
-        }
-    }
-
-    // Mapping method: returns unique venue ID based on location.
-    private int mapLocationToVenueId(String location) {
-        switch (location) {
-            case "Venue":
-                return 1;
-            case "The Green Room":
-                return 2;
-            case "Room Brontë Boardroom":
-                return 3;
-            case "Room Dickens Den":
-                return 4;
-            case "Room Poe Parlor":
-                return 5;
-            case "Room Globe Room":
-                return 6;
-            case "Chekhov Chamber":
-                return 7;
-            case "Main_Hall":
-                return 8;
-            case "Small_Hall":
-                return 9;
-            case "Rehearsal_Space":
-                return 10;
-            default:
-                return 1;
         }
     }
 }

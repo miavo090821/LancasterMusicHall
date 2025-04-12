@@ -15,11 +15,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The {@code NewBookingForm} class represents a modal dialog used to create a new booking.
+ * <p>
+ * It gathers client, contract, booking, event, and pricing details through various form fields
+ * and then submits the complete booking information to the database.
+ * </p>
+ */
 public class NewBookingForm extends JDialog {
     private SQLConnection sqlCon;
 
-    // Date formatter for dd/MM/yyyy format.
-    // Date formatter for dd/MM/yyyy format.
+    /**
+     * Date formatter using "dd/MM/yyyy" pattern.
+     */
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // --- Client Details Fields ---
@@ -39,7 +47,7 @@ public class NewBookingForm extends JDialog {
     private JLabel contractFileLabel;
 
     // --- Booking Details Fields ---
-// Removed the booking-level event name field as each event now supplies its own name.
+    // Removed the booking-level event name field as each event now supplies its own name.
     private JTextField bookingStartDateField;
     private JTextField bookingEndDateField;
     private JCheckBox confirmedCheck;
@@ -61,6 +69,12 @@ public class NewBookingForm extends JDialog {
     // --- Submit Booking Button ---
     private JButton submitButton;
 
+    /**
+     * Constructs a new {@code NewBookingForm} dialog.
+     *
+     * @param owner  the parent frame
+     * @param sqlCon the {@code SQLConnection} instance for database operations
+     */
     public NewBookingForm(Frame owner, SQLConnection sqlCon) {
         super(owner, "New Booking", true);
         this.sqlCon = sqlCon;
@@ -70,6 +84,9 @@ public class NewBookingForm extends JDialog {
         setLocationRelativeTo(owner);
     }
 
+    /**
+     * Initializes and lays out all UI components used for creating a new booking.
+     */
     private void initComponents() {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -126,9 +143,6 @@ public class NewBookingForm extends JDialog {
         bookingEndDateField = new JTextField("01/04/2025");
         confirmedCheck = new JCheckBox("Confirmed", true);
 
-        // Removed these two lines:
-        // bookingPanel.add(new JLabel("Event Name:"));
-        // bookingPanel.add(eventNameField);
         bookingPanel.add(new JLabel("Booking Start Date (dd/MM/yyyy):"));
         bookingPanel.add(bookingStartDateField);
         bookingPanel.add(new JLabel("Booking End Date (dd/MM/yyyy):"));
@@ -201,6 +215,9 @@ public class NewBookingForm extends JDialog {
         setContentPane(scrollPane);
     }
 
+    /**
+     * Updates the customer bill total label based on the price of each event detail panel.
+     */
     private void updateCustomerBillTotal() {
         double totalBill = 0.0;
         for (EventDetailPanel panel : eventPanels) {
@@ -212,12 +229,20 @@ public class NewBookingForm extends JDialog {
         customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
     }
 
+    /**
+     * Adds a new event detail panel to the events container.
+     */
     private void addNewEventPanel() {
         EventDetailPanel eventPanel = new EventDetailPanel();
         eventPanels.add(eventPanel);
         eventsContainer.add(eventPanel);
     }
 
+    /**
+     * Handles the contract upload action by allowing the user to select a file.
+     *
+     * @param e the {@code ActionEvent} triggering this method
+     */
     private void handleContractUpload(ActionEvent e) {
         JFileChooser fileChooser = new JFileChooser();
         int result = fileChooser.showOpenDialog(this);
@@ -228,6 +253,12 @@ public class NewBookingForm extends JDialog {
         }
     }
 
+    /**
+     * Handles the submission of the booking by gathering all entered details and calling the
+     * {@code insertFullBooking} method on the {@code SQLConnection} instance.
+     *
+     * @param e the {@code ActionEvent} triggering the submission
+     */
     private void handleSubmitBooking(ActionEvent e) {
         try {
             // Collect Client details.
@@ -312,7 +343,9 @@ public class NewBookingForm extends JDialog {
         }
     }
 
-    // --- Inner Class: EventDetailPanel ---
+    /**
+     * An inner class representing the panel for entering the details of a single event.
+     */
     private class EventDetailPanel extends JPanel {
         // New text field for per-event name.
         private JTextField eventNameField;
@@ -324,10 +357,13 @@ public class NewBookingForm extends JDialog {
         private JComboBox<String> eventTypeCombo;
         private JButton calcPriceButton;
         private JLabel eventPriceLabel;
-        // New fields for event description and layout:
+        // New fields for event description and layout.
         private JTextField descriptionField;
         private JTextField layoutField;
 
+        /**
+         * Constructs a new {@code EventDetailPanel} and initializes its UI components.
+         */
         public EventDetailPanel() {
             setLayout(new GridLayout(0, 2, 5, 5));
             setBorder(BorderFactory.createTitledBorder("Event Detail"));
@@ -378,13 +414,23 @@ public class NewBookingForm extends JDialog {
             add(eventPriceLabel);
         }
 
-        // Calculate price using SQLConnection pricing functions.
+        /**
+         * A helper inner class representing room rates.
+         */
         class RoomRate {
             double hourly;
             double morningAfternoon;
             double allDay;
             double week;
 
+            /**
+             * Constructs a new {@code RoomRate}.
+             *
+             * @param hourly          the hourly rate
+             * @param morningAfternoon the morning/afternoon rate
+             * @param allDay          the all-day rate
+             * @param week            the weekly rate
+             */
             public RoomRate(double hourly, double morningAfternoon, double allDay, double week) {
                 this.hourly = hourly;
                 this.morningAfternoon = morningAfternoon;
@@ -393,6 +439,12 @@ public class NewBookingForm extends JDialog {
             }
         }
 
+        /**
+         * Retrieves the room rate for a given room name.
+         *
+         * @param roomName the name of the room
+         * @return a {@code RoomRate} object containing different rates
+         */
         private RoomRate getRoomRate(String roomName) {
             switch (roomName) {
                 case "The Green Room":
@@ -412,6 +464,11 @@ public class NewBookingForm extends JDialog {
             }
         }
 
+        /**
+         * Calculates the price for the event based on its details and room selection.
+         *
+         * @return the calculated event price as a {@code double}
+         */
         private double calculateEventPrice() {
             double price = 0.0;
             try {
@@ -504,6 +561,9 @@ public class NewBookingForm extends JDialog {
             return price;
         }
 
+        /**
+         * Updates the overall customer bill total by summing the prices from all event detail panels.
+         */
         private void updateCustomerBillTotal() {
             double totalBill = 0.0;
             for (EventDetailPanel panel : eventPanels) {
@@ -517,8 +577,11 @@ public class NewBookingForm extends JDialog {
             customerBillTotalLabel.setText("Customer Bill Total: £" + totalBill);
         }
 
-        // Collect data from this panel and return an Event object.
-        // Returns an Event object including the new description and layout fields.
+        /**
+         * Collects the details entered in this event detail panel and constructs an {@link Event} object.
+         *
+         * @return an {@code Event} object with the entered details, or {@code null} if an error occurs
+         */
         public Event getEvent() {
             try {
                 // Get the event name from the new text field.
@@ -565,7 +628,12 @@ public class NewBookingForm extends JDialog {
         }
     }
 
-    // Mapping method for venue ID remains unchanged.
+    /**
+     * Maps a given location name to a venue ID.
+     *
+     * @param location the location name
+     * @return the corresponding venue ID as an integer
+     */
     private int mapLocationToVenueId(String location) {
         switch (location) {
             case "Venue": return 1;
@@ -581,5 +649,4 @@ public class NewBookingForm extends JDialog {
             default: return 1;
         }
     }
-
 }

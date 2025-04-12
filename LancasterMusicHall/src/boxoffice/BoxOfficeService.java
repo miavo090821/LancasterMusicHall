@@ -12,15 +12,38 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * The {@code BoxOfficeService} class provides services to query and update box office-related
+ * event information stored in the database. It implements the {@code BoxOfficeInterface}.
+ * <p>
+ * This class uses an instance of {@code SQLConnection} to obtain database connections and
+ * execute SQL queries related to events, rooms, and venues.
+ * </p>
+ */
 public class BoxOfficeService implements BoxOfficeInterface {
 
     private final SQLConnection sqlCon;
 
+    /**
+     * Constructs a new {@code BoxOfficeService} using the provided SQL connection.
+     *
+     * @param sqlCon the {@code SQLConnection} object used for database communication
+     */
     public BoxOfficeService(SQLConnection sqlCon) {
         this.sqlCon = sqlCon;
     }
 
-    // Retrieve events by date range from the database.
+    /**
+     * Retrieves a list of events from the database that occur within the specified date range.
+     * <p>
+     * The method executes a SQL query to find events where the start date falls between the given
+     * start and end dates.
+     * </p>
+     *
+     * @param startDate the start date for filtering events
+     * @param endDate   the end date for filtering events
+     * @return a {@code List} of {@code Event} objects within the date range; an empty list if no events are found
+     */
     @Override
     public List<Event> getEventsByDateRange(LocalDate startDate, LocalDate endDate) {
         List<Event> eventList = new ArrayList<>();
@@ -56,7 +79,16 @@ public class BoxOfficeService implements BoxOfficeInterface {
         return eventList;
     }
 
-    // Internal method: update event details in the database.
+    /**
+     * Updates the event details for a given event in the database.
+     * <p>
+     * This internal method constructs and executes an UPDATE SQL statement to modify the event details.
+     * </p>
+     *
+     * @param eventId        the ID of the event to update
+     * @param updatedDetails an {@code Event} object containing the new details for the event
+     * @return {@code true} if the event details were updated successfully; {@code false} otherwise
+     */
     public boolean updateEventDetails(int eventId, Event updatedDetails) {
         String updateQuery = "UPDATE Event SET name = ?, start_date = ?, end_date = ?, start_time = ?, end_time = ?, location = ?, description = ?, layout = ? WHERE event_id = ?";
         try (Connection con = sqlCon.getConnection();
@@ -81,15 +113,31 @@ public class BoxOfficeService implements BoxOfficeInterface {
         return false;
     }
 
-    // Interface method: notifyEventChanges calls our internal updateEventDetails.
+    /**
+     * Notifies the system of event changes by updating the event details.
+     * <p>
+     * This method acts as a wrapper to call the internal {@code updateEventDetails} method.
+     * </p>
+     *
+     * @param eventId        the ID of the event to update
+     * @param updatedDetails an {@code Event} object containing the new details for the event
+     * @return {@code true} if the event was updated successfully; {@code false} otherwise
+     */
     @Override
     public boolean notifyEventChanges(int eventId, Event updatedDetails) {
         return updateEventDetails(eventId, updatedDetails);
     }
 
-    // getSeatingPlanForEvent: For Box Office, we want to print out room details.
-    // This method retrieves the venue_id from the event, prints the venue name and room details,
-    // then returns an empty list (as the interface expects List<Seat>).
+    /**
+     * Retrieves the seating plan for an event.
+     * <p>
+     * This method prints out the venue name and room details associated with the event.
+     * As per the interface, it returns an empty list of {@code Seat} objects.
+     * </p>
+     *
+     * @param eventId the ID of the event for which the seating plan is requested
+     * @return an empty {@code List} of {@code Seat} objects
+     */
     @Override
     public List<Seat> getSeatingPlanForEvent(int eventId) {
         int venueId = getVenueIdForEvent(eventId);
@@ -106,16 +154,16 @@ public class BoxOfficeService implements BoxOfficeInterface {
         return Collections.emptyList();
     }
 
-//    // updateSeatingPlan: Simply print out a message (no update).
-//    @Override
-//    public boolean updateSeatingPlan(int eventId, List<Seat> updatedSeats) {
-//        System.out.println("No update performed for seating plan for event: " + eventId);
-//        return false;
-//    }
-
-    // getHeldAccessibleSeats: Retrieve venue information from the Event's venue,
-    // then check the Venue entity's is_flexible_seating and is_accessible flags.
-    // Print out the values accordingly.
+    /**
+     * Retrieves held accessible seats for an event.
+     * <p>
+     * This method retrieves venue information based on the event's venue and checks if the venue's seating is accessible.
+     * It prints out whether the venue is accessible or not and returns an empty list of {@code Seat} objects.
+     * </p>
+     *
+     * @param eventId the ID of the event for which to retrieve accessible seats
+     * @return an empty {@code List} of {@code Seat} objects
+     */
     @Override
     public List<Seat> getHeldAccessibleSeats(int eventId) {
         int venueId = getVenueIdForEvent(eventId);
@@ -144,13 +192,26 @@ public class BoxOfficeService implements BoxOfficeInterface {
         return Collections.emptyList();
     }
 
-    // New method: Retrieve room details for the venue of an event.
+    /**
+     * Retrieves the room details for the venue associated with an event.
+     *
+     * @param eventId the ID of the event
+     * @return a {@code List} of {@code Room} objects with the room details of the venue; may be empty if no details found
+     */
     public List<Room> getRoomDetailsForEvent(int eventId) {
         int venueId = getVenueIdForEvent(eventId);
         return getRoomDetailsForVenue(venueId);
     }
 
-    // Helper: Retrieve venue_id for a given event.
+    /**
+     * Helper method to retrieve the venue ID for a given event.
+     * <p>
+     * This method queries the database for the venue associated with the event.
+     * </p>
+     *
+     * @param eventId the ID of the event
+     * @return the venue ID if found; otherwise, {@code 0}
+     */
     private int getVenueIdForEvent(int eventId) {
         String query = "SELECT venue_id FROM Event WHERE event_id = ?";
         try (Connection con = sqlCon.getConnection();
@@ -169,7 +230,15 @@ public class BoxOfficeService implements BoxOfficeInterface {
         return 0;
     }
 
-    // Helper: Retrieve the venue name from the Venue table.
+    /**
+     * Helper method to retrieve the venue name for a given venue ID.
+     * <p>
+     * This method queries the database for the venue name from the {@code Venue} table.
+     * </p>
+     *
+     * @param venueId the ID of the venue
+     * @return the venue name if found; otherwise, "Unknown Venue"
+     */
     private String getVenueName(int venueId) {
         String query = "SELECT venue_name FROM Venue WHERE venue_id = ?";
         try (Connection con = sqlCon.getConnection();
@@ -188,7 +257,15 @@ public class BoxOfficeService implements BoxOfficeInterface {
         return "Unknown Venue";
     }
 
-    // Helper: Retrieve room details for a given venue.
+    /**
+     * Helper method to retrieve room details for a given venue.
+     * <p>
+     * The method executes a SQL query to get details for rooms associated with the specified venue.
+     * </p>
+     *
+     * @param venueId the ID of the venue
+     * @return a {@code List} of {@code Room} objects with room details; the list is empty if no rooms found
+     */
     public List<Room> getRoomDetailsForVenue(int venueId) {
         List<Room> roomList = new ArrayList<>();
         String query = "SELECT room_name, venue_id, room_number, room_capacity, classroom_capacity, boardroom_capacity, presentation_capacity, seating_type " +
@@ -216,7 +293,16 @@ public class BoxOfficeService implements BoxOfficeInterface {
         return roomList;
     }
 
-    // New helper method: Fetch Daily Sheet (summary of events for a given date).
+    /**
+     * Fetches a daily sheet summarizing events for a specific date.
+     * <p>
+     * This method executes a SQL query to retrieve event information (ID, name, start time, and end time)
+     * for the given date.
+     * </p>
+     *
+     * @param date the date for which to fetch the daily sheet
+     * @return a {@code ResultSet} containing the query results; {@code null} if an error occurs
+     */
     public ResultSet fetchDailySheet(LocalDate date) {
         String query = "SELECT event_id, name, start_time, end_time FROM Event WHERE start_date = ?";
         try {
@@ -230,11 +316,21 @@ public class BoxOfficeService implements BoxOfficeInterface {
         }
     }
 
-
+    /**
+     * Updates the seating plan for an event.
+     * <p>
+     * <strong>Note:</strong> This method calls itself which seems to be a mistake. You may need to update
+     * the implementation to avoid recursive calls. For now, this returns the value of a (recursive) call.
+     * </p>
+     *
+     * @param eventId      the ID of the event whose seating plan is to be updated
+     * @param updatedSeats a {@code List} of {@code Seat} objects representing the new seating plan
+     * @return {@code true} if the seating plan was updated successfully; {@code false} otherwise
+     */
     @Override
     public boolean updateSeatingPlan(int eventId, List<Seat> updatedSeats) {
-        // Already implemented above.
+        // Warning: The current implementation recursively calls itself.
+        // Please review and update this implementation as needed.
         return updateSeatingPlan(eventId, updatedSeats);
     }
 }
-

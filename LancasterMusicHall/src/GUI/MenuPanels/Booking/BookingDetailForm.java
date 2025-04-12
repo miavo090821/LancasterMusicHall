@@ -16,9 +16,14 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ArrayList;
 
-
+/**
+ * The {@code BookingDetailForm} class represents a dialog form that displays detailed booking information.
+ * <p>
+ * It shows booking, client, event, and contract details, and allows users to update or delete a booking.
+ * The form retrieves data from the database using an instance of {@link SQLConnection}.
+ * </p>
+ */
 public class BookingDetailForm extends JDialog {
 
     private SQLConnection sqlCon;
@@ -41,7 +46,13 @@ public class BookingDetailForm extends JDialog {
 
     private String bookingStatus;
 
-
+    /**
+     * Constructs a new {@code BookingDetailForm} dialog.
+     *
+     * @param owner     the parent frame for this dialog
+     * @param sqlCon    the {@code SQLConnection} instance used to load booking details
+     * @param bookingId the booking ID for which details are to be displayed
+     */
     public BookingDetailForm(Frame owner, SQLConnection sqlCon, String bookingId) {
         super(owner, "Booking Details - " + bookingId, true);
         this.sqlCon = sqlCon;
@@ -52,6 +63,13 @@ public class BookingDetailForm extends JDialog {
         setLocationRelativeTo(owner);
     }
 
+    /**
+     * Initializes and lays out all UI components of the booking detail form.
+     * <p>
+     * This includes fields for booking, client, event, and contract details as well as buttons
+     * for updating, deleting, and downloading contracts.
+     * </p>
+     */
     private void initComponents() {
         // Main panel with vertical layout and scroll pane
         JPanel mainPanel = new JPanel();
@@ -134,8 +152,7 @@ public class BookingDetailForm extends JDialog {
         JPanel eventPanel = new JPanel(new BorderLayout());
         eventPanel.setBorder(new TitledBorder("Event Details"));
 
-        // Replace the creation of eventTableModel in BookingDetailForm.java with the following code:
-
+        // Set up event table model with non-editable Event ID column.
         String[] eventColumns = {"Event ID", "Name", "Start Date", "End Date", "Start Time", "End Time", "Event Type", "Venue Name"};
         eventTableModel = new DefaultTableModel(eventColumns, 0) {
             @Override
@@ -171,10 +188,10 @@ public class BookingDetailForm extends JDialog {
 
         setContentPane(new JScrollPane(mainPanel));
 
-        // Download button action listener
+        // Download button action listener for contract download.
         downloadContractButton.addActionListener(e -> {
             if (contractData != null && contractData.length > 0) {
-                // Use a default file name based on contract ID
+                // Use a default file name based on contract ID.
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setSelectedFile(new File("contract_" + contractId + ".dat"));
                 int option = fileChooser.showSaveDialog(BookingDetailForm.this);
@@ -192,19 +209,23 @@ public class BookingDetailForm extends JDialog {
             }
         });
 
-
         // Create the Delete Booking button.
         JButton deleteButton = new JButton("Delete Booking");
         deleteButton.setBackground(Color.RED);
-//        deleteButton.setForeground(Color.WHITE);
         deleteButton.addActionListener(e -> deleteBookingAction());
         buttonPanel.add(deleteButton);
 
+        // Adding button panel (containing update and delete buttons) to main panel.
         mainPanel.add(buttonPanel);
-
-
     }
 
+    /**
+     * Loads booking details from the database and populates the form fields.
+     * <p>
+     * This method retrieves booking and client data as well as event and contract details,
+     * then populates the corresponding UI components.
+     * </p>
+     */
     private void loadBookingDetails() {
         try {
             // --- Load Booking Data (join with Clients for company_name) ---
@@ -219,8 +240,6 @@ public class BookingDetailForm extends JDialog {
                 bookingStatus = rsBooking.getString("booking_status");
             }
             rsBooking.close();
-
-
 
             // --- Load Client Data ---
             ResultSet rsClient = sqlCon.getClientDetails(Integer.parseInt(bookingId));
@@ -249,7 +268,6 @@ public class BookingDetailForm extends JDialog {
             rsEvent.close();
 
             // --- Load Contract Data ---
-            // The updated contract entity now includes only 'contract_id', 'details', and 'file_data'
             ResultSet rsContract = sqlCon.getContractDetails(Integer.parseInt(bookingId));
             if (rsContract.next()) {
                 contractId = rsContract.getInt("contract_id");
@@ -275,6 +293,13 @@ public class BookingDetailForm extends JDialog {
         }
     }
 
+    /**
+     * Updates the booking details based on user changes in the form.
+     * <p>
+     * This method validates the input, builds a list of updated events from the event table,
+     * and calls the SQLConnection's {@code updateFullBooking} method.
+     * </p>
+     */
     private void updateBooking() {
         try {
             // Helper function: treat blank as null.
@@ -290,7 +315,7 @@ public class BookingDetailForm extends JDialog {
                     ? LocalDate.parse(bookingEndDateField.getText().trim()) : null;
 
             // Instead of reading booking_status from a field (which may contain an invalid value),
-            // we pass null so that the current database value is kept.
+            // pass null so that the current database value is kept.
             String bookingStatus = null;
 
             String companyName = emptyToNull.apply(companyNameField.getText());
@@ -407,8 +432,13 @@ public class BookingDetailForm extends JDialog {
         }
     }
 
-
-
+    /**
+     * Deletes the booking after verifying that the booking status is "held".
+     * <p>
+     * This method calls the {@code deleteFullBooking} method from the {@code SQLConnection} instance.
+     * If successful, the form is closed.
+     * </p>
+     */
     private void deleteBookingAction() {
         try {
             // Only allow deletion if the booking_status is "held"
@@ -430,5 +460,4 @@ public class BookingDetailForm extends JDialog {
             JOptionPane.showMessageDialog(this, "Error deleting booking: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }

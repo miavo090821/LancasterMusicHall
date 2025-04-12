@@ -13,24 +13,54 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DiaryPanel is a user interface panel for a diary application that supports multiple calendar views:
+ * day, week, and month. It allows the user to navigate between dates, switch between views, and create new
+ * event drafts.
+ * <p>
+ * The panel communicates with the main menu and an SQL database to retrieve and display event information.
+ * </p>
+ */
 public class DiaryPanel extends JPanel {
+    /**
+     * Enumeration representing the available diary views.
+     */
     private enum DiaryView {DAY, WEEK, MONTH}
+
+    /** The currently selected diary view. */
     private DiaryView currentView = DiaryView.DAY;
+    /** The currently active CalendarViewPanel displayed in the diary. */
     private CalendarViewPanel currentViewPanel;
+    /** The SQL connection used to interact with the database. */
     private SQLConnection sqlCon;
+    /** Reference to the main menu GUI. */
     private MainMenuGUI mainMenu;
+    /** The current date used as the basis for the view. */
     private LocalDate currentDate = LocalDate.now();
-    private List<operations.entities.Event> events = new ArrayList<>(); // Start empty
+    /**
+     * A list of events to display.
+     * <p>
+     * Initially, this list is empty.
+     * </p>
+     */
+    private List<operations.entities.Event> events = new ArrayList<>();
 
     // UI Components
+    /** Combo box to select the diary view (Day, Week, Month). */
     private JComboBox<String> viewCombo;
-
+    /** Label to display the current view range (e.g. date range for week view). */
     private JLabel viewRangeLabel = new JLabel();
-
-    // Date formatting
+    /** Formatter for displaying dates in the format "dd/MM/yyyy". */
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    /** Formatter for displaying month and year in the format "MMMM yyyy". */
     private final DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
 
+    /**
+     * Constructs a DiaryPanel with the specified main menu and SQL connection.
+     *
+     * @param mainMenu the MainMenuGUI instance associated with the diary.
+     * @param sqlCon   the SQLConnection used for database operations.
+     */
     public DiaryPanel(MainMenuGUI mainMenu, SQLConnection sqlCon) {
         this.mainMenu = mainMenu;
         this.sqlCon = sqlCon;
@@ -39,6 +69,11 @@ public class DiaryPanel extends JPanel {
         setupBottomPanel();
     }
 
+    /**
+     * Switches the diary view to the specified view type.
+     *
+     * @param view the DiaryView to switch to.
+     */
     private void switchToView(DiaryView view) {
         currentView = view;
 
@@ -60,6 +95,7 @@ public class DiaryPanel extends JPanel {
                         switchToView(DiaryView.WEEK, date);
                     }
                 });
+                break;
         }
 
         add(currentViewPanel, BorderLayout.CENTER);
@@ -67,6 +103,10 @@ public class DiaryPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Sets up the bottom panel which includes view controls, a "New Draft" button,
+     * and navigation buttons.
+     */
     private void setupBottomPanel() {
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
@@ -74,7 +114,7 @@ public class DiaryPanel extends JPanel {
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         bottomPanel.add(Box.createHorizontalGlue());
 
-        // View controls
+        // View controls panel.
         JPanel viewPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         viewPanel.setBackground(Color.WHITE);
         viewPanel.add(new JLabel("View:"));
@@ -93,7 +133,7 @@ public class DiaryPanel extends JPanel {
         bottomPanel.add(viewPanel);
         bottomPanel.add(Box.createHorizontalGlue());
 
-        // New Draft button
+        // New Draft button.
         JButton newEventButton = new JButton("New Draft");
         newEventButton.setBackground(new Color(200, 170, 250));
         newEventButton.setPreferredSize(new Dimension(120, 30));
@@ -113,7 +153,7 @@ public class DiaryPanel extends JPanel {
         bottomPanel.add(newEventButton);
         bottomPanel.add(Box.createHorizontalGlue());
 
-        // Navigation buttons
+        // Navigation panel.
         JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         navPanel.setBackground(Color.WHITE);
 
@@ -134,14 +174,26 @@ public class DiaryPanel extends JPanel {
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Navigates the current view by moving forward or backward.
+     *
+     * @param direction an integer representing the navigation direction; negative values move backward,
+     *                  positive values move forward.
+     */
     private void navigate(int direction) {
         currentViewPanel.navigate(direction);
         updateView();
     }
 
+    /**
+     * Switches the diary view to the specified view type with a specific date.
+     *
+     * @param view the DiaryView to switch to.
+     * @param date the LocalDate that becomes the new current date.
+     */
     private void switchToView(DiaryView view, LocalDate date) {
         currentView = view;
-        currentDate = date; // Update the current date
+        currentDate = date; // Update the current date.
 
         if (currentViewPanel != null) {
             remove(currentViewPanel);
@@ -171,12 +223,21 @@ public class DiaryPanel extends JPanel {
         updateView();
     }
 
+    /**
+     * Updates the diary view by refreshing the current view panel and updating the header text.
+     */
     private void updateView() {
         currentViewPanel.refreshView();
         updateHeaderText();
     }
 
-
+    /**
+     * Updates the header text of the diary view to reflect the current date range or date.
+     * <p>
+     * For week views, the header displays the start and end dates; for day view, it displays a single date;
+     * for month view, it displays the month and year.
+     * </p>
+     */
     private void updateHeaderText() {
         String headerText = switch (currentView) {
             case WEEK -> currentViewPanel.getViewStartDate().format(dateFormatter) + " to " +

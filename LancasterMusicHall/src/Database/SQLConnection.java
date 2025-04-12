@@ -2,7 +2,6 @@ package Database;
 
 import operations.entities.Event;
 import java.io.File;
-
 import javax.swing.table.DefaultTableModel;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,7 +13,14 @@ import java.time.LocalTime;
 import java.util.*;
 import java.sql.Statement;
 
-
+/**
+ * The {@code SQLConnection} class manages connections to the MySQL database and provides methods to
+ * perform various database operations such as querying, updating, inserting, and deleting records.
+ * <p>
+ * It implements the {@code SQLInterface} and includes methods for user authentication, booking management,
+ * financial reporting, and handling custom stored function calls.
+ * </p>
+ */
 public class SQLConnection implements SQLInterface {
 
     // Updated connection info with new database name and user.
@@ -37,10 +43,21 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
+    /**
+     * Registers a listener to receive database update notifications.
+     *
+     * @param listener the {@code DatabaseUpdateListener} to add to the listeners list
+     */
     public void registerUpdateListener(DatabaseUpdateListener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * Notifies all registered listeners of a database update event.
+     *
+     * @param updateType a {@code String} representing the type of update (e.g., "passwordReset", "bookingUpdated")
+     * @param data       additional data related to the update event
+     */
     private void notifyUpdateListeners(String updateType, Object data) {
         for (DatabaseUpdateListener listener : listeners) {
             listener.databaseUpdated(updateType, data);
@@ -48,9 +65,9 @@ public class SQLConnection implements SQLInterface {
     }
 
     /**
-     * Centralized method to obtain a database connection using the new connection details.
+     * Centralized method to obtain a database connection using the current connection details.
      *
-     * @return a Connection object or null if connection fails.
+     * @return a {@code Connection} object, or {@code null} if the connection fails
      */
     public Connection getConnection() {
         Connection con = null;
@@ -64,6 +81,14 @@ public class SQLConnection implements SQLInterface {
         return con;
     }
 
+    /**
+     * Connects to the database using the provided username and password, and queries the Booking table
+     * to print all booking IDs.
+     *
+     * @param username the username for the database connection
+     * @param password the password for the database connection
+     * @throws SQLException if a database access error occurs
+     */
     @Override
     public void connectToAndQueryDatabase(String username, String password) throws SQLException {
         try (Connection con = DriverManager.getConnection(url, username, password);
@@ -82,9 +107,13 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
-    // Additional methods (loginStaff, resetPassword, createBooking, etc.) remain unchanged
-    // or can be updated similarly if desired.
-
+    /**
+     * Authenticates a staff member using the provided staff ID and password.
+     *
+     * @param staffId  the staff ID to log in
+     * @param password the password for the staff member
+     * @return {@code true} if the staff ID is valid and login is successful; {@code false} otherwise
+     */
     @Override
     public boolean loginStaff(String staffId, String password) {
         boolean valid = false;
@@ -109,7 +138,15 @@ public class SQLConnection implements SQLInterface {
         return valid;
     }
 
-
+    /**
+     * Resets the password for a staff member, given the staff ID, email, and new password.
+     * This method updates the Staff table and notifies update listeners upon success.
+     *
+     * @param staffId    the staff ID for the password reset
+     * @param email      the email associated with the staff account
+     * @param newPassword the new password to be set
+     * @return {@code true} if the password was updated successfully; {@code false} otherwise
+     */
     @Override
     public boolean resetPassword(String staffId, String email, String newPassword) {
         boolean updated = false;
@@ -133,23 +170,37 @@ public class SQLConnection implements SQLInterface {
         }
         return updated;
     }
-// try to get staff id
+
+    // Try to get staff id.
     private Integer currentStaffId;
 
+    /**
+     * Sets the current staff ID after successful authentication.
+     *
+     * @param staffId the staff ID to set
+     */
     public void setCurrentStaffId(Integer staffId) {
         this.currentStaffId = staffId;
     }
 
+    /**
+     * Retrieves the current staff ID.
+     *
+     * @return the current staff ID, or {@code null} if not set
+     */
     public Integer getCurrentStaffId() {
         return currentStaffId;
     }
 
     /**
-     * Returns a DefaultTableModel containing bookings data.
-     * The table has 5 columns:
-     * "ID No.", "Name" (from location), "Start Date", "End Date", "Status"
+     * Retrieves a {@code DefaultTableModel} containing bookings data.
+     * <p>
+     * The table contains the following columns: "ID No.", "Name", "Start Date", "End Date", and "Status".
+     * Data is obtained by joining the Booking and Clients tables.
+     * </p>
+     *
+     * @return a {@code DefaultTableModel} with booking information
      */
-    // this is for the booking panel
     public DefaultTableModel getBookingsTableModel() {
         String[] columnNames = {"ID No.", "Name", "Start Date", "End Date", "Status"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
@@ -164,7 +215,7 @@ public class SQLConnection implements SQLInterface {
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
-            while (rs.next()){
+            while (rs.next()) {
                 int bookingId = rs.getInt("booking_id");
                 String clientName = rs.getString("clientName");
                 String startDate = rs.getDate("booking_DateStart").toString();
@@ -179,21 +230,38 @@ public class SQLConnection implements SQLInterface {
         return model;
     }
 
-
-    // hold report panel data
+    /**
+     * A helper class for encapsulating financial report data.
+     */
     public static class ReportData {
         private final double totalRevenue;
         private final double totalProfit;
 
+        /**
+         * Constructs a new {@code ReportData} instance.
+         *
+         * @param totalRevenue the total revenue
+         * @param totalProfit  the total profit
+         */
         public ReportData(double totalRevenue, double totalProfit) {
             this.totalRevenue = totalRevenue;
             this.totalProfit = totalProfit;
         }
 
+        /**
+         * Returns the total revenue.
+         *
+         * @return the total revenue
+         */
         public double getTotalRevenue() {
             return totalRevenue;
         }
 
+        /**
+         * Returns the total profit.
+         *
+         * @return the total profit
+         */
         public double getTotalProfit() {
             return totalProfit;
         }
@@ -202,9 +270,9 @@ public class SQLConnection implements SQLInterface {
     /**
      * Retrieves total revenue and total profit for financial records within the given date range.
      *
-     * @param startDate The start date for the report.
-     * @param endDate The end date for the report.
-     * @return A ReportData object with total revenue and total profit, or null if an error occurs.
+     * @param startDate the start date for the report
+     * @param endDate   the end date for the report
+     * @return a {@code ReportData} object with total revenue and total profit, or {@code null} if an error occurs
      */
     public ReportData getReportData(LocalDate startDate, LocalDate endDate) {
         ReportData reportData = null;
@@ -232,23 +300,42 @@ public class SQLConnection implements SQLInterface {
         return reportData;
     }
 
-
-
-    // this is for the new booking form in booking panel, it works!
-    // Updated method signature including Street Address, City, Postcode, and maxDiscount.
-
-
     /**
-     * Inserts a full booking along with its client, events, contract, and a corresponding Invoice record.
+     * Inserts a full booking including client details, events, contract, and an associated invoice record.
+     * <p>
+     * This method performs multiple insert operations:
+     * <ol>
+     *   <li>Insert into Clients and retrieve generated client_id.</li>
+     *   <li>Insert into Booking and retrieve generated booking_id.</li>
+     *   <li>Insert an Invoice record for the booking.</li>
+     *   <li>Insert each Event record.</li>
+     *   <li>Insert Contract details if a file is provided.</li>
+     * </ol>
+     * </p>
      *
-     * In addition to existing behavior:
-     * - A new Invoice record is inserted after the Booking record. The Invoice table receives:
-     *     - invoice_id (auto-incremented),
-     *     - booking_id (generated from the Booking insert),
-     *     - date (from bookingStartDate),
-     *     - total (from the total bill),
-     *     - client_id (from the inserted client).
-     * - Each Event record uses the event's own name (removing any fallback to a booking-level event name).
+     * @param bookingEventName the event name for the booking (not used if event object contains its own name)
+     * @param bookingStartDate the booking start date
+     * @param bookingEndDate   the booking end date
+     * @param bookingStatus    the booking status
+     * @param companyName      the client company name
+     * @param primaryContact   the client primary contact name
+     * @param telephone        the client telephone number
+     * @param email            the client email address
+     * @param events           the list of {@code Event} objects to be inserted
+     * @param customerBillTotal the total bill amount for the booking
+     * @param ticketPrice      the ticket price for the booking
+     * @param customerAccount  the customer account number
+     * @param customerSortCode the customer sort code
+     * @param streetAddress    the client's street address
+     * @param city             the client's city
+     * @param postcode         the client's postcode
+     * @param paymentDueDate   the payment due date
+     * @param paymentStatus    the payment status
+     * @param contractDetails  details of the contract
+     * @param contractFile     a {@code File} object representing the contract file (or {@code null} if none)
+     * @param maxDiscount      the maximum discount allowed
+     * @param staffId          the staff ID who processed the booking
+     * @return {@code true} if the full booking was inserted successfully; {@code false} otherwise
      */
     public boolean insertFullBooking(String bookingEventName,
                                      LocalDate bookingStartDate,
@@ -314,7 +401,7 @@ public class SQLConnection implements SQLInterface {
                 }
             }
 
-            // 2. Insert Booking details (including staff_id, client_id, total_cost, and max_discount) and retrieve the generated booking_id.
+            // 2. Insert Booking details and retrieve the generated booking_id.
             try (PreparedStatement psBooking = con.prepareStatement(insertBooking, Statement.RETURN_GENERATED_KEYS)) {
                 psBooking.setDate(1, java.sql.Date.valueOf(bookingStartDate));
                 psBooking.setDate(2, java.sql.Date.valueOf(bookingEndDate));
@@ -367,10 +454,10 @@ public class SQLConnection implements SQLInterface {
                     psEvent.setInt(7, event.getVenue().getVenueId());
                     psEvent.setInt(8, bookingId);
                     psEvent.setInt(9, clientId);
-                    psEvent.setString(10, event.getRoom());           // location from the event
-                    psEvent.setString(11, event.getDescription());      // new description field
-                    psEvent.setString(12, event.getLayout());           // new layout field
-                    psEvent.setDouble(13, maxDiscount);                 // send maxDiscount to Event entity
+                    psEvent.setString(10, event.getRoom());
+                    psEvent.setString(11, event.getDescription());
+                    psEvent.setString(12, event.getLayout());
+                    psEvent.setDouble(13, maxDiscount);
                     psEvent.executeUpdate();
                 }
             }
@@ -395,10 +482,13 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
-
-
     /**
-     * Calls the MySQL stored function calculateMainHallCost.
+     * Calls the MySQL stored function {@code calculateMainHallCost} to determine the cost for the main hall.
+     *
+     * @param p_date      the date for which to calculate the cost
+     * @param p_rate_type the rate type (e.g., standard, premium)
+     * @param p_hours     the number of hours the hall is booked
+     * @return the calculated cost as a {@code double}
      */
     public double calculateMainHallCost(java.sql.Date p_date, String p_rate_type, int p_hours) {
         double cost = 0.0;
@@ -420,7 +510,12 @@ public class SQLConnection implements SQLInterface {
     }
 
     /**
-     * Calls the MySQL stored function calculateSmallHallCost.
+     * Calls the MySQL stored function {@code calculateSmallHallCost} to determine the cost for the small hall.
+     *
+     * @param p_date      the date for which to calculate the cost
+     * @param p_rate_type the rate type (e.g., standard, premium)
+     * @param p_hours     the number of hours the hall is booked
+     * @return the calculated cost as a {@code double}
      */
     public double calculateSmallHallCost(java.sql.Date p_date, String p_rate_type, int p_hours) {
         double cost = 0.0;
@@ -442,7 +537,12 @@ public class SQLConnection implements SQLInterface {
     }
 
     /**
-     * Calls the MySQL stored function calculateRehearsalCost.
+     * Calls the MySQL stored function {@code calculateRehearsalCost} to determine the rehearsal cost.
+     *
+     * @param p_date      the date for which to calculate the cost
+     * @param p_rate_type the rate type for rehearsal cost
+     * @param p_hours     the number of hours for the rehearsal
+     * @return the calculated cost as a {@code double}
      */
     public double calculateRehearsalCost(java.sql.Date p_date, String p_rate_type, int p_hours) {
         double cost = 0.0;
@@ -464,7 +564,12 @@ public class SQLConnection implements SQLInterface {
     }
 
     /**
-     * Calls the MySQL stored function calculateRoomCost.
+     * Calls the MySQL stored function {@code calculateRoomCost} to determine the cost for a room.
+     *
+     * @param p_venue_id     the venue ID where the room is located
+     * @param p_room_name    the name of the room
+     * @param p_duration_type the type of duration for which cost is calculated
+     * @return the calculated cost as a {@code double}
      */
     public double calculateRoomCost(int p_venue_id, String p_room_name, String p_duration_type) {
         double cost = 0.0;
@@ -486,7 +591,11 @@ public class SQLConnection implements SQLInterface {
     }
 
     /**
-     * Calls the MySQL stored function calculateVenueCost.
+     * Calls the MySQL stored function {@code calculateVenueCost} to determine the cost for a venue.
+     *
+     * @param p_date         the booking date
+     * @param p_booking_type the type of booking
+     * @return the calculated cost as a {@code double}
      */
     public double calculateVenueCost(java.sql.Date p_date, String p_booking_type) {
         double cost = 0.0;
@@ -506,11 +615,15 @@ public class SQLConnection implements SQLInterface {
         return cost;
     }
 
-
     /**
-     * Retrieves event details from the Event table for the given booking ID.
-     * Joins the Venue table to replace venue_id with venue_name.
-     * Fields returned: event_id, name, start_date, end_date, start_time, end_time, a default event_type, and venue_name.
+     * Retrieves event details for a given booking ID by joining the Event and Venue tables.
+     * <p>
+     * Fields returned include event_id, name, start_date, end_date, start_time, end_time,
+     * a default event_type ('N/A'), and venue_name.
+     * </p>
+     *
+     * @param bookingId the booking ID used to filter event details
+     * @return a {@code ResultSet} containing event details, or {@code null} if an error occurs
      */
     public ResultSet getEventDetails(int bookingId) {
         String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
@@ -529,13 +642,11 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
-
-
-
     /**
-     * Retrieves client details from the Clients table for the given booking ID.
-     * Joins the Booking and Clients tables using client_id.
-     * Fields: Company Name, Contact Name, Phone Number, Contact Email, Customer Account Number, Customer Sort Code.
+     * Retrieves client details for a given booking by joining the Booking and Clients tables.
+     *
+     * @param bookingId the booking ID used to find the client details
+     * @return a {@code ResultSet} containing client details, or {@code null} if an error occurs
      */
     public ResultSet getClientDetails(int bookingId) {
         String query = "SELECT c.`Company Name`, c.`Contact Name`, c.`Phone Number`, c.`Contact Email`, " +
@@ -555,10 +666,10 @@ public class SQLConnection implements SQLInterface {
     }
 
     /**
-     * Retrieves contract details for the specified bookingId.
+     * Retrieves contract details for the specified booking.
      *
-     * @param bookingId The booking id to look up the contract.
-     * @return A ResultSet containing contract_id, details, and file_data; or null if an error occurs.
+     * @param bookingId the booking ID for which the contract details are retrieved
+     * @return a {@code ResultSet} containing contract_id, details, and file_data, or {@code null} if an error occurs
      */
     public ResultSet getContractDetails(int bookingId) {
         String query = "SELECT contract_id, details, file_data FROM Contract WHERE booking_id = ?";
@@ -573,9 +684,12 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
-
-    // handle the calendar panel for event look on calendar:
-
+    /**
+     * Retrieves event details for a given event ID for calendar view purposes.
+     *
+     * @param eventId the event ID used to filter the event details
+     * @return a {@code ResultSet} containing event details, or {@code null} if an error occurs
+     */
     public ResultSet getEventDetailsByEventId(int eventId) {
         String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
                 "e.`event_type`, e.description, e.booked_by, v.venue_name " +
@@ -593,10 +707,11 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
-
-
     /**
      * Retrieves booking details for the given booking ID.
+     *
+     * @param bookingId the booking ID used to retrieve booking details
+     * @return a {@code ResultSet} containing booking details, or {@code null} if an error occurs
      */
     public ResultSet getBookingDetails(int bookingId) {
         String query = "SELECT b.booking_DateStart, b.booking_DateEnd, b.booking_status, b.total_cost, b.payment_status, " +
@@ -615,11 +730,16 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
-    // -------------------------------------------------------------
-// New method for the schedule film functionality.
-// This method queries all film events on the given date, groups them by venue (location),
-// and calculates free time intervals for each venue based on fixed operating hours.
-// -------------------------------------------------------------
+    /**
+     * Retrieves film event details and computes available free time intervals for each venue on the given date.
+     * <p>
+     * The method groups film events by venue and calculates the free time intervals (based on fixed operating hours, 08:00 to 22:00)
+     * by subtracting the booked intervals.
+     * </p>
+     *
+     * @param date the date for which the film event availability is calculated
+     * @return a {@code Map} where each key is a venue (location) and the value is a {@code String} describing the free time intervals
+     */
     public Map<String, String> getFilmEventDetailsWithAvailability(LocalDate date) {
         Map<String, List<Interval>> bookedSlotsByVenue = new HashMap<>();
         Map<String, String> freeTimeByVenue = new HashMap<>();
@@ -670,18 +790,57 @@ public class SQLConnection implements SQLInterface {
         return freeTimeByVenue;
     }
 
-    // Helper class to represent a time interval.
+    /**
+     * A helper class to represent a time interval.
+     */
     private static class Interval {
         LocalTime start;
         LocalTime end;
+
+        /**
+         * Constructs an {@code Interval} with a start and end time.
+         *
+         * @param start the start time of the interval
+         * @param end   the end time of the interval
+         */
         Interval(LocalTime start, LocalTime end) {
             this.start = start;
             this.end = end;
         }
     }
 
-
-    // this is for the update on booking details
+    /**
+     * Updates a full booking and its associated records such as booking, invoice, client, events, and contract.
+     * <p>
+     * This method uses COALESCE in the update queries so that if a passed parameter is {@code null},
+     * the current value in the database remains unchanged.
+     * </p>
+     *
+     * @param bookingId         the ID of the booking to update (as a {@code String})
+     * @param bookingEventName  the new booking event name (if applicable)
+     * @param bookingStartDate  the new booking start date
+     * @param bookingEndDate    the new booking end date
+     * @param bookingStatus     the new booking status
+     * @param companyName       the new company name for the client
+     * @param primaryContact    the new primary contact name
+     * @param telephone         the new telephone number
+     * @param email             the new email address
+     * @param events            the list of {@code Event} objects to update
+     * @param customerBillTotal the new customer bill total
+     * @param ticketPrice       the new ticket price
+     * @param customerAccount   the new customer account number
+     * @param customerSortCode  the new customer sort code
+     * @param streetAddress     the new street address
+     * @param city              the new city
+     * @param postcode          the new postcode
+     * @param paymentDueDate    the new payment due date
+     * @param paymentStatus     the new payment status
+     * @param contractDetails   the new contract details
+     * @param contractFile      the new contract {@code File} (or {@code null} if not updated)
+     * @param maxDiscount       the new maximum discount
+     * @param staffId           the new staff ID
+     * @return {@code true} if the update is successful; {@code false} otherwise
+     */
     public boolean updateFullBooking(String bookingId,
                                      String bookingEventName,
                                      LocalDate bookingStartDate,
@@ -837,9 +996,7 @@ public class SQLConnection implements SQLInterface {
             }
 
             con.commit();
-            // Print message to the terminal.
             System.out.println("Booking " + bookingId + " updated successfully.");
-            // Notify listeners (e.g., Box Office) that the booking has been updated.
             notifyUpdateListeners("bookingUpdated", bookingId);
             return true;
         } catch (Exception ex) {
@@ -863,12 +1020,19 @@ public class SQLConnection implements SQLInterface {
         }
     }
 
-
-
-
-
-    // delete booking button in the booking detail form
-
+    /**
+     * Deletes a full booking and its associated records from the database.
+     * <p>
+     * This method performs the following steps:
+     * <ol>
+     *   <li>Checks if the booking exists and has a "held" status.</li>
+     *   <li>Deletes the Contract, Invoice, Event, Booking, and Client records associated with the booking.</li>
+     * </ol>
+     * </p>
+     *
+     * @param bookingId the booking ID to delete
+     * @return {@code true} if the booking was successfully deleted; {@code false} otherwise
+     */
     public boolean deleteFullBooking(int bookingId) {
         Connection con = null;
         try {
@@ -920,8 +1084,6 @@ public class SQLConnection implements SQLInterface {
             }
 
             // 6. Delete Client record.
-            // Optionally, you might want to check if the client is linked to other bookings.
-            // Here, we assume each booking has a unique client record.
             try (PreparedStatement psClient = con.prepareStatement("DELETE FROM Clients WHERE client_id = ?")) {
                 psClient.setInt(1, clientId);
                 psClient.executeUpdate();
@@ -950,12 +1112,4 @@ public class SQLConnection implements SQLInterface {
             }
         }
     }
-
-
-
-
-
-
-
-
 }

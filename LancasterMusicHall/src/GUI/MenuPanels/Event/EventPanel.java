@@ -5,14 +5,19 @@ import com.toedter.calendar.JDateChooser;
 import operations.entities.Booking;
 
 import javax.swing.*;
-        import javax.swing.border.EmptyBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-        import java.text.SimpleDateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
 
+/**
+ * The EventPanel class displays and collects event-related data.
+ * It is a panel used to input or edit event details, including dates, times,
+ * booking, and contact information.
+ */
 public class EventPanel extends JPanel {
     private JDateChooser startDatePicker;
     private JDateChooser endDatePicker;
@@ -29,6 +34,13 @@ public class EventPanel extends JPanel {
     private JTextField contactPhoneField;
     private JTextField contactEmailField;
 
+    /**
+     * Constructs an EventPanel with UI components to input and display event details.
+     *
+     * @param mainMenu   the main menu GUI instance used for styling and interactions
+     * @param cardLayout the CardLayout used for switching views in the parent panel
+     * @param cardPanel  the parent panel holding different cards (views)
+     */
     public EventPanel(MainMenuGUI mainMenu, CardLayout cardLayout, JPanel cardPanel) {
         this.setBackground(Color.white);
         setLayout(new BorderLayout());
@@ -205,7 +217,6 @@ public class EventPanel extends JPanel {
                 int venueId = Integer.parseInt(venueIdField.getText().trim());
                 boolean isConfirmed = confirmedCheck.isSelected();
 
-
                 // Save logic here
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Invalid input: " + ex.getMessage(),
@@ -213,9 +224,16 @@ public class EventPanel extends JPanel {
             }
         });
 
+        // Cancel Button Logic
         cancelButton.addActionListener(ev -> cardLayout.show(cardPanel, "Calendar"));
     }
 
+    /**
+     * Creates a panel with a label and an input text field.
+     *
+     * @param labelText the text to display in the label
+     * @return a JPanel containing the label and input text field
+     */
     private JPanel createInputPanel(String labelText) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduced hgap from 30 to 10
         panel.setBackground(Color.white);
@@ -228,6 +246,12 @@ public class EventPanel extends JPanel {
         return panel;
     }
 
+    /**
+     * Creates a panel with a label for displaying a date field.
+     *
+     * @param labelText the text to display in the label
+     * @return a JPanel containing the label
+     */
     private JPanel createDatePanel(String labelText) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduced hgap
         panel.setBackground(Color.white);
@@ -237,6 +261,12 @@ public class EventPanel extends JPanel {
         return panel;
     }
 
+    /**
+     * Creates a panel with a label for displaying a combo box.
+     *
+     * @param labelText the text to display in the label
+     * @return a JPanel containing the label
+     */
     private JPanel createComboPanel(String labelText) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduced hgap
         panel.setBackground(Color.white);
@@ -246,6 +276,12 @@ public class EventPanel extends JPanel {
         return panel;
     }
 
+    /**
+     * Creates a styled JLabel for consistency across the UI.
+     *
+     * @param text the text to display in the label
+     * @return a styled JLabel
+     */
     private JLabel createStyledLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -253,11 +289,22 @@ public class EventPanel extends JPanel {
         return label;
     }
 
+    /**
+     * Collects and validates the form data.
+     *
+     * @return a Booking object with the collected data, or null if validation fails
+     */
     private Booking collectFormData() {
         // Validate required fields
         return null;
     }
 
+    /**
+     * Sets the booking data to be displayed/edited in the form.
+     *
+     * @param booking the Booking object containing existing booking data
+     */
     public void setBookingData(Booking booking) {
+        // Implementation for setting booking data goes here.
     }
 }

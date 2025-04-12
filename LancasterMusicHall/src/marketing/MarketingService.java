@@ -17,6 +17,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The {@code MarketingService} class implements the {@code MarketingInterface} and provides
+ * methods to retrieve and manipulate marketing-related data, including calendar bookings,
+ * booking details, client details, event details, contract details, film event availability,
+ * daily sheets, and revenue and usage reports.
+ * <p>
+ * This class relies on injected dependencies for calendar operations, room configuration,
+ * income tracking, and SQL connections.
+ * </p>
+ */
 public class MarketingService implements MarketingInterface {
 
     private final CalendarModule calendarModule;
@@ -24,7 +34,14 @@ public class MarketingService implements MarketingInterface {
     private final IncomeTracker incomeTracker;
     private final SQLConnection sqlCon; // SQL connection dependency
 
-    // Constructor with SQLConnection injection
+    /**
+     * Constructs a new {@code MarketingService} with the specified modules and SQL connection.
+     *
+     * @param calendarModule  The {@link CalendarModule} used for scheduling and calendar operations.
+     * @param roomConfigSystem The {@link RoomConfigurationSystem} used to manage room configurations and availability.
+     * @param incomeTracker   The {@link IncomeTracker} used for tracking revenue and usage.
+     * @param sqlCon          The {@link SQLConnection} used for executing SQL queries.
+     */
     public MarketingService(CalendarModule calendarModule, RoomConfigurationSystem roomConfigSystem, IncomeTracker incomeTracker, SQLConnection sqlCon) {
         this.calendarModule = calendarModule;
         this.roomConfigSystem = roomConfigSystem;
@@ -34,7 +51,14 @@ public class MarketingService implements MarketingInterface {
 
     // ------------------ SQL Methods Directly in Marketing ------------------
 
-    // 1. Get Calendar Bookings: Retrieve bookings between startDate and endDate.
+    /**
+     * Retrieves calendar bookings that have start and end dates within the specified range.
+     *
+     * @param startDate The start date of the booking range.
+     * @param endDate   The end date of the booking range.
+     * @return A {@link ResultSet} containing booking_id, booking_DateStart, booking_DateEnd, and booking_status,
+     *         or {@code null} if an SQL exception occurs.
+     */
     public ResultSet getCalendarBookings(LocalDate startDate, LocalDate endDate) {
         String query = "SELECT booking_id, booking_DateStart, booking_DateEnd, booking_status " +
                 "FROM Booking WHERE booking_DateStart >= ? AND booking_DateEnd <= ?";
@@ -50,7 +74,13 @@ public class MarketingService implements MarketingInterface {
         }
     }
 
-    // 2. Get Booking Details: Retrieve booking details joined with client info.
+    /**
+     * Retrieves detailed booking information including client company name for a given booking ID.
+     *
+     * @param bookingId The booking ID for which the details are requested.
+     * @return A {@link ResultSet} containing booking details such as booking_DateStart, booking_DateEnd, booking_status,
+     *         total_cost, payment_status, client_id, and company_name; or {@code null} if an SQL exception occurs.
+     */
     public ResultSet getBookingDetails(int bookingId) {
         String query = "SELECT b.booking_DateStart, b.booking_DateEnd, b.booking_status, b.total_cost, b.payment_status, " +
                 "b.client_id, c.`Company Name` AS company_name " +
@@ -67,7 +97,13 @@ public class MarketingService implements MarketingInterface {
         }
     }
 
-    // 3. Get Client Details: Retrieve client info for a booking.
+    /**
+     * Retrieves client contact details associated with a specific booking.
+     *
+     * @param bookingId The booking ID for which client details are requested.
+     * @return A {@link ResultSet} containing client contact information such as Contact Name, Phone Number,
+     *         and Contact Email, or {@code null} if an SQL exception occurs.
+     */
     public ResultSet getClientDetails(int bookingId) {
         String query = "SELECT c.`Contact Name`, c.`Phone Number`, c.`Contact Email` " +
                 "FROM Clients c JOIN Booking b ON c.client_id = b.client_id " +
@@ -83,7 +119,13 @@ public class MarketingService implements MarketingInterface {
         }
     }
 
-    // 4. Get Event Details: Retrieve events for a booking (joined with Venue).
+    /**
+     * Retrieves event details associated with a specific booking, joined with venue details.
+     *
+     * @param bookingId The booking ID for which event details are requested.
+     * @return A {@link ResultSet} containing event details such as event_id, name, start_date, end_date,
+     *         start_time, end_time, event_type, and venue_name, or {@code null} if an SQL exception occurs.
+     */
     public ResultSet getEventDetails(int bookingId) {
         String query = "SELECT e.event_id, e.name, e.start_date, e.end_date, e.start_time, e.end_time, " +
                 "e.event_type, v.venue_name " +
@@ -100,7 +142,13 @@ public class MarketingService implements MarketingInterface {
         }
     }
 
-    // 5. Get Contract Details: Retrieve contract data for a booking.
+    /**
+     * Retrieves contract details for a given booking.
+     *
+     * @param bookingId The booking ID for which contract details are requested.
+     * @return A {@link ResultSet} containing contract_id, details, and file_data,
+     *         or {@code null} if an SQL exception occurs.
+     */
     public ResultSet getContractDetails(int bookingId) {
         String query = "SELECT contract_id, details, file_data FROM Contract WHERE booking_id = ?";
         try {
@@ -114,7 +162,16 @@ public class MarketingService implements MarketingInterface {
         }
     }
 
-    // 6. Get Film Event Details With Availability: Retrieve film events on a date and calculate free slots.
+    /**
+     * Retrieves film event details with available free time intervals for a specified date.
+     * <p>
+     * This method calculates free time slots for each venue by comparing existing film events with
+     * assumed operating hours (08:00 to 22:00).
+     * </p>
+     *
+     * @param date The date for which film event availability is requested.
+     * @return A {@link Map} where keys are venue names and values are comma-separated strings representing free time intervals.
+     */
     public Map<String, String> getFilmEventDetailsWithAvailability(LocalDate date) {
         Map<String, List<Interval>> bookedSlotsByVenue = new HashMap<>();
         Map<String, String> freeTimeByVenue = new HashMap<>();
@@ -163,17 +220,32 @@ public class MarketingService implements MarketingInterface {
         return freeTimeByVenue;
     }
 
-    // Helper class for time intervals.
+    /**
+     * A helper class representing a time interval with a start and end time.
+     */
     private static class Interval {
         LocalTime start;
         LocalTime end;
+
+        /**
+         * Constructs a new {@code Interval} with the specified start and end times.
+         *
+         * @param start The start time of the interval.
+         * @param end   The end time of the interval.
+         */
         Interval(LocalTime start, LocalTime end) {
             this.start = start;
             this.end = end;
         }
     }
 
-    // 7. Fetch Daily Sheet: Retrieve summary of events on a given date.
+    /**
+     * Fetches a daily sheet summary of events for the given date.
+     *
+     * @param date The date for which to fetch the daily sheet.
+     * @return A {@link ResultSet} containing event_id, name, start_time, and end_time,
+     *         or {@code null} if an SQL exception occurs.
+     */
     public ResultSet fetchDailySheet(LocalDate date) {
         String query = "SELECT event_id, name, start_time, end_time FROM Event WHERE start_date = ?";
         try {
@@ -189,6 +261,14 @@ public class MarketingService implements MarketingInterface {
 
     // ------------------ Marketing Interface Methods ------------------
 
+    /**
+     * Returns a string representation of the calendar bookings within the specified date range.
+     *
+     * @param startDate The starting date for the calendar view.
+     * @param endDate   The ending date for the calendar view.
+     * @return A string listing booking details including Booking ID, Start Date, End Date, and Status,
+     *         or an error message if data retrieval fails.
+     */
     @Override
     public String viewCalendar(LocalDate startDate, LocalDate endDate) {
         StringBuilder calendarData = new StringBuilder();
@@ -210,21 +290,46 @@ public class MarketingService implements MarketingInterface {
         return calendarData.toString();
     }
 
+    /**
+     * Notifies that a change has occurred on the calendar for a specific booking.
+     *
+     * @param bookingId The booking ID that has been changed.
+     * @param changeType A string describing the type of change.
+     */
     @Override
     public void notifyCalendarChange(int bookingId, String changeType) {
         System.out.println("Booking " + bookingId + " has been " + changeType);
     }
 
+    /**
+     * Retrieves space availability based on the provided date.
+     *
+     * @param date The date for which room availability is requested.
+     * @return A {@link Map} containing availability information returned from the room configuration system.
+     */
     @Override
     public Map<String, String> getSpaceAvailability(LocalDate date) {
         return roomConfigSystem.getRoomAvailability(date);
     }
 
+    /**
+     * Retrieves the seating plan for a given activity.
+     *
+     * @param activityId The ID of the activity.
+     * @return A string representing the seating plan for the activity.
+     */
     @Override
     public String getSeatingPlan(int activityId) {
         return roomConfigSystem.getSeatingPlan(activityId);
     }
 
+    /**
+     * Retrieves the configuration details of a booking including dates, status, total cost,
+     * payment status, and client company name.
+     *
+     * @param bookingId The booking ID for which configuration details are requested.
+     * @return A string containing the booking configuration details, or an error message if the booking is not found.
+     */
     @Override
     public String getConfigurationDetails(int bookingId) {
         StringBuilder details = new StringBuilder();
@@ -246,21 +351,47 @@ public class MarketingService implements MarketingInterface {
         return details.toString();
     }
 
+    /**
+     * Retrieves revenue information for a specified activity.
+     *
+     * @param activityId The ID of the activity.
+     * @return A string representing the revenue information for the activity.
+     */
     @Override
     public String getRevenueInfo(int activityId) {
         return incomeTracker.getRevenueForActivity(activityId);
     }
 
+    /**
+     * Retrieves a usage report for a specified date range.
+     *
+     * @param startDate The starting date of the usage report.
+     * @param endDate   The ending date of the usage report.
+     * @return A string representing the usage report for the given date range.
+     */
     @Override
     public String getUsageReports(LocalDate startDate, LocalDate endDate) {
         return incomeTracker.getUsageReport(startDate, endDate);
     }
 
+    /**
+     * Retrieves information about held spaces from the room configuration system.
+     *
+     * @return A string representing the held spaces.
+     */
     @Override
     public String getHeldSpaces() {
         return roomConfigSystem.getHeldSpaces();
     }
 
+    /**
+     * Schedules a film event by retrieving free time slots for the specified date and then delegating
+     * the scheduling to the calendar module.
+     *
+     * @param filmId       The ID of the film event to schedule.
+     * @param proposedDate The proposed date for the film event.
+     * @return {@code true} if the film event is successfully scheduled; {@code false} otherwise.
+     */
     @Override
     public boolean scheduleFilm(int filmId, LocalDate proposedDate) {
         Map<String, String> freeTime = getFilmEventDetailsWithAvailability(proposedDate);
@@ -271,6 +402,13 @@ public class MarketingService implements MarketingInterface {
         return calendarModule.scheduleFilm(filmId, proposedDate);
     }
 
+    /**
+     * Retrieves a daily sheet summarizing events for the given date.
+     *
+     * @param date The date for which to retrieve the daily sheet.
+     * @return A string representation of the daily sheet including event IDs, names, start times,
+     *         and end times, or an error message if data retrieval fails.
+     */
     @Override
     public String getDailySheet(LocalDate date) {
         StringBuilder sheet = new StringBuilder();

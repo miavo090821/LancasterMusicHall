@@ -11,10 +11,23 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ * The {@code BookingPanel} class represents the main user interface panel for displaying and
+ * interacting with booking records.
+ * <p>
+ * It retrieves booking data via a {@link SQLConnection} instance, and provides functionality
+ * to filter, add, and view detailed booking information.
+ * </p>
+ */
 public class BookingPanel extends JPanel {
     private SQLConnection sqlCon;
     private MainMenuGUI mainMenu;
 
+    /**
+     * Constructs a {@code BookingPanel} using the given main menu.
+     *
+     * @param mainMenu the main menu GUI that provides the SQL connection and other application context
+     */
     public BookingPanel(MainMenuGUI mainMenu) {
         this.mainMenu = mainMenu;
         this.sqlCon = mainMenu.getSqlConnection();
@@ -34,6 +47,11 @@ public class BookingPanel extends JPanel {
         add(contentPanel, BorderLayout.CENTER);
     }
 
+    /**
+     * Creates and returns the title panel for the booking panel.
+     *
+     * @return a {@code JPanel} containing the title label
+     */
     private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         titlePanel.setPreferredSize(new Dimension(550, 40));
@@ -45,6 +63,14 @@ public class BookingPanel extends JPanel {
         return titlePanel;
     }
 
+    /**
+     * Creates and returns the content panel which includes the search controls and the bookings table.
+     * <p>
+     * The panel also includes mouse listeners to refresh the table and to launch the booking detail form on double-click.
+     * </p>
+     *
+     * @return a {@code JPanel} containing the main content for booking management
+     */
     private JPanel createContentPanel() {
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBackground(Color.WHITE);
@@ -152,7 +178,7 @@ public class BookingPanel extends JPanel {
             }
         });
 
-        // add a mouse listener to refresh the table when the panel is clicked.
+        // Add a mouse listener to refresh the table when the panel is clicked.
         contentPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -169,6 +195,12 @@ public class BookingPanel extends JPanel {
         return contentPanel;
     }
 
+    /**
+     * Displays the new booking form.
+     * <p>
+     * The new booking form is launched as a modal dialog.
+     * </p>
+     */
     private void showNewBookingForm() {
         Window ownerWindow = SwingUtilities.getWindowAncestor(this);
         Frame ownerFrame = (ownerWindow instanceof Frame) ? (Frame) ownerWindow : null;

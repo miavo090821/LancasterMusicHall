@@ -18,6 +18,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
+/**
+ * The DiaryWeekViewPanel class represents the week view panel in the diary section.
+ * It extends the CalendarViewPanel and visualizes events on a weekly grid with time slots.
+ */
 public class DiaryWeekViewPanel extends CalendarViewPanel {
     private LocalDate viewDate;
     private LocalDate startOfWeek;
@@ -38,6 +42,13 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
     private JPanel daysGridPanel;
     private JPanel[][] timeSlotPanels; // rows: time slots, cols: days
 
+    /**
+     * Constructs a new DiaryWeekViewPanel for a given date with the provided events and SQL connection.
+     *
+     * @param date          the reference date for the diary view
+     * @param events        a list of events (currently not used in this implementation)
+     * @param sqlConnection the SQLConnection object to the database
+     */
     public DiaryWeekViewPanel(LocalDate date, List events, Object sqlConnection) {
         super(date, events, sqlConnection);
         this.sqlCon = (SQLConnection) sqlConnection;
@@ -47,10 +58,16 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         renderEvents(null);
     }
 
+    /**
+     * Computes the start of the week based on the view date, setting Monday as the first day.
+     */
     private void computeStartOfWeek() {
         startOfWeek = viewDate.with(DayOfWeek.MONDAY);
     }
 
+    /**
+     * Initializes the user interface components of the week view including headers and time grid.
+     */
     private void initializeUI() {
         setLayout(new BorderLayout());
 
@@ -126,11 +143,21 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         add(new JScrollPane(gridPanel), BorderLayout.CENTER);
     }
 
+    /**
+     * Retrieves the SQLConnection used by this panel.
+     *
+     * @return the SQLConnection object
+     */
     @Override
     protected SQLConnection getSQLConnection() {
         return sqlCon;
     }
 
+    /**
+     * Sets the view date and updates the panel accordingly.
+     *
+     * @param date the new view date
+     */
     @Override
     public void setViewDate(LocalDate date) {
         this.viewDate = date;
@@ -138,6 +165,10 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         refreshView();
     }
 
+    /**
+     * Refreshes the view by updating header texts, clearing time slots, re-rendering events,
+     * and repainting the panel.
+     */
     @Override
     public void refreshView() {
         DateTimeFormatter headerFormatter = DateTimeFormatter.ofPattern("EEEE dd/MM");
@@ -151,6 +182,9 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         repaint();
     }
 
+    /**
+     * Clears the content of all time slot panels and resets event display information.
+     */
     private void clearTimeSlots() {
         eventDisplayMap.clear();
         for (int row = 0; row < numberOfSlots; row++) {
@@ -162,6 +196,11 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         }
     }
 
+    /**
+     * Navigates the view by shifting the current view date by a number of weeks.
+     *
+     * @param direction the number of weeks to shift (positive for future, negative for past)
+     */
     @Override
     public void navigate(int direction) {
         viewDate = viewDate.plusWeeks(direction);
@@ -169,6 +208,12 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         refreshView();
     }
 
+    /**
+     * Renders events on the grid between the start and end of the current week view.
+     * Queries the database to get events, processes overlaps and sets event panels.
+     *
+     * @param ignored an ignored parameter (not used)
+     */
     @Override
     public void renderEvents(List ignored) {
         LocalDate weekStart = startOfWeek;
@@ -286,6 +331,12 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         repaint();
     }
 
+    /**
+     * Determines the background color for an event based on the booking department.
+     *
+     * @param bookedBy the department or person who booked the event
+     * @return the Color associated with the event booking
+     */
     private Color determineEventColor(String bookedBy) {
         if (bookedBy != null) {
             if (bookedBy.equalsIgnoreCase("operations")) {
@@ -297,6 +348,16 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         return new Color(230, 255, 200);  // Default green.
     }
 
+    /**
+     * Creates a panel representing an individual event to be displayed in the grid.
+     *
+     * @param event       the EventInfo object containing event details
+     * @param isFirstSlot true if this panel is in the first slot of the event duration
+     * @param isLastSlot  true if this panel is in the last slot of the event duration
+     * @param column      the column index assigned to the event
+     * @param maxColumns  the total number of columns in the time slot container
+     * @return a JPanel representing the event
+     */
     private JPanel createEventPanel(EventInfo event, boolean isFirstSlot, boolean isLastSlot,
                                     int column, int maxColumns) {
         JPanel panel = new JPanel(new BorderLayout());
@@ -320,6 +381,12 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         return panel;
     }
 
+    /**
+     * Calculates the maximum number of concurrent events in the given list.
+     *
+     * @param events a list of events occurring in a specific day
+     * @return the maximum number of overlapping events for any time slot
+     */
     private int calculateMaxConcurrentEvents(List<EventInfo> events) {
         if (events.isEmpty()) return 0;
 
@@ -341,6 +408,12 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         return maxConcurrent;
     }
 
+    /**
+     * Assigns a column index to each event such that overlapping events are shown side by side.
+     *
+     * @param events     the list of events for a given day
+     * @param maxColumns the maximum number of overlapping event columns in that day
+     */
     private void assignEventColumns(List<EventInfo> events, int maxColumns) {
         // Group events by their time slots
         Map<Integer, List<EventInfo>> eventsBySlot = new HashMap<>();
@@ -383,6 +456,13 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         }
     }
 
+    /**
+     * Attaches mouse event listeners to the given panel for interactive behavior
+     * such as hover effects and clicking to show event details.
+     *
+     * @param panel   the JPanel representing the event
+     * @param eventId the unique identifier of the event
+     */
     private void attachEventListeners(JPanel panel, int eventId) {
         Color baseColor = panel.getBackground();
         panel.addMouseListener(new MouseAdapter() {
@@ -406,25 +486,52 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         });
     }
 
+    /**
+     * Retrieves the start date of the current week view.
+     *
+     * @return the LocalDate representing the Monday of the week
+     */
     @Override
     public LocalDate getViewStartDate() {
         return startOfWeek;
     }
 
+    /**
+     * Retrieves the end date of the current week view.
+     *
+     * @return the LocalDate representing the Sunday of the week
+     */
     @Override
     public LocalDate getViewEndDate() {
         return startOfWeek.plusDays(6);
     }
 
+    /**
+     * Private helper class representing a time point in an event with a flag indicating
+     * whether it is the start or end of an event.
+     */
     private static class TimePoint implements Comparable<TimePoint> {
         LocalTime time;
         boolean isStart;
 
+        /**
+         * Constructs a TimePoint with the specified time and start flag.
+         *
+         * @param time    the LocalTime of the time point
+         * @param isStart true if this time point is the start of an event; false otherwise
+         */
         TimePoint(LocalTime time, boolean isStart) {
             this.time = time;
             this.isStart = isStart;
         }
 
+        /**
+         * Compares this TimePoint with another based on time and start/end flag.
+         *
+         * @param other the other TimePoint to compare
+         * @return a negative integer, zero, or a positive integer as this object is less than,
+         * equal to, or greater than the specified object
+         */
         @Override
         public int compareTo(TimePoint other) {
             int timeCompare = this.time.compareTo(other.time);
@@ -433,6 +540,9 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         }
     }
 
+    /**
+     * Private helper class representing an event's information necessary for display.
+     */
     private static class EventInfo {
         int eventId;
         String eventName;
@@ -445,6 +555,19 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         int dayIndex;
         int column;
 
+        /**
+         * Constructs an EventInfo object with the provided event details.
+         *
+         * @param eventId   the unique identifier of the event
+         * @param eventName the event's name
+         * @param venueName the name of the venue hosting the event
+         * @param bookedBy  the department or person who booked the event
+         * @param startTime the starting time of the event
+         * @param endTime   the ending time of the event
+         * @param startSlot the starting time slot index in the grid
+         * @param endSlot   the ending time slot index in the grid
+         * @param dayIndex  the index of the day in the week (0 for Monday, etc.)
+         */
         public EventInfo(int eventId, String eventName, String venueName,
                          String bookedBy, LocalTime startTime, LocalTime endTime,
                          int startSlot, int endSlot, int dayIndex) {
@@ -460,10 +583,20 @@ public class DiaryWeekViewPanel extends CalendarViewPanel {
         }
     }
 
+    /**
+     * Private helper class containing display information for an event, such as its
+     * assigned column and the total number of columns in the time slot container.
+     */
     private static class EventDisplayInfo {
         int column;
         int totalColumns;
 
+        /**
+         * Constructs an EventDisplayInfo object with the specified column and total columns.
+         *
+         * @param column       the column index assigned to the event
+         * @param totalColumns the total number of columns in the container for the event's time slot
+         */
         public EventDisplayInfo(int column, int totalColumns) {
             this.column = column;
             this.totalColumns = totalColumns;

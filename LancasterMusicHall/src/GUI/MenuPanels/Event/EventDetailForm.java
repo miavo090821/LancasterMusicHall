@@ -5,6 +5,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.ResultSet;
 
+/**
+ * The EventDetailForm class displays a modal dialog containing details for a specific event.
+ * It connects to a SQL database to load the event data and shows them in non-editable text fields.
+ */
 public class EventDetailForm extends JDialog {
     private SQLConnection sqlCon;
     private String eventId;
@@ -15,6 +19,13 @@ public class EventDetailForm extends JDialog {
 
     // You can add more fields as needed
 
+    /**
+     * Constructs a new EventDetailForm dialog.
+     *
+     * @param owner      the parent frame of this dialog
+     * @param sqlCon     the SQLConnection to the database for event details
+     * @param eventId    the identifier of the event whose details are to be displayed
+     */
     public EventDetailForm(Frame owner, SQLConnection sqlCon, String eventId) {
         super(owner, "Event Details - " + eventId, true);
         this.sqlCon = sqlCon;
@@ -25,15 +36,19 @@ public class EventDetailForm extends JDialog {
         setLocationRelativeTo(owner);
     }
 
+    /**
+     * Initializes the GUI components and layout for the event detail form.
+     */
     private void initComponents() {
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Event Name
-        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         mainPanel.add(new JLabel("Event Name:"), gbc);
         gbc.gridx = 1;
         eventNameField = new JTextField(20);
@@ -41,7 +56,8 @@ public class EventDetailForm extends JDialog {
         mainPanel.add(eventNameField, gbc);
 
         // Venue Name
-        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridy++;
         mainPanel.add(new JLabel("Venue Name:"), gbc);
         gbc.gridx = 1;
         venueNameField = new JTextField(20);
@@ -49,7 +65,8 @@ public class EventDetailForm extends JDialog {
         mainPanel.add(venueNameField, gbc);
 
         // Start Date
-        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridy++;
         mainPanel.add(new JLabel("Start Date:"), gbc);
         gbc.gridx = 1;
         startDateField = new JTextField(20);
@@ -57,7 +74,8 @@ public class EventDetailForm extends JDialog {
         mainPanel.add(startDateField, gbc);
 
         // End Date
-        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridy++;
         mainPanel.add(new JLabel("End Date:"), gbc);
         gbc.gridx = 1;
         endDateField = new JTextField(20);
@@ -65,7 +83,8 @@ public class EventDetailForm extends JDialog {
         mainPanel.add(endDateField, gbc);
 
         // Start Time
-        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridy++;
         mainPanel.add(new JLabel("Start Time:"), gbc);
         gbc.gridx = 1;
         startTimeField = new JTextField(20);
@@ -73,7 +92,8 @@ public class EventDetailForm extends JDialog {
         mainPanel.add(startTimeField, gbc);
 
         // End Time
-        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridy++;
         mainPanel.add(new JLabel("End Time:"), gbc);
         gbc.gridx = 1;
         endTimeField = new JTextField(20);
@@ -81,7 +101,8 @@ public class EventDetailForm extends JDialog {
         mainPanel.add(endTimeField, gbc);
 
         // Event Type
-        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridy++;
         mainPanel.add(new JLabel("Event Type:"), gbc);
         gbc.gridx = 1;
         eventTypeField = new JTextField(20);
@@ -89,7 +110,8 @@ public class EventDetailForm extends JDialog {
         mainPanel.add(eventTypeField, gbc);
 
         // Description
-        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridy++;
         mainPanel.add(new JLabel("Description:"), gbc);
         gbc.gridx = 1;
         descriptionField = new JTextField(20);
@@ -97,7 +119,8 @@ public class EventDetailForm extends JDialog {
         mainPanel.add(descriptionField, gbc);
 
         // Booked By
-        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridy++;
         mainPanel.add(new JLabel("Booked By:"), gbc);
         gbc.gridx = 1;
         bookedByField = new JTextField(20);
@@ -108,9 +131,9 @@ public class EventDetailForm extends JDialog {
         descriptionField = new JTextField();
         layoutField = new JTextField();
 
-
         // Add a button to close the form
-        gbc.gridx = 1; gbc.gridy++;
+        gbc.gridx = 1;
+        gbc.gridy++;
         JButton closeButton = new JButton("Close");
         closeButton.addActionListener(e -> dispose());
         mainPanel.add(closeButton, gbc);
@@ -118,6 +141,10 @@ public class EventDetailForm extends JDialog {
         setContentPane(new JScrollPane(mainPanel));
     }
 
+    /**
+     * Loads the event details from the database using the event ID and populates
+     * the corresponding text fields. In case of an error, a dialog is displayed.
+     */
     private void loadEventDetails() {
         try {
             // Assume you have a method in SQLConnection that gets event details by event_id.

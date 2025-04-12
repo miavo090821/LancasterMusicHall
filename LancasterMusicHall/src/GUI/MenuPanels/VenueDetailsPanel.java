@@ -5,9 +5,22 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/**
+ * The {@code VenueDetailsPanel} class creates a GUI panel that displays venue details
+ * along with a calendar and a text area. It allows users to edit, delete, save, and undo
+ * changes made to the text.
+ */
 public class VenueDetailsPanel extends JPanel {
     private static final String FILE_NAME = "calender.txt";
 
+    /**
+     * Constructs a {@code VenueDetailsPanel} with the specified main menu reference.
+     * This panel is divided into three sections: a title panel in the NORTH, a content panel
+     * in the CENTER showing a text area with a scroll pane, and an action panel in the SOUTH.
+     *
+     * @param mainMenu The instance of {@link MainMenuGUI} which provides methods to load and save text,
+     *                 as well as to stylize buttons.
+     */
     public VenueDetailsPanel(MainMenuGUI mainMenu) {
         setLayout(new BorderLayout()); // Changed to BorderLayout for better organization
         setBorder(new EmptyBorder(10, 20, 10, 20));
@@ -48,6 +61,15 @@ public class VenueDetailsPanel extends JPanel {
         add(actionPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Creates the action panel containing the Edit, Delete, Save, and Undo buttons.
+     * Each button is styled using the main menu's stylizeButton method and has its respective
+     * action listeners for editing, deleting, saving, and undoing changes in the text area.
+     *
+     * @param mainMenu    The instance of {@link MainMenuGUI} for handling saving and loading text.
+     * @param textReminder The {@link JTextArea} which displays the current text and is subject to edits.
+     * @return A {@link JPanel} containing the action buttons.
+     */
     private JPanel createActionPanel(MainMenuGUI mainMenu, JTextArea textReminder) {
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         actionPanel.setBackground(Color.WHITE);
@@ -59,7 +81,7 @@ public class VenueDetailsPanel extends JPanel {
         JButton undoButton = new JButton("Undo");
         undoButton.setVisible(false);
 
-        // Style buttons
+        // Style buttons using the main menu's stylize method
         mainMenu.stylizeButton(editButton);
         mainMenu.stylizeButton(deleteButton);
         mainMenu.stylizeButton(saveButton);

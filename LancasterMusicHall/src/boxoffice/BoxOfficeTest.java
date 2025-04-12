@@ -8,7 +8,26 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * The {@code BoxOfficeTest} class is a test driver for the {@link BoxOfficeService}.
+ * <p>
+ * This class demonstrates how to use the {@code BoxOfficeService} by executing various
+ * operations like retrieving events, updating event details, fetching seating plans, and
+ * retrieving daily sheets of events.
+ * </p>
+ */
+
 public class BoxOfficeTest {
+
+    /**
+     * The main method serves as the entry point for testing the {@code BoxOfficeService}.
+     * <p>
+     * It creates an instance of {@code SQLConnection} and {@code BoxOfficeService}, then
+     * runs tests for various service methods by printing the results to the console.
+     * </p>
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         // Create a SQLConnection instance.
         SQLConnection sqlCon = new SQLConnection();

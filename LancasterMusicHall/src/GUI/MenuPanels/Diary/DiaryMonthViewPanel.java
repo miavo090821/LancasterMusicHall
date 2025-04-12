@@ -18,18 +18,38 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * DiaryMonthViewPanel is a concrete implementation of CalendarViewPanel that displays a month view
+ * tailored for a diary. It shows the monthly calendar grid and renders events for each day.
+ * <p>
+ * The panel retrieves events from a database using an SQL connection and notifies a
+ * MonthViewListener when a day cell is clicked.
+ * </p>
+ */
 public class DiaryMonthViewPanel extends CalendarViewPanel {
+    /** The SQL connection used to retrieve event data. */
     private SQLConnection sqlCon;
+    /** 2D array of DayCellPanel representing the day cells of the month view. */
     private DayCellPanel[][] dayCells;
+    /** The start date of the view. */
     private LocalDate viewStartDate;
+    /** The end date of the view. */
     private LocalDate viewEndDate;
+    /** Formatter for displaying the month and year in the header. */
     private final DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
+    /** The list of events to be displayed. */
     private List<Event> events;
-
-    // The listener to notify when a day is clicked.
+    /** The listener to notify when a day cell is clicked. */
     private MonthViewListener listener;
 
-    // Constructor now accepts MonthViewListener as well.
+    /**
+     * Constructs a DiaryMonthViewPanel with the specified starting date, events, SQL connection, and listener.
+     *
+     * @param startDate the starting date for the view (the view is set to the first day of the month).
+     * @param events    the list of events to be displayed.
+     * @param sqlCon    the SQLConnection used to access the database.
+     * @param listener  the MonthViewListener that will be notified when a day cell is clicked.
+     */
     public DiaryMonthViewPanel(LocalDate startDate, List<Event> events, SQLConnection sqlCon, MonthViewListener listener) {
         super(startDate, events, sqlCon);
         this.sqlCon = sqlCon;
@@ -42,11 +62,25 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
         renderEvents(null);
     }
 
+    /**
+     * Returns the SQLConnection used by this panel.
+     *
+     * @return the SQLConnection.
+     */
     @Override
     protected SQLConnection getSQLConnection() {
         return sqlCon;
     }
 
+    /**
+     * Sets the view date for the DiaryMonthViewPanel.
+     * <p>
+     * The view date is adjusted to the first day of the month, and the view end date is calculated
+     * to be the last day of the month.
+     * </p>
+     *
+     * @param date the new view date.
+     */
     @Override
     public void setViewDate(LocalDate date) {
         this.viewStartDate = date.withDayOfMonth(1);
@@ -54,6 +88,13 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
         refreshView();
     }
 
+    /**
+     * Initializes the user interface components for the month view.
+     * <p>
+     * The UI consists of a header panel displaying the month name and a note, and a calendar grid
+     * placed inside a scroll pane.
+     * </p>
+     */
     private void initializeUI() {
         setLayout(new BorderLayout());
 
@@ -84,6 +125,15 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
         add(new JScrollPane(gridPanel), BorderLayout.CENTER);
     }
 
+    /**
+     * Initializes the calendar grid for the month view.
+     * <p>
+     * The grid includes day headers for Monday to Sunday and day cells representing each day of the month.
+     * Empty cells are added for days before and after the current month.
+     * </p>
+     *
+     * @param gridPanel the panel to be populated with the calendar grid.
+     */
     private void initializeMonthGrid(JPanel gridPanel) {
         gridPanel.removeAll();
 
@@ -99,7 +149,7 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
         YearMonth yearMonth = YearMonth.from(viewStartDate);
         int daysInMonth = yearMonth.lengthOfMonth();
         LocalDate firstOfMonth = viewStartDate.withDayOfMonth(1);
-        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue() - 1; // Monday=0
+        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue() - 1; // Monday = 0
 
         dayCells = new DayCellPanel[6][7];
         int totalCells = 42;
@@ -128,14 +178,11 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
     }
 
     /**
-     * Called when a day cell is clicked. It calls the listener's method.
+     * Navigates the month view by a specified number of months.
+     *
+     * @param direction an integer representing the navigation direction; positive to move forward,
+     *                  negative to move backward.
      */
-//    private void onDayCellClicked(LocalDate date) {
-//        if (listener != null) {
-//            listener.onDayCellClicked(date);
-//        }
-//    }
-
     @Override
     public void navigate(int direction) {
         viewStartDate = viewStartDate.plusMonths(direction).withDayOfMonth(1);
@@ -143,6 +190,15 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
         refreshView();
     }
 
+    /**
+     * Renders events on the month view.
+     * <p>
+     * The method clears existing events from each day cell, queries the database for events within the
+     * current month's start and end dates, and adds event information to the corresponding day cells.
+     * </p>
+     *
+     * @param ignored a placeholder parameter that is not used in this implementation.
+     */
     @Override
     public void renderEvents(List<Event> ignored) {
         if (dayCells == null) return;
@@ -194,6 +250,9 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
         repaint();
     }
 
+    /**
+     * Refreshes the month view by updating the header and reinitializing the calendar grid.
+     */
     @Override
     public void refreshView() {
         JLabel monthHeader = (JLabel) this.getClientProperty("monthHeader");
@@ -211,8 +270,9 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
     // Inner class: DayCellPanel
     // ---------------------------------------------------------
     /**
-     * Called when a day cell is clicked.
-     * It notifies the listener.
+     * Called when a day cell is clicked. This method notifies the MonthViewListener.
+     *
+     * @param date the LocalDate corresponding to the clicked day cell.
      */
     private void onDayCellClicked(LocalDate date) {
         if (listener != null) {
@@ -220,13 +280,29 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
         }
     }
 
-    // Inner class: DayCellPanel (unchanged except that it calls MonthViewPanel.this.onDayCellClicked)
+    /**
+     * DayCellPanel represents a single day cell in the diary month view.
+     * <p>
+     * It displays the day number and a list of events associated with that day.
+     * Clicking on the cell will trigger a notification to the MonthViewListener.
+     * </p>
+     */
     public class DayCellPanel extends JPanel {
+        /** The label displaying the day number. */
         private JLabel dayLabel;
+        /** Panel to hold event labels for this day. */
         private JPanel eventsPanel;
+        /** The day number to display. */
         private int dayNumber;
+        /** The LocalDate represented by this cell. */
         private LocalDate date;
 
+        /**
+         * Constructs a DayCellPanel with the given day number and date.
+         *
+         * @param dayNumber the numerical day of the month.
+         * @param date      the LocalDate for this cell.
+         */
         public DayCellPanel(int dayNumber, LocalDate date) {
             this.dayNumber = dayNumber;
             this.date = date;
@@ -246,7 +322,7 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
             eventsScroll.setBorder(null);
             add(eventsScroll, BorderLayout.CENTER);
 
-            // Add recursive mouse listener so that clicks anywhere trigger navigation.
+            // Add recursive mouse listener so that clicks anywhere trigger notification.
             addMouseListenerRecursively(this, new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -255,10 +331,20 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
             });
         }
 
+        /**
+         * Returns the LocalDate represented by this day cell.
+         *
+         * @return the LocalDate for this cell.
+         */
         public LocalDate getDate() {
             return date;
         }
 
+        /**
+         * Adds an event description to the day cell.
+         *
+         * @param eventText the text describing the event.
+         */
         public void addEvent(String eventText) {
             JLabel eventLabel = new JLabel(eventText);
             eventLabel.setFont(new Font("Arial", Font.PLAIN, 10));
@@ -268,15 +354,27 @@ public class DiaryMonthViewPanel extends CalendarViewPanel {
             eventsPanel.add(eventLabel);
         }
 
+        /**
+         * Clears all event descriptions from the day cell.
+         */
         public void clearEvents() {
             eventsPanel.removeAll();
         }
 
+        /**
+         * Refreshes the display of the day cell.
+         */
         public void refresh() {
             revalidate();
             repaint();
         }
 
+        /**
+         * Recursively adds the specified MouseListener to the given component and all its child components.
+         *
+         * @param comp     the component to attach the listener to.
+         * @param listener the MouseListener to add.
+         */
         private void addMouseListenerRecursively(Component comp, java.awt.event.MouseListener listener) {
             comp.addMouseListener(listener);
             if (comp instanceof Container) {

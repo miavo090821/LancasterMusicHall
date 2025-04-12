@@ -11,6 +11,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The ReviewsPanel class displays a list of reviews along with details for the selected review.
+ * Users can view, reply to, save, or post reviews to a company. Data is retrieved and updated via a SQLConnection.
+ */
 public class ReviewsPanel extends JPanel {
     private SQLConnection sqlCon;
     private JList<Review> reviewsList;
@@ -23,6 +27,11 @@ public class ReviewsPanel extends JPanel {
     private JButton refreshButton;
     private Review selectedReview;
 
+    /**
+     * Constructs a ReviewsPanel with the specified SQLConnection.
+     *
+     * @param sqlCon the SQLConnection to the database
+     */
     public ReviewsPanel(SQLConnection sqlCon) {
         this.sqlCon = sqlCon;
         setLayout(new BorderLayout(10, 10)); // Added gaps between components
@@ -45,6 +54,11 @@ public class ReviewsPanel extends JPanel {
         refreshReviews();
     }
 
+    /**
+     * Creates and returns the panel containing the list of reviews.
+     *
+     * @return the JPanel with the reviews list and a refresh button
+     */
     private JPanel createListPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
@@ -72,6 +86,11 @@ public class ReviewsPanel extends JPanel {
         return panel;
     }
 
+    /**
+     * Creates and returns the panel displaying the selected review details and reply interface.
+     *
+     * @return the JPanel with review details and reply area
+     */
     private JPanel createReviewPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(Color.WHITE);
@@ -103,6 +122,11 @@ public class ReviewsPanel extends JPanel {
         return panel;
     }
 
+    /**
+     * Creates and returns the bottom button panel containing the Save and Post buttons.
+     *
+     * @return the JPanel with Save and Post buttons
+     */
     private JPanel createButtonPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         panel.setBackground(Color.WHITE);
@@ -119,6 +143,9 @@ public class ReviewsPanel extends JPanel {
         return panel;
     }
 
+    /**
+     * Refreshes the list of reviews by clearing the list model and reloading reviews from the database.
+     */
     private void refreshReviews() {
         try {
             listModel.clear();
@@ -133,6 +160,12 @@ public class ReviewsPanel extends JPanel {
         }
     }
 
+    /**
+     * Retrieves all reviews from the database.
+     *
+     * @return a List of Review objects
+     * @throws SQLException if a database error occurs
+     */
     private List<Review> fetchAllReviews() throws SQLException {
         List<Review> reviews = new ArrayList<>();
         String query = "SELECT review_id, review_text, review_date, source, event_id FROM Review ORDER BY review_date DESC";
@@ -154,6 +187,11 @@ public class ReviewsPanel extends JPanel {
         return reviews;
     }
 
+    /**
+     * List selection listener that handles when a review is selected from the list.
+     *
+     * @param e the ListSelectionEvent triggered by selecting a review
+     */
     private void reviewSelected(ListSelectionEvent e) {
         if (!e.getValueIsAdjusting()) {
             selectedReview = reviewsList.getSelectedValue();
@@ -163,6 +201,11 @@ public class ReviewsPanel extends JPanel {
         }
     }
 
+    /**
+     * Displays the details of the selected review in the review display area.
+     *
+     * @param review the Review object to display
+     */
     private void displayReviewDetails(Review review) {
         String reviewText = String.format(
                 "Review ID: %d\nEvent ID: %d\nDate: %s\nSource: %s\n\nReview:\n%s",
@@ -176,6 +219,10 @@ public class ReviewsPanel extends JPanel {
         replyArea.setText("");
     }
 
+    /**
+     * Saves the currently selected review.
+     * If no review is selected, shows an error message.
+     */
     private void saveReview() {
         if (selectedReview == null) {
             JOptionPane.showMessageDialog(this, "Please select a review first", "Error", JOptionPane.ERROR_MESSAGE);
@@ -184,6 +231,10 @@ public class ReviewsPanel extends JPanel {
         JOptionPane.showMessageDialog(this, "Review saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /**
+     * Posts the currently selected review to the company.
+     * If no review is selected, shows an error message.
+     */
     private void postReview() {
         if (selectedReview == null) {
             JOptionPane.showMessageDialog(this, "Please select a review first", "Error", JOptionPane.ERROR_MESSAGE);
@@ -194,6 +245,11 @@ public class ReviewsPanel extends JPanel {
                 "Posted", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /**
+     * Submits a reply for the selected review. The reply is updated in the database and the display.
+     *
+     * @param e the ActionEvent triggered by clicking the reply button
+     */
     private void submitReply(ActionEvent e) {
         if (selectedReview == null) {
             JOptionPane.showMessageDialog(this, "Please select a review first", "Error", JOptionPane.ERROR_MESSAGE);
@@ -231,7 +287,11 @@ public class ReviewsPanel extends JPanel {
         }
     }
 
-    // Inner class to represent a Review
+    // --- Inner Class: Review ---
+
+    /**
+     * The Review class represents a review with its details such as text, date, source, and event ID.
+     */
     private static class Review {
         private int id;
         private String text;
@@ -240,6 +300,15 @@ public class ReviewsPanel extends JPanel {
         private String source;
         private int eventId;
 
+        /**
+         * Constructs a Review object with the given details.
+         *
+         * @param id      the unique review ID
+         * @param text    the review text
+         * @param date    the date of the review
+         * @param source  the source of the review
+         * @param eventId the associated event ID
+         */
         public Review(int id, String text, java.sql.Date date, String source, int eventId) {
             this.id = id;
             this.text = text;
@@ -248,15 +317,60 @@ public class ReviewsPanel extends JPanel {
             this.eventId = eventId;
         }
 
-        // Getters and setters.
+        /**
+         * Returns the review ID.
+         *
+         * @return the review ID
+         */
         public int getId() { return id; }
+
+        /**
+         * Returns the review text.
+         *
+         * @return the review text
+         */
         public String getText() { return text; }
+
+        /**
+         * Returns the reply text to the review.
+         *
+         * @return the reply text
+         */
         public String getReply() { return reply; }
+
+        /**
+         * Sets the reply text for the review.
+         *
+         * @param reply the reply text
+         */
         public void setReply(String reply) { this.reply = reply; }
+
+        /**
+         * Returns the date of the review.
+         *
+         * @return the review date
+         */
         public java.sql.Date getDate() { return date; }
+
+        /**
+         * Returns the source of the review.
+         *
+         * @return the review source
+         */
         public String getSource() { return source; }
+
+        /**
+         * Returns the event ID associated with the review.
+         *
+         * @return the event ID
+         */
         public int getEventId() { return eventId; }
 
+        /**
+         * Returns a string representation of the review for display in the list.
+         *
+         * @return the string representation of the review
+         */
         @Override
         public String toString() {
             String shortText = text.length() > 30 ? text.substring(0, 30) + "..." : text;
@@ -264,8 +378,22 @@ public class ReviewsPanel extends JPanel {
         }
     }
 
-    // Custom renderer to make the list items look better
+    // --- Inner Class: ReviewListRenderer ---
+
+    /**
+     * The ReviewListRenderer class customizes the display of review items in the JList.
+     */
     private static class ReviewListRenderer extends DefaultListCellRenderer {
+        /**
+         * Returns a component configured to display the specified value.
+         *
+         * @param list         the JList we're painting
+         * @param value        the value returned by list.getModel().getElementAt(index)
+         * @param index        the cell's index
+         * @param isSelected   true if the specified cell is selected
+         * @param cellHasFocus true if the specified cell has the focus
+         * @return a component whose paint() method will render the specified value
+         */
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                       boolean isSelected, boolean cellHasFocus) {
@@ -275,7 +403,6 @@ public class ReviewsPanel extends JPanel {
                 setText(review.toString());
                 if (review.getReply() != null) {
                     setForeground(new Color(0, 128, 0));
-                } else {
                 }
             }
             return this;
