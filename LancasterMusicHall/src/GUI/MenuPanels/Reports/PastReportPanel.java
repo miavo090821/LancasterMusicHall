@@ -18,27 +18,86 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
+/**
+ * The PastReportPanel class provides an interface for viewing historical financial reports
+ * with date range filtering capabilities. It supports three report types:
+ * <ul>
+ *   <li>Yearly reports</li>
+ *   <li>Quarterly reports</li>
+ *   <li>Daily reports</li>
+ * </ul>
+ *
+ * <p>Key features include:
+ * <ul>
+ *   <li>Interactive date range selection</li>
+ *   <li>Visual chart display of revenue and profit data</li>
+ *   <li>Consistent styling matching the application design system</li>
+ * </ul>
+ *
+ * @see MainMenuGUI
+ * @see SQLConnection
+ * @since 1.3
+ */
 public class PastReportPanel extends JPanel {
     // Color scheme matching other panels
-    private final Color PRIMARY_COLOR = new Color(200, 170, 250); // Lavender
-    private final Color ACCENT_COLOR = new Color(230, 210, 250); // Lighter lavender
-    private final Color TEXT_COLOR = new Color(60, 60, 60); // Dark gray for text
-    private final Color BORDER_COLOR = new Color(0, 0, 0); // Light gray for borders
+    /** Primary lavender color used for buttons and accents */
+    private final Color PRIMARY_COLOR = new Color(200, 170, 250);
 
+    /** Lighter lavender accent color for hover effects */
+    private final Color ACCENT_COLOR = new Color(230, 210, 250);
+
+    /** Dark gray color for text and labels */
+    private final Color TEXT_COLOR = new Color(60, 60, 60);
+
+    /** Black color for borders and separators */
+    private final Color BORDER_COLOR = new Color(0, 0, 0);
+
+    /** Dropdown for selecting report type (Yearly/Quarterly/Daily) */
     private JComboBox<String> reportTypeCombo;
-    private JDateChooser startDateChooser;
-    private JDateChooser endDateChooser;
-    private JButton previewButton;
-    private SQLConnection sqlCon = new SQLConnection();
-    private int fontSize = 16; // Default font size
 
+    /** Date picker for selecting the report start date */
+    private JDateChooser startDateChooser;
+
+    /** Date picker for selecting the report end date */
+    private JDateChooser endDateChooser;
+
+    /** Button to trigger report generation */
+    private JButton previewButton;
+
+    /** Database connection handler for report data */
+    private SQLConnection sqlCon = new SQLConnection();
+
+    /** Current base font size for UI elements */
+    private int fontSize = 16;
+
+    /**
+     * Constructs a new PastReportPanel with reference to the main menu.
+     *
+     * @param mainMenu The parent MainMenuGUI that contains this panel
+     */
     public PastReportPanel(MainMenuGUI mainMenu) {
         this.fontSize = mainMenu.getFontSize();
+        initializeUI();
+    }
+
+    /**
+     * Initializes the panel UI components and layout.
+     */
+    private void initializeUI() {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // === Title Panel ===
+        add(createTitlePanel(), BorderLayout.NORTH);
+        add(createMainContentPanel(), BorderLayout.CENTER);
+    }
+
+    /**
+     * Creates the title panel with the main heading.
+     *
+     * @return Configured title panel
+     */
+    private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(Color.WHITE);
         titlePanel.setBorder(new EmptyBorder(0, 0, 15, 0));
@@ -48,9 +107,15 @@ public class PastReportPanel extends JPanel {
         titleLabel.setForeground(TEXT_COLOR);
         titlePanel.add(titleLabel, BorderLayout.WEST);
 
-        add(titlePanel, BorderLayout.NORTH);
+        return titlePanel;
+    }
 
-        // === Main Content Panel ===
+    /**
+     * Creates the main content panel with report controls.
+     *
+     * @return Configured content panel
+     */
+    private JScrollPane createMainContentPanel() {
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBackground(Color.WHITE);
@@ -59,136 +124,274 @@ public class PastReportPanel extends JPanel {
                 BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
 
-        // Report Type Selection
-        JPanel reportTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 25));
-        reportTypePanel.setPreferredSize(new Dimension(800, 40));
-        reportTypePanel.setBackground(Color.white);
-        reportTypePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        contentPanel.add(createReportTypePanel());
+        contentPanel.add(Box.createVerticalStrut(15));
+        contentPanel.add(createDateSelectionPanel());
+        contentPanel.add(Box.createVerticalStrut(20));
+        contentPanel.add(createButtonPanel());
+        contentPanel.add(createEmptySpacePanel());
+
+        return wrapInScrollPane(contentPanel);
+    }
+
+    /**
+     * Creates the report type selection panel.
+     *
+     * @return Configured report type panel
+     */
+    private JPanel createReportTypePanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 25));
+        panel.setPreferredSize(new Dimension(800, 40));
+        panel.setBackground(Color.white);
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel typeLabel = new JLabel("Report Type:");
         typeLabel.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
         typeLabel.setForeground(TEXT_COLOR);
-        reportTypePanel.add(typeLabel);
+        panel.add(typeLabel);
 
         String[] reportTypes = {"Yearly", "Quarterly", "Daily"};
         reportTypeCombo = new JComboBox<>(reportTypes);
         styleDropdown(reportTypeCombo);
-        reportTypePanel.add(reportTypeCombo);
+        panel.add(reportTypeCombo);
 
-        contentPanel.add(reportTypePanel);
-        contentPanel.add(Box.createVerticalStrut(15));
+        return panel;
+    }
 
-        // Date Selection
-        JPanel datePanel = new JPanel(new GridLayout(2, 1, 0, 0));
-        datePanel.setBackground(Color.WHITE);
-        datePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    /**
+     * Creates the date selection panel with start/end date pickers.
+     *
+     * @return Configured date selection panel
+     */
+    private JPanel createDateSelectionPanel() {
+        JPanel panel = new JPanel(new GridLayout(2, 1, 0, 0));
+        panel.setBackground(Color.WHITE);
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Start Date
-        JPanel startDatePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        startDatePanel.setBackground(Color.WHITE);
+        panel.add(createStartDatePanel());
+        panel.add(createEndDatePanel());
 
-        JLabel startLabel = new JLabel("Start Date:");
-        startLabel.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
-        startLabel.setForeground(TEXT_COLOR);
-        startDatePanel.add(startLabel);
+        return panel;
+    }
 
-        startDateChooser = new JDateChooser();
-        startDateChooser.setDateFormatString("dd-MM-yyyy");
-        startDateChooser.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
-        startDateChooser.setPreferredSize(new Dimension(150, 30));
-        startDateChooser.setBackground(Color.WHITE);
-        startDatePanel.add(startDateChooser);
+    /**
+     * Creates the start date selection panel.
+     *
+     * @return Configured start date panel
+     */
+    private JPanel createStartDatePanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        panel.setBackground(Color.WHITE);
 
-        // End Date
-        JPanel endDatePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        endDatePanel.setBackground(Color.WHITE);
+        JLabel label = new JLabel("Start Date:");
+        label.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+        label.setForeground(TEXT_COLOR);
+        panel.add(label);
 
-        JLabel endLabel = new JLabel("End Date:");
-        endLabel.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
-        endLabel.setForeground(TEXT_COLOR);
-        endDatePanel.add(endLabel);
+        startDateChooser = createDateChooser();
+        panel.add(startDateChooser);
 
-        endDateChooser = new JDateChooser();
-        endDateChooser.setDateFormatString("dd-MM-yyyy");
-        endDateChooser.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
-        endDateChooser.setPreferredSize(new Dimension(150, 30));
-        endDateChooser.setBackground(Color.WHITE);
-        endDatePanel.add(endDateChooser);
+        return panel;
+    }
 
-        datePanel.add(startDatePanel);
-        datePanel.add(endDatePanel);
-        contentPanel.add(datePanel);
-        contentPanel.add(Box.createVerticalStrut(20));
+    /**
+     * Creates the end date selection panel.
+     *
+     * @return Configured end date panel
+     */
+    private JPanel createEndDatePanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        panel.setBackground(Color.WHITE);
 
-        // Preview Button
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(Color.WHITE);
-        buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel label = new JLabel("End Date:");
+        label.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+        label.setForeground(TEXT_COLOR);
+        panel.add(label);
+
+        endDateChooser = createDateChooser();
+        panel.add(endDateChooser);
+
+        return panel;
+    }
+
+    /**
+     * Creates a styled date chooser component.
+     *
+     * @return Configured JDateChooser
+     */
+    private JDateChooser createDateChooser() {
+        JDateChooser chooser = new JDateChooser();
+        chooser.setDateFormatString("dd-MM-yyyy");
+        chooser.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+        chooser.setPreferredSize(new Dimension(150, 30));
+        chooser.setBackground(Color.WHITE);
+        return chooser;
+    }
+
+    /**
+     * Creates the button panel with the preview button.
+     *
+     * @return Configured button panel
+     */
+    private JPanel createButtonPanel() {
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.WHITE);
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         previewButton = createStyledButton("Preview Report", PRIMARY_COLOR, fontSize);
         previewButton.addActionListener(this::generateReport);
-        buttonPanel.add(previewButton);
+        panel.add(previewButton);
 
-        contentPanel.add(buttonPanel);
+        return panel;
+    }
 
-        // Report Type Selection
-        JPanel EmptyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 5));
-        EmptyPanel.setPreferredSize(new Dimension(700, 100));
-        EmptyPanel.setBackground(Color.WHITE);
-        EmptyPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        contentPanel.add(EmptyPanel);
+    /**
+     * Creates an empty space panel for layout purposes.
+     *
+     * @return Configured empty panel
+     */
+    private JPanel createEmptySpacePanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 5));
+        panel.setPreferredSize(new Dimension(700, 100));
+        panel.setBackground(Color.WHITE);
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return panel;
+    }
 
-        // Wrap in scroll pane
-        JScrollPane scrollPane = new JScrollPane(contentPanel);
+    /**
+     * Wraps a panel in a scroll pane with consistent styling.
+     *
+     * @param panel The panel to wrap
+     * @return Configured JScrollPane
+     */
+    private JScrollPane wrapInScrollPane(JPanel panel) {
+        JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setPreferredSize(new Dimension(700, 800));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        add(scrollPane, BorderLayout.CENTER);
+        return scrollPane;
     }
 
+    /**
+     * Generates and displays a report based on the selected parameters.
+     *
+     * @param e The action event that triggered this method
+     */
     private void generateReport(ActionEvent e) {
         String reportType = (String) reportTypeCombo.getSelectedItem();
 
         Date startDateRaw = startDateChooser.getDate();
         Date endDateRaw = endDateChooser.getDate();
         if (startDateRaw == null || endDateRaw == null) {
-            JOptionPane.showMessageDialog(this, "Please select both start and end dates.", "Error", JOptionPane.ERROR_MESSAGE);
+            showErrorDialog("Please select both start and end dates.");
             return;
         }
-        LocalDate startDate = startDateRaw.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate endDate = endDateRaw.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        LocalDate startDate = convertToLocalDate(startDateRaw);
+        LocalDate endDate = convertToLocalDate(endDateRaw);
 
         ReportData data = sqlCon.getReportData(startDate, endDate);
         if (data == null) {
-            JOptionPane.showMessageDialog(this, "Failed to retrieve report data.", "Error", JOptionPane.ERROR_MESSAGE);
+            showErrorDialog("Failed to retrieve report data.");
             return;
         }
-        double totalRevenue = data.getTotalRevenue();
-        double totalProfit = data.getTotalProfit();
 
+        displayReportChart(reportType, data.getTotalRevenue(), data.getTotalProfit());
+    }
+
+    /**
+     * Converts a Date object to LocalDate.
+     *
+     * @param date The Date to convert
+     * @return The corresponding LocalDate
+     */
+    private LocalDate convertToLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    /**
+     * Displays an error dialog with the specified message.
+     *
+     * @param message The error message to display
+     */
+    private void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    /**
+     * Displays the report data in a chart dialog.
+     *
+     * @param reportType The type of report being displayed
+     * @param revenue The total revenue value
+     * @param profit The total profit value
+     */
+    private void displayReportChart(String reportType, double revenue, double profit) {
+        DefaultCategoryDataset dataset = createReportDataset(reportType, revenue, profit);
+        JFreeChart chart = createChart(reportType, dataset);
+
+        JDialog dialog = createChartDialog(chart);
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Creates a dataset for the report chart.
+     *
+     * @param reportType The report type
+     * @param revenue The revenue value
+     * @param profit The profit value
+     * @return Configured dataset
+     */
+    private DefaultCategoryDataset createReportDataset(String reportType, double revenue, double profit) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        dataset.addValue(totalRevenue, "Revenue (£)", reportType);
-        dataset.addValue(totalProfit, "Profit (£)", reportType);
+        dataset.addValue(revenue, "Revenue (£)", reportType);
+        dataset.addValue(profit, "Profit (£)", reportType);
+        return dataset;
+    }
 
-        JFreeChart barChart = ChartFactory.createBarChart(
+    /**
+     * Creates a chart from the report data.
+     *
+     * @param reportType The report type
+     * @param dataset The data to display
+     * @return Configured JFreeChart
+     */
+    private JFreeChart createChart(String reportType, DefaultCategoryDataset dataset) {
+        JFreeChart chart = ChartFactory.createBarChart(
                 reportType + " Report",
                 "Report Type",
                 "Amount (£)",
                 dataset
         );
-        CategoryPlot plot = barChart.getCategoryPlot();
+        CategoryPlot plot = chart.getCategoryPlot();
         plot.getRangeAxis().setRange(0.0, 100000000.0);
-
-        ChartPanel chartPanel = new ChartPanel(barChart);
-        chartPanel.setPreferredSize(new Dimension(600, 400));
-
-        JDialog reportDialog = new JDialog((Frame) null, "Report Preview", true);
-        reportDialog.getContentPane().add(chartPanel);
-        reportDialog.pack();
-        reportDialog.setLocationRelativeTo(this);
-        reportDialog.setVisible(true);
+        return chart;
     }
 
+    /**
+     * Creates a dialog to display the chart.
+     *
+     * @param chart The chart to display
+     * @return Configured JDialog
+     */
+    private JDialog createChartDialog(JFreeChart chart) {
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(600, 400));
+
+        JDialog dialog = new JDialog((Frame) null, "Report Preview", true);
+        dialog.getContentPane().add(chartPanel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        return dialog;
+    }
+
+    /**
+     * Creates a styled button with consistent appearance.
+     *
+     * @param text The button text
+     * @param color The base color
+     * @param fontSize The font size
+     * @return Configured JButton
+     */
     private JButton createStyledButton(String text, Color color, int fontSize) {
         JButton button = new JButton(text);
         button.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
@@ -201,7 +404,6 @@ public class PastReportPanel extends JPanel {
         ));
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // Add hover effect
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(color.brighter());
@@ -215,6 +417,11 @@ public class PastReportPanel extends JPanel {
         return button;
     }
 
+    /**
+     * Styles a dropdown combo box consistently.
+     *
+     * @param dropdown The combo box to style
+     */
     private void styleDropdown(JComboBox<String> dropdown) {
         dropdown.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
         dropdown.setBackground(Color.WHITE);
@@ -226,18 +433,18 @@ public class PastReportPanel extends JPanel {
         dropdown.setMaximumSize(new Dimension(200, 30));
     }
 
+    /**
+     * Updates font sizes throughout the panel.
+     *
+     * @param newFontSize The new base font size
+     */
     public void updateFontSizes(int newFontSize) {
         this.fontSize = newFontSize;
 
         Component[] components = getComponents();
         for (Component component : components) {
             if (component instanceof JLabel) {
-                JLabel label = (JLabel) component;
-                if (label.getText().equals("Preview Past Report")) {
-                    label.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4));
-                } else {
-                    label.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
-                }
+                updateLabelFont((JLabel) component);
             } else if (component instanceof JButton) {
                 ((JButton) component).setFont(new Font("Segoe UI", Font.BOLD, fontSize));
             } else if (component instanceof JComboBox) {
@@ -251,10 +458,28 @@ public class PastReportPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Updates the font of a label based on its role.
+     *
+     * @param label The label to update
+     */
+    private void updateLabelFont(JLabel label) {
+        if (label.getText().equals("Preview Past Report")) {
+            label.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4));
+        } else {
+            label.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+        }
+    }
+
+    /**
+     * Recursively updates fonts in a panel and its child components.
+     *
+     * @param panel The panel to update
+     */
     private void updatePanelFonts(JPanel panel) {
         for (Component component : panel.getComponents()) {
             if (component instanceof JLabel) {
-                ((JLabel) component).setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+                updateLabelFont((JLabel) component);
             } else if (component instanceof JButton) {
                 ((JButton) component).setFont(new Font("Segoe UI", Font.BOLD, fontSize));
             } else if (component instanceof JComboBox) {

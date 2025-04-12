@@ -20,6 +20,13 @@ import java.util.List;
 public class BoxOfficeTest {
 
     /**
+     * Constructs a new BoxOfficeTest instance.
+     * Initializes test fixtures and mock objects for testing box office operations.
+     */
+    public BoxOfficeTest() {
+    }
+
+    /**
      * The main method serves as the entry point for testing the {@code BoxOfficeService}.
      * <p>
      * It creates an instance of {@code SQLConnection} and {@code BoxOfficeService}, then

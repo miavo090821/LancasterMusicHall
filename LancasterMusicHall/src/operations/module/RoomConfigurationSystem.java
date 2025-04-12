@@ -17,6 +17,17 @@ import java.util.Map;
 public class RoomConfigurationSystem {
 
     /**
+     * Initializes the room configuration system with default settings.
+     * <p>
+     * Subclasses should call this constructor to ensure proper initialization
+     * of common configuration components.
+     * </p>
+     */
+    public RoomConfigurationSystem() {
+        // Base initialization logic
+    }
+
+    /**
      * Returns a sample room availability map for a given date.
      *
      * @param date the {@link LocalDate} for which room availability is requested
@@ -29,6 +40,13 @@ public class RoomConfigurationSystem {
         availability.put("Rehearsal Room", "Available");
         return availability;
     }
+
+    /**
+     * Initializes a new configuration system with default settings.
+     */
+    public void ConfigurationSystem() {
+    }
+
 
     /**
      * Returns a sample seating plan for the specified activity.

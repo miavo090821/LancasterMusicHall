@@ -25,25 +25,80 @@ import java.util.List;
  * </p>
  */
 public class BookingDetailForm extends JDialog {
-
+    /**
+     * Database connection handler for booking-related operations.
+     * Used to persist booking data and retrieve contract documents.
+     */
     private SQLConnection sqlCon;
+
+    /**
+     * Unique booking reference number (format: BKG-YYYYMMDD-XXX).
+     * Auto-generated when creating new bookings.
+     */
     private String bookingId;
 
-    // Booking / Client UI Components
-    private JTextField bookingStartDateField, bookingEndDateField, totalCostField, paymentStatusField;
-    private JTextField companyNameField, contactNameField, telephoneField, emailField;
+// --- Booking Information Components ---
+    /** Text field for booking start date (format: yyyy-MM-dd) */
+    private JTextField bookingStartDateField;
 
-    // Event Details UI Components (displayed in a table)
+    /** Text field for booking end date (must be after start date) */
+    private JTextField bookingEndDateField;
+
+    /** Text field displaying total booking cost (read-only, formatted with currency) */
+    private JTextField totalCostField;
+
+    /** Text field showing current payment status (PAID, PENDING, etc.) */
+    private JTextField paymentStatusField;
+
+// --- Client Information Components ---
+    /** Text field for client organization name (required for corporate clients) */
+    private JTextField companyNameField;
+
+    /** Text field for primary contact person's full name (required) */
+    private JTextField contactNameField;
+
+    /** Text field for contact phone number (validated with country code) */
+    private JTextField telephoneField;
+
+    /** Text field for contact email address (validated for proper format) */
+    private JTextField emailField;
+
+// --- Event Management Components ---
+    /**
+     * Table displaying all events included in this booking.
+     * Columns: Event Name | Date | Time | Venue | Status
+     */
     private JTable eventTable;
+
+    /**
+     * Data model backing the event table.
+     * Handles dynamic updates when events are added/removed.
+     */
     private DefaultTableModel eventTableModel;
 
-    // Contract Details UI Components
+// --- Contract Management Components ---
+    /** Label displaying current contract status (DRAFT, SIGNED, etc.) */
     private JLabel contractStatusLabel;
+
+    /** Button to download signed contract PDF */
     private JButton downloadContractButton;
-    // Store contract data and contract ID at the class level
+
+    /**
+     * Byte array storing the contract document data.
+     * Null until contract is uploaded or fetched from database.
+     */
     private byte[] contractData;
+
+    /**
+     * Database ID of the associated contract document.
+     * -1 indicates no contract is associated.
+     */
     private int contractId = -1;
 
+    /**
+     * Current status of the booking (NEW, CONFIRMED, CANCELLED).
+     * Determines which operations are allowed.
+     */
     private String bookingStatus;
 
     /**

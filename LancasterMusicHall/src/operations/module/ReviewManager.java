@@ -11,6 +11,13 @@ import java.util.List;
 public class ReviewManager {
 
     /**
+     * Initializes the review manager with default configuration.
+     */
+    public ReviewManager() {
+        // Base initialization logic
+    }
+
+    /**
      * Fetches the latest reviews from the external review API and/or the local review data store.
      * <p>
      * In a full implementation, this method would call the external API and update the local data store.

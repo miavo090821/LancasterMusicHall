@@ -21,42 +21,197 @@ import java.util.List;
  * The form connects to a SQL database via the provided SQLConnection.
  */
 public class NewEventForm extends JDialog {
+    /**
+     * Database connection handler for all event-related database operations.
+     * <p>
+     * <b>Security:</b> Must be initialized with authenticated connection.
+     * Never exposed publicly.
+     */
     private SQLConnection sqlCon;
 
     /**
-     * Date formatter for dd/MM/yyyy format.
+     * Thread-safe formatter for date display/parsing in UK format (day/month/year).
+     * <p>
+     * <b>Format:</b> Strictly follows "dd/MM/yyyy" pattern
+     * <b>Usage:</b> Used for all date fields in the form
      */
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // --- Client Details Fields ---
+// --- Client Details Fields ---
+
+    /**
+     * Input field for client's legal business name.
+     * <p>
+     * <b>Validation:</b> Required field, max 100 chars
+     * <b>Business Rule:</b> Used for contract generation
+     */
     private JTextField companyNameField;
+
+    /**
+     * Input field for primary contact person's full name.
+     * <p>
+     * <b>Validation:</b> Required field, max 50 chars
+     */
     private JTextField primaryContactField;
+
+    /**
+     * Input field for client's contact telephone number.
+     * <p>
+     * <b>Format:</b> Accepts any phone number format
+     * <b>Business Rule:</b> Used for urgent event notifications
+     */
     private JTextField telephoneField;
+
+    /**
+     * Input field for client's email address.
+     * <p>
+     * <b>Validation:</b> Basic email format validation
+     * <b>Business Rule:</b> Primary communication channel
+     */
     private JTextField emailField;
+
+    /**
+     * Checkbox to persist client details in database for future bookings.
+     * <p>
+     * <b>Privacy:</b> When checked, stores all client details
+     * <b>Default:</b> Unchecked (opt-in)
+     */
     private JCheckBox saveCompanyCheck;
+
+    /**
+     * Button to initiate contract document upload process.
+     * <p>
+     * <b>Supported Formats:</b> PDF, DOC, DOCX (max 10MB)
+     * <b>Security:</b> Local file system access only
+     */
     private JButton contractUploadButton;
+
+    /**
+     * Reference to uploaded contract document file.
+     * <p>
+     * <b>Lifecycle:</b> Stored as reference until form submission
+     * <b>Null State:</b> Indicates no contract uploaded
+     */
     private File contractFile = null;
 
-    // --- Event Details Fields ---
+// --- Event Details Fields ---
+
+    /**
+     * Unique booking reference identifier field.
+     * <p>
+     * <b>Format:</b> Auto-generated if empty
+     * <b>Business Rule:</b> Must be unique across all events
+     */
     private JTextField bookingIDField;
-    private JTextField eventStartDateField;  // dd/MM/yyyy
-    private JTextField eventEndDateField;    // dd/MM/yyyy
+
+    /**
+     * Input field for event start date in UK format.
+     * <p>
+     * <b>Format:</b> dd/MM/yyyy
+     * <b>Validation:</b> Must be current or future date
+     */
+    private JTextField eventStartDateField;
+
+    /**
+     * Input field for event end date in UK format.
+     * <p>
+     * <b>Business Rule:</b> Must be ≥ start date
+     * <b>Default:</b> Matches start date initially
+     */
+    private JTextField eventEndDateField;
+
+    /**
+     * Checkbox indicating booking confirmation status.
+     * <p>
+     * <b>Business Rule:</b> Unconfirmed events may be auto-cancelled
+     * <b>Default:</b> Checked (confirmed)
+     */
     private JCheckBox confirmedCheck;
 
-    // --- Container for multiple Event Details Panels ---
+// --- Event Panels Container ---
+
+    /**
+     * Container panel for holding multiple event detail panels.
+     * <p>
+     * <b>UI:</b> Uses vertical BoxLayout
+     * <b>Dynamic:</b> Grows with added events
+     */
     private JPanel eventsContainer;
+
+    /**
+     * Button to add additional event panels to the booking.
+     * <p>
+     * <b>Business Rule:</b> Max 10 events per booking
+     * <b>UI Effect:</b> Triggers revalidation of container
+     */
     private JButton addEventButton;
+
+    /**
+     * Collection of all active event detail panels.
+     * <p>
+     * <b>Invariant:</b> Always contains at least one panel
+     * <b>Lifecycle:</b> Managed by add/remove operations
+     */
     private List<EventDetailPanel> eventPanels;
 
-    // --- Pricing Panel Fields (for overall event) ---
-    private JLabel customerBillTotalLabel;   // automatically calculated total
-    private JTextField ticketPriceField;
-    private JTextField customerAccountField;
-    private JTextField customerSortCodeField;
-    private JTextField paymentDueDateField;  // dd/MM/yyyy
-    private JComboBox<String> paymentStatusCombo; // Paid, Pending, Overdue
+// --- Pricing Fields ---
 
-    // --- Submit event Button ---
+    /**
+     * Display label showing cumulative total of all events.
+     * <p>
+     * <b>Format:</b> "Customer Bill Total: £X.XX"
+     * <b>Behavior:</b> Auto-updates on price changes
+     */
+    private JLabel customerBillTotalLabel;
+
+    /**
+     * Input field for per-ticket price (if applicable).
+     * <p>
+     * <b>Business Rule:</b> Optional for non-ticketed events
+     * <b>Validation:</b> Must be positive number if provided
+     */
+    private JTextField ticketPriceField;
+
+    /**
+     * Input field for client's bank account number.
+     * <p>
+     * <b>Security:</b> Stored as plaintext - consider encryption
+     * <b>Validation:</b> UK account number rules
+     */
+    private JTextField customerAccountField;
+
+    /**
+     * Input field for client's bank sort code.
+     * <p>
+     * <b>Format:</b> XX-XX-XX or XXXXXX
+     * <b>Privacy:</b> Sensitive financial data
+     */
+    private JTextField customerSortCodeField;
+
+    /**
+     * Input field for payment due date in UK format.
+     * <p>
+     * <b>Business Rule:</b> Defaults to 10 days after submission
+     * <b>Format:</b> dd/MM/yyyy
+     */
+    private JTextField paymentDueDateField;
+
+    /**
+     * Dropdown selector for payment status.
+     * <p>
+     * <b>Options:</b> Paid, Pending, Overdue
+     * <b>Business Rule:</b> Affects invoice generation
+     */
+    private JComboBox<String> paymentStatusCombo;
+
+// --- Submission Control ---
+
+    /**
+     * Primary submission button for the entire booking.
+     * <p>
+     * <b>Workflow:</b> Validates all data before submission
+     * <b>Behavior:</b> Disabled during processing
+     */
     private JButton submitButton;
 
     /**

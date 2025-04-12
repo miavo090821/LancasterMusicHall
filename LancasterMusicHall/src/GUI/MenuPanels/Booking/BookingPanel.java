@@ -20,7 +20,10 @@ import javax.swing.table.DefaultTableModel;
  * </p>
  */
 public class BookingPanel extends JPanel {
+    /** Database connection handler for booking operations */
     private SQLConnection sqlCon;
+
+    /** Reference to the main menu for configuration and database access */
     private MainMenuGUI mainMenu;
 
     /**

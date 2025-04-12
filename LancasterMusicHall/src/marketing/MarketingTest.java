@@ -8,7 +8,61 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Test class for marketing service operations.
+ * <p>
+ * Provides integration testing for the {@link MarketingService} by creating dummy implementations
+ * of all dependencies and demonstrating end-to-end functionality. This test class verifies:
+ * <ul>
+ *   <li>Calendar viewing operations</li>
+ *   <li>Revenue reporting functionality</li>
+ *   <li>Room configuration integration</li>
+ *   <li>Film scheduling capabilities</li>
+ *   <li>Daily operations reporting</li>
+ * </ul>
+ */
 public class MarketingTest {
+
+    /**
+     * Initializes common test resources for marketing.
+     */
+    public MarketingTest() {
+        // Common test initialization
+    }
+
+
+    /**
+     * Test class for marketing service operations.
+     * <p>
+     * Provides integration testing for the {@link MarketingService}. This test class verifies:
+     * </p>
+     *
+     * <ul>
+     *   <li>Calendar viewing operations</li>
+     *   <li>Revenue reporting functionality</li>
+     *   <li>Room configuration integration</li>
+     *   <li>Film scheduling capabilities</li>
+     *   <li>Daily operations reporting</li>
+     * </ul>
+     *
+     * <p><b>Sample Output:</b> Shows all marketing service operations including:</p>
+     * <ul>
+     *   <li>Calendar viewing</li>
+     *   <li>Configuration details</li>
+     *   <li>Revenue reporting</li>
+     *   <li>Usage statistics</li>
+     *   <li>Space management</li>
+     *   <li>Film scheduling</li>
+     *   <li>Daily sheet generation</li>
+     * </ul>
+     *
+     * @param args command line arguments (not used in this implementation)
+     * @see MarketingService
+     * @see CalendarModule
+     * @see RoomConfigurationSystem
+     * @see IncomeTracker
+     * @see SQLConnection
+     */
     public static void main(String[] args) {
         // Create a SQLConnection instance.
         SQLConnection sqlCon = new SQLConnection();

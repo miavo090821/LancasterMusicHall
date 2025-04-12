@@ -7,7 +7,6 @@ package operations.entities;
  * and its maximum occupancy.
  * </p>
  *
- * @author
  */
 public class Hall {
     private int hallId;              // Unique identifier for the hall

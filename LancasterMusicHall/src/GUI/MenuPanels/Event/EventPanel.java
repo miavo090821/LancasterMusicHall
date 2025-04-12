@@ -19,21 +19,127 @@ import java.util.Date;
  * booking, and contact information.
  */
 public class EventPanel extends JPanel {
+    /**
+     * Date picker component for selecting the event start date.
+     * Includes validation to ensure:
+     * - Date is not in the past
+     * - Date is within venue operating calendar
+     * - Does not conflict with existing bookings
+     */
     private JDateChooser startDatePicker;
-    private JDateChooser endDatePicker;
-    private JComboBox<String> startTimeCombo;
-    private JComboBox<String> endTimeCombo;
-    private JTextField bookingIdField;
-    private JTextField activityIdField;
-    private JTextField venueIdField;
-    private JCheckBox confirmedCheck;
-    private JTextField bookedByField;
-    private JTextField roomField;
-    private JTextField companyNameField;
-    private JTextField primaryContactField;
-    private JTextField contactPhoneField;
-    private JTextField contactEmailField;
 
+    /**
+     * Date picker component for selecting the event end date.
+     * Automatically constrained to be:
+     * - On or after start date
+     * - Within maximum booking duration policy
+     * - Valid for the selected venue
+     */
+    private JDateChooser endDatePicker;
+
+    /**
+     * Combo box for selecting event start time in 30-minute intervals.
+     * Format: HH:mm (24-hour format)
+     * Range: 08:00 to 22:00 (venue operating hours)
+     * Default: 09:00
+     */
+    private JComboBox<String> startTimeCombo;
+
+    /**
+     * Combo box for selecting event end time in 30-minute intervals.
+     * Format: HH:mm (24-hour format)
+     * Range: 08:00 to 22:00 (venue operating hours)
+     * Automatically adjusted to be after start time
+     */
+    private JComboBox<String> endTimeCombo;
+
+    /**
+     * Text field displaying the system-generated booking reference number.
+     * Format: [YYMMDD]-[VENUE]-[SEQ#] (e.g., "240415-HALL-A12")
+     * Read-only field populated after successful booking submission
+     */
+    private JTextField bookingIdField;
+
+    /**
+     * Text field for entering the activity/event type identifier.
+     * Validated against:
+     * - Master list of approved activities
+     * - Venue-specific allowed activities
+     * - User permission to book activity type
+     */
+    private JTextField activityIdField;
+
+    /**
+     * Text field for entering the venue/room identifier.
+     * Auto-completes from available venues matching:
+     * - Date availability
+     * - Capacity requirements
+     * - Activity type restrictions
+     */
+    private JTextField venueIdField;
+
+    /**
+     * Checkbox indicating booking confirmation status.
+     * When checked:
+     * - Marks booking as confirmed in system
+     * - Triggers confirmation email workflow
+     * - Locks record from further edits
+     * Requires "Confirm Booking" permission to modify
+     */
+    private JCheckBox confirmedCheck;
+
+    /**
+     * Text field displaying the staff ID of the booking creator.
+     * Auto-populated from current session
+     * Format: [DEPT]-[ID#] (e.g., "EVT-142")
+     * Read-only field
+     */
+    private JTextField bookedByField;
+
+    /**
+     * Text field displaying the assigned room/space name.
+     * Auto-populated based on venueId selection
+     * Combines venue ID with specific space (e.g., "MAIN HALL - Stage Left")
+     * Read-only display field
+     */
+    private JTextField roomField;
+
+    /**
+     * Text field for entering the client organization name.
+     * Required for corporate bookings
+     * Maximum length: 120 characters
+     * Validates against organization registry
+     */
+    private JTextField companyNameField;
+
+    /**
+     * Text field for entering the primary contact person's full name.
+     * Required field for all bookings
+     * Format validation: Requires at least first and last name
+     * Maximum length: 80 characters
+     */
+    private JTextField primaryContactField;
+
+    /**
+     * Text field for entering the contact phone number.
+     * Valid formats:
+     * - International: +[country][number]
+     * - Local: [area][number]
+     * Auto-formats during input
+     * Required for all bookings
+     */
+    private JTextField contactPhoneField;
+
+    /**
+     * Text field for entering the contact email address.
+     * Validates standard email format
+     * Used for:
+     * - Booking confirmations
+     * - Event reminders
+     * - Emergency notifications
+     * Required for all bookings
+     */
+    private JTextField contactEmailField;
     /**
      * Constructs an EventPanel with UI components to input and display event details.
      *

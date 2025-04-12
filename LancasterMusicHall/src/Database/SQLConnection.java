@@ -14,25 +14,42 @@ import java.util.*;
 import java.sql.Statement;
 
 /**
- * The {@code SQLConnection} class manages connections to the MySQL database and provides methods to
+ * The SQLConnection class manages connections to the MySQL database and provides methods to
  * perform various database operations such as querying, updating, inserting, and deleting records.
  * <p>
- * It implements the {@code SQLInterface} and includes methods for user authentication, booking management,
+ * It implements the SQLInterface and includes methods for user authentication, booking management,
  * financial reporting, and handling custom stored function calls.
  * </p>
  */
 public class SQLConnection implements SQLInterface {
-
-    // Updated connection info with new database name and user.
-    // Note: The JDBC URL now reflects the new server and database ("in2033t23_a")
+    /**
+     * JDBC URL for database connection. Includes server address, port, and database name.
+     * <p><b>Format:</b> jdbc:mysql://host:port/database</p>
+     */
     private static final String url = "jdbc:mysql://sst-stuproj00.city.ac.uk:3306/in2033t23";
+
+    /**
+     * Database username with restricted permissions.
+     * <p><b>Security:</b> Should only have necessary CRUD permissions</p>
+     */
     private final String dbUser = "in2033t23_a";
+
+    /**
+     * Database password stored as final field.
+     * <p><b>Security:</b> Never logged or exposed in any way</p>
+     */
     private final String dbPassword = "XUBLJfsYMHY";
 
-    // Listeners for database update notifications.
+    /**
+     * List of registered listeners for database update events.
+     * <p><b>Usage:</b> Notified after significant database changes</p>
+     */
     private final List<DatabaseUpdateListener> listeners = new ArrayList<>();
 
-    // Load the MySQL JDBC Driver.
+    /**
+     * Static initializer for loading MySQL JDBC driver.
+     * <p><b>Error Handling:</b> Fails fast if driver not available</p>
+     */
     static {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -41,6 +58,16 @@ public class SQLConnection implements SQLInterface {
             System.out.println("MySQL JDBC Driver not found!");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Constructs a new SQLConnection instance that implements the SQLInterface.
+     * <p>
+     * This default constructor initializes the database connection handler
+     * </p>
+     */
+    public SQLConnection() {
+        // Default constructor
     }
 
     /**
@@ -305,13 +332,12 @@ public class SQLConnection implements SQLInterface {
      * <p>
      * This method performs multiple insert operations:
      * <ol>
-     *   <li>Insert into Clients and retrieve generated client_id.</li>
-     *   <li>Insert into Booking and retrieve generated booking_id.</li>
-     *   <li>Insert an Invoice record for the booking.</li>
-     *   <li>Insert each Event record.</li>
-     *   <li>Insert Contract details if a file is provided.</li>
+     *   <li>Insert into Clients and retrieve generated client_id</li>
+     *   <li>Insert into Booking and retrieve generated booking_id</li>
+     *   <li>Insert an Invoice record for the booking</li>
+     *   <li>Insert each Event record</li>
+     *   <li>Insert Contract details if a file is provided</li>
      * </ol>
-     * </p>
      *
      * @param bookingEventName the event name for the booking (not used if event object contains its own name)
      * @param bookingStartDate the booking start date
@@ -1025,10 +1051,9 @@ public class SQLConnection implements SQLInterface {
      * <p>
      * This method performs the following steps:
      * <ol>
-     *   <li>Checks if the booking exists and has a "held" status.</li>
-     *   <li>Deletes the Contract, Invoice, Event, Booking, and Client records associated with the booking.</li>
+     *   <li>Checks if the booking exists and has a "held" status</li>
+     *   <li>Deletes the Contract, Invoice, Event, Booking, and Client records associated with the booking</li>
      * </ol>
-     * </p>
      *
      * @param bookingId the booking ID to delete
      * @return {@code true} if the booking was successfully deleted; {@code false} otherwise

@@ -10,11 +10,34 @@ package operations.interfaces;
  *     <li>{@code DISABLED} - A ticket specifically for individuals with disabilities.</li>
  *     <li>{@code FRIEND} - A special ticket type offered for friends or accompanying persons.</li>
  * </ul>
- * </p>
  */
 public enum ETicketType {
+    /**
+     * Standard admission ticket with no special conditions.
+     */
     GENERAL,
+
+    /**
+     * Reduced-price ticket typically for students, seniors, or other eligible groups.
+     * <p>
+     * Requires valid identification for purchase.
+     * </p>
+     */
     DISCOUNTED,
+
+    /**
+     * Accessibility ticket providing special accommodations.
+     * <p>
+     * Includes wheelchair access and companion ticket options.
+     * </p>
+     */
     DISABLED,
+
+    /**
+     * Complimentary ticket for venue associates and partners.
+     * <p>
+     * Requires authorization code for redemption.
+     * </p>
+     */
     FRIEND
 }

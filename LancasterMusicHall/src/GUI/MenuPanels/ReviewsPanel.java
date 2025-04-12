@@ -16,15 +16,65 @@ import java.util.List;
  * Users can view, reply to, save, or post reviews to a company. Data is retrieved and updated via a SQLConnection.
  */
 public class ReviewsPanel extends JPanel {
+    /**
+     * Database connection handler for review data operations.
+     * Used to fetch, update, and persist reviews and replies.
+     */
     private SQLConnection sqlCon;
+
+    /**
+     * Swing component that displays the list of reviews in a scrollable pane.
+     * Uses Review objects as list items.
+     */
     private JList<Review> reviewsList;
+
+    /**
+     * Data model backing the reviewsList component.
+     * Manages the collection of Review objects and notifies the JList of changes.
+     */
     private DefaultListModel<Review> listModel;
+
+    /**
+     * Text area that displays the full content of the selected review.
+     * Read-only area showing review details including customer comments.
+     */
     private JTextArea reviewDisplayArea;
+
+    /**
+     * Editable text area where staff can compose replies to reviews.
+     * Content from this area is saved when replyButton is clicked.
+     */
     private JTextArea replyArea;
+
+    /**
+     * Button to save any edits made to existing replies.
+     * Applies changes to the currently selected review.
+     */
     private JButton saveButton;
+
+    /**
+     * Button to post a new review (for staff testing purposes).
+     * Typically hidden in production or restricted to admin users.
+     */
     private JButton postButton;
+
+    /**
+     * Button to submit a reply to the currently selected review.
+     * Persists the reply text from replyArea to the database.
+     */
     private JButton replyButton;
+
+    /**
+     * Button to reload reviews from the database.
+     * Updates the listModel and refreshes the UI display.
+     */
     private JButton refreshButton;
+
+    /**
+     * Currently selected review in the reviewsList.
+     * Null when no review is selected. Contains the full Review object including
+     * customer details, original text, and any existing reply.
+     */
     private Review selectedReview;
 
     /**

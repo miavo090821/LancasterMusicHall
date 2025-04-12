@@ -6,21 +6,51 @@ import operations.entities.Seat;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * The BoxOfficeInterface defines the contract for box office operations in the venue management system.
+ * <p>
+ * This interface provides methods for:
+ * <ul>
+ *   <li>Event calendar access and management</li>
+ *   <li>Seating plan configuration and queries</li>
+ *   <li>Accessibility seat management</li>
+ * </ul>
+ *
+ * <p><b>Key Responsibilities:</b>
+ * <ul>
+ *   <li>Maintaining up-to-date event information</li>
+ *   <li>Managing seat availability and configurations</li>
+ *   <li>Handling accessibility requirements</li>
+ *   <li>Providing real-time event data to clients</li>
+ * </ul>
+ *
+ * @see Event
+ * @see Seat
+ */
+
 public interface BoxOfficeInterface {
 
     // --- Calendar Access ---
 
     /**
-     * Get all Events (shows, films, meetings, etc.) scheduled within a specific date range.
-     * @param startDate The start of the date range.
-     * @param endDate   The end of the date range.
-     * @return A list of Events happening within this period, each Event has a:
-     * - Title
-     * - Date & Time
-     * - Location (room/venue)
-     * - Ticket price
-     * - Capacity
-     * - Seating plan
+     * Retrieves all events scheduled within a specified date range.
+     * <p>
+     * The returned events include comprehensive details about each scheduled activity.
+     * </p>
+     *
+     * @param startDate the inclusive start date of the query range (must not be null)
+     * @param endDate the inclusive end date of the query range (must not be null)
+     * @return an unmodifiable list of {@link Event} objects containing:
+     *         <ul>
+     *           <li>Event title and description</li>
+     *           <li>Date and time information</li>
+     *           <li>Venue/room location details</li>
+     *           <li>Applicable ticket pricing</li>
+     *           <li>Maximum capacity limits</li>
+     *           <li>Current seating configuration</li>
+     *         </ul>
+     * @throws IllegalArgumentException if either date parameter is null,
+     *         or if endDate is before startDate
      */
     List<Event> getEventsByDateRange(LocalDate startDate, LocalDate endDate);
 

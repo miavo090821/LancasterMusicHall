@@ -10,12 +10,43 @@ import java.sql.ResultSet;
  * It connects to a SQL database to load the event data and shows them in non-editable text fields.
  */
 public class EventDetailForm extends JDialog {
+    /** Database connection handler for event operations */
     private SQLConnection sqlCon;
+
+    /** Unique identifier for the event */
     private String eventId;
 
-    // Event UI Components
-    private JTextField startDateField, endDateField, startTimeField, endTimeField;
-    private JTextField eventNameField, venueNameField, eventTypeField, descriptionField, bookedByField, layoutField;
+// Event Time Components
+    /** Text field for event start date (format: yyyy-MM-dd) */
+    private JTextField startDateField;
+
+    /** Text field for event end date (format: yyyy-MM-dd) */
+    private JTextField endDateField;
+
+    /** Text field for event start time (24-hour format: HH:mm) */
+    private JTextField startTimeField;
+
+    /** Text field for event end time (24-hour format: HH:mm) */
+    private JTextField endTimeField;
+
+// Event Information Components
+    /** Text field for the event name (max 100 chars) */
+    private JTextField eventNameField;
+
+    /** Text field for venue name (matches venue database) */
+    private JTextField venueNameField;
+
+    /** Text field for event type (e.g., CONCERT, PLAY) */
+    private JTextField eventTypeField;
+
+    /** Text area for event description (multiline) */
+    private JTextField descriptionField;
+
+    /** Text field showing staff ID who created booking (read-only) */
+    private JTextField bookedByField;
+
+    /** Text field showing seating layout type (e.g., THEATER, ROUND) */
+    private JTextField layoutField;
 
     // You can add more fields as needed
 

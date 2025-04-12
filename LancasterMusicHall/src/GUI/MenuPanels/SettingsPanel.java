@@ -13,14 +13,38 @@ import java.awt.event.ActionListener;
  * like accessibility options and general settings.
  */
 public class SettingsPanel extends JPanel {
+    /**
+     * Current base font size for UI elements in the application.
+     * Value can be modified through settings.
+     */
     private int fontSize;
-    private MainMenuGUI mainMenu;
 
     // Color scheme matching HomePanel
-    private final Color PRIMARY_COLOR = new Color(200, 170, 250); // Lavender
-    private final Color TEXT_COLOR = new Color(60, 60, 60); // Dark gray for text
-    private final Color BORDER_COLOR = new Color(0, 0, 0); // Light gray for borders
-    private final Color BUTTON_COLOR = new Color(220, 220, 220); // Light gray for borders
+    /**
+     * Primary accent color (lavender) used for main UI elements.
+     * RGB values: (200, 170, 250)
+     */
+    private final Color PRIMARY_COLOR = new Color(200, 170, 250);
+
+    /**
+     * Text color for all readable content (dark gray).
+     * RGB values: (60, 60, 60)
+     */
+    private final Color TEXT_COLOR = new Color(60, 60, 60);
+
+    /**
+     * Border color for UI component outlines (black).
+     * RGB values: (0, 0, 0)
+     * Note: Originally intended as light gray but currently set to black
+     */
+    private final Color BORDER_COLOR = new Color(0, 0, 0);
+
+    /**
+     * Background color for buttons (light gray).
+     * RGB values: (220, 220, 220)
+     * Note: Comment incorrectly states this is for borders - actually used for buttons
+     */
+    private final Color BUTTON_COLOR = new Color(220, 220, 220);
 
     /**
      * Constructs a new {@code SettingsPanel} with the specified main menu reference.
@@ -28,7 +52,6 @@ public class SettingsPanel extends JPanel {
      * @param mainMenu The instance of {@link MainMenuGUI} that manages the main menu and font size settings.
      */
     public SettingsPanel(MainMenuGUI mainMenu) {
-        this.mainMenu = mainMenu;
         this.fontSize = mainMenu.getFontSize();
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);

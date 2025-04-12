@@ -23,52 +23,96 @@ import java.util.List;
  * </p>
  */
 public class NewBookingForm extends JDialog {
+    /** Database connection handler for booking operations */
     private SQLConnection sqlCon;
 
     /**
      * Date formatter using "dd/MM/yyyy" pattern.
      */
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-    // --- Client Details Fields ---
+// --- Client Details Fields ---
+    /** Company/organization name (required for corporate bookings) */
     private JTextField companyNameField;
+
+    /** Primary contact person's full name (required) */
     private JTextField primaryContactField;
+
+    /** Contact telephone number (validated with country code) */
     private JTextField telephoneField;
+
+    /** Contact email address (validated for proper format) */
     private JTextField emailField;
-    private JTextField streetAddressField; // new
-    private JTextField cityField;           // new
-    private JTextField postcodeField;       // new
+
+    /** Street address line (first line of address) */
+    private JTextField streetAddressField;
+
+    /** City/town name */
+    private JTextField cityField;
+
+    /** Postal/ZIP code (validated against country format) */
+    private JTextField postcodeField;
+
+    /** Checkbox to save company details for future bookings */
     private JCheckBox saveCompanyCheck;
+
+    /** Button to upload signed contract PDF */
     private JButton contractUploadButton;
+
+    /** Reference to the uploaded contract file (null if none uploaded) */
     private File contractFile = null;
 
     // --- Contract Details Fields ---
+    /** Displays key contract terms and conditions (read-only) */
     private JTextArea contractDetailsArea;
+
+    /** Shows filename of uploaded contract or "No file selected" */
     private JLabel contractFileLabel;
 
     // --- Booking Details Fields ---
-    // Removed the booking-level event name field as each event now supplies its own name.
+    /** Start date of booking period (yyyy-MM-dd format) */
     private JTextField bookingStartDateField;
+
+    /** End date of booking period (must be >= start date) */
     private JTextField bookingEndDateField;
+
+    /** Indicates if booking is confirmed (triggers confirmation email) */
     private JCheckBox confirmedCheck;
 
-    // --- Container for multiple Event Details Panels ---
+    // --- Event Management Fields ---
+    /** Container panel that holds all individual event panels */
     private JPanel eventsContainer;
+
+    /** Button to add new event to this booking */
     private JButton addEventButton;
+
+    /** List of event panels (one per event in this booking) */
     private List<EventDetailPanel> eventPanels;
 
-    // --- Pricing Panel Fields ---
+    // --- Pricing and Payment Fields ---
+    /** Displays total calculated price including all events */
     private JLabel customerBillTotalLabel;
+
+    /** Base price per ticket (before discounts) */
     private JTextField ticketPriceField;
+
+    /** Customer bank account number (encrypted at rest) */
     private JTextField customerAccountField;
+
+    /** Customer bank sort code (formatted XX-XX-XX) */
     private JTextField customerSortCodeField;
+
+    /** Payment due date (defaults to 14 days from booking) */
     private JTextField paymentDueDateField;
+
+    /** Payment status dropdown (PENDING, PAID, PARTIAL, OVERDUE) */
     private JComboBox<String> paymentStatusCombo;
-    private JTextField maxDiscountField; // new
 
-    // --- Submit Booking Button ---
+    /** Maximum allowed discount percentage (0-100) */
+    private JTextField maxDiscountField;
+
+    // --- Submission Control ---
+    /** Button to submit completed booking (validates all fields) */
     private JButton submitButton;
-
     /**
      * Constructs a new {@code NewBookingForm} dialog.
      *

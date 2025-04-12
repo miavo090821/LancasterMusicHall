@@ -20,27 +20,69 @@ import java.util.List;
 
 /**
  * The DiaryWeekViewPanel class represents the week view panel in the diary section.
- * It extends the CalendarViewPanel and visualizes events on a weekly grid with time slots.
+ * It extends CalendarViewPanel to display events in a weekly grid format with time slots.
+ *
+ * <p>Key features include:
+ * <ul>
+ *   <li>Visualization of events across a 7-day week</li>
+ *   <li>Time slots from 10:00 to 24:00</li>
+ *   <li>Color-coded event blocks with hover information</li>
+ *   <li>Interactive time slot panels for potential event creation</li>
+ * </ul>
+ *
+ * @see CalendarViewPanel
  */
 public class DiaryWeekViewPanel extends CalendarViewPanel {
+    /** The currently focused date in the view */
     private LocalDate viewDate;
+
+    /** The calculated start date of the current week (Monday) */
     private LocalDate startOfWeek;
+
+    /** Earliest hour displayed in the view (inclusive) */
     private final int startHour = 10;
-    private final int endHour = 24;  // inclusive
+
+    /** Latest hour displayed in the view (inclusive) */
+    private final int endHour = 24;
+
+    /** Total number of time slots between startHour and endHour */
     private final int numberOfSlots = endHour - startHour + 1;
+
+    /** Database connection for event operations */
     private SQLConnection sqlCon;
+
+    /** Color mapping for different event types/categories */
     private Map<Integer, Color> eventColors = new HashMap<>();
+
+    /**
+     * Mapping of event IDs to their display information
+     * Contains hover text, time details, and other visual properties
+     */
     private Map<Integer, EventDisplayInfo> eventDisplayMap = new HashMap<>();
 
-    // Header for days (Monday to Sunday)
+    // Header components
+    /** Array of day labels (Monday through Sunday) */
     private JLabel[] dayLabels = new JLabel[7];
+
+    /** Panel containing the day labels header */
     private JPanel daysHeaderPanel;
 
-    // Time grid components
+    // Grid components
+    /** Main container panel for the time grid */
     private JPanel gridPanel;
+
+    /** Panel containing time labels (hour markers) */
     private JPanel timeLabelPanel;
+
+    /** Panel containing the day columns and time slot grid */
     private JPanel daysGridPanel;
-    private JPanel[][] timeSlotPanels; // rows: time slots, cols: days
+
+    /**
+     * 2D array of time slot panels
+     * First dimension: time slots (rows)
+     * Second dimension: days (columns)
+     */
+    private JPanel[][] timeSlotPanels;
 
     /**
      * Constructs a new DiaryWeekViewPanel for a given date with the provided events and SQL connection.

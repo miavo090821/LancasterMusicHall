@@ -52,9 +52,56 @@ public class HomePanel extends JPanel {
     private final Color BORDER_COLOR = new Color(220, 220, 220);
 
     // UI Components
+
+    /**
+     * Label displaying the panel title ("Dashboard")
+     */
     private JLabel titleLabel;
-    private JTextArea textReminder, textNotification;
-    private JButton editButton, saveButton, undoButton, notifyEditButton, notifySaveButton, notifyUndoButton, logoutButton;
+
+    /**
+     * Text area displaying reminder content loaded from file
+     */
+    private JTextArea textReminder;
+
+    /**
+     * Text area displaying notification content loaded from file
+     */
+    private JTextArea textNotification;
+
+    /**
+     * Button to enable editing of reminders
+     */
+    private JButton editButton;
+
+    /**
+     * Button to save edited reminders
+     */
+    private JButton saveButton;
+
+    /**
+     * Button to undo changes to reminders
+     */
+    private JButton undoButton;
+
+    /**
+     * Button to enable editing of notifications
+     */
+    private JButton notifyEditButton;
+
+    /**
+     * Button to save edited notifications
+     */
+    private JButton notifySaveButton;
+
+    /**
+     * Button to undo changes to notifications
+     */
+    private JButton notifyUndoButton;
+
+    /**
+     * Button to log out of the application
+     */
+    private JButton logoutButton;
 
     /**
      * Constructs a new HomePanel with reference to the main menu for configuration.

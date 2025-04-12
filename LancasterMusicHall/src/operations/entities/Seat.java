@@ -26,17 +26,58 @@ public class Seat {
     private Status status;
 
     /**
-     * Enum representing various seat types.
+     * Represents the different types of seating available in the venue.
+     * Each type corresponds to specific accessibility and usage requirements.
      */
     public enum Type {
-        REGULAR, RESTRICTED, WHEELCHAIR, COMPANION
+        /**
+         * Standard seating available to all patrons.
+         * No special restrictions or accommodations.
+         */
+        REGULAR,
+
+        /**
+         * Seating with restricted views or limited legroom.
+         * Typically offered at a reduced price.
+         */
+        RESTRICTED,
+
+        /**
+         * Seating designed for wheelchair users.
+         * Includes appropriate space and accessibility features.
+         */
+        WHEELCHAIR,
+
+        /**
+         * Companion seating located adjacent to wheelchair spaces.
+         * Reserved for companions of wheelchair users.
+         */
+        COMPANION
     }
 
     /**
-     * Enum representing the status of a seat.
+     * Represents the current booking status of a seat or ticket in the venue.
+     * Used to track availability and reservation state throughout the booking process.
      */
     public enum Status {
-        AVAILABLE, SOLD, HELD;
+        /**
+         * The seat is currently available for booking.
+         * Can be selected by customers and transition to HELD or SOLD status.
+         */
+        AVAILABLE,
+
+        /**
+         * The seat has been successfully sold to a customer.
+         * Represents a completed transaction - cannot be modified.
+         */
+        SOLD,
+
+        /**
+         * The seat is temporarily reserved during the booking process.
+         * May expire and return to AVAILABLE or convert to SOLD after payment.
+         * hold duration is 15 minutes for online bookings.
+         */
+        HELD;
     }
 
     /**
