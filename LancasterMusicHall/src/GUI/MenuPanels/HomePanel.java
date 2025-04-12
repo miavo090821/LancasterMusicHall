@@ -6,99 +6,204 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+/**
+ * The HomePanel class represents the dashboard view of the Lancaster Music Hall management system.
+ * It provides two main sections for managing reminders and notifications, with editing capabilities
+ * for both sections.
+ *
+ * <p>Key features include:
+ * <ul>
+ *   <li>Reminders section with edit/save/undo functionality</li>
+ *   <li>Notifications section with edit/save/undo functionality</li>
+ *   <li>Dynamic font sizing that responds to system settings</li>
+ *   <li>Consistent color scheme and styling</li>
+ * </ul>
+ *
+ * <p>This panel integrates with the MainMenuGUI for font size management and file I/O operations.</p>
+ *
+ * @author Mysaeah
+ * @version 1.0
+ * @see MainMenuGUI
+ */
 public class HomePanel extends JPanel {
+    /** File name for storing reminders */
     private static final String FILE_NAME = "reminders.txt";
+
+    /** File name for storing notifications */
     private static final String NOTIFICATIONS_FILE = "notifications.txt";
+
+    /** Current base font size for the panel */
     private int fontSize;
 
-    // Color scheme
-    private final Color PRIMARY_COLOR = new Color(200, 170, 250); // Lavender
-    private final Color ACCENT_COLOR = new Color(230, 210, 250); // Lighter lavender
-    private final Color TEXT_COLOR = new Color(60, 60, 60); // Dark gray for text
-    private final Color BORDER_COLOR = new Color(220, 220, 220); // Light gray for borders
+    // Color scheme constants
+    /** Primary lavender color used for accents */
+    private final Color PRIMARY_COLOR = new Color(200, 170, 250);
 
-    // Components that need font size updates
+    /** Lighter lavender accent color */
+    private final Color ACCENT_COLOR = new Color(230, 210, 250);
+
+    /** Dark gray color for text */
+    private final Color TEXT_COLOR = new Color(60, 60, 60);
+
+    /** Light gray color for borders */
+    private final Color BORDER_COLOR = new Color(220, 220, 220);
+
+    // UI Components
     private JLabel titleLabel;
     private JTextArea textReminder, textNotification;
     private JButton editButton, saveButton, undoButton, notifyEditButton, notifySaveButton, notifyUndoButton, logoutButton;
 
+    /**
+     * Constructs a new HomePanel with reference to the main menu for configuration.
+     *
+     * @param mainMenu The parent MainMenuGUI that contains this panel
+     */
     public HomePanel(MainMenuGUI mainMenu) {
         this.fontSize = mainMenu.getFontSize();
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(900, 500));
         setBackground(Color.WHITE);
-
-        // Add subtle padding around the entire panel
         setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // === Section 1: Title Panel (NORTH) ===
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
-        titlePanel.setBackground(Color.WHITE);
-
-        titleLabel = new JLabel("Dashboard");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4)); // Title is larger
-        titleLabel.setForeground(TEXT_COLOR);
-        titlePanel.add(titleLabel);
-
+        // Section 1: Title Panel (NORTH)
+        JPanel titlePanel = createTitlePanel();
         add(titlePanel, BorderLayout.NORTH);
 
-        // === Section 2: Main Content Panel (CENTER) ===
-        JPanel contentPanel = new JPanel(new GridLayout(1, 2, 30, 0));
-        contentPanel.setBackground(Color.WHITE);
-        contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        // Left Panel - Reminders
-        JPanel remindersPanel = createRemindersPanel(mainMenu);
-        contentPanel.add(remindersPanel);
-
-        // Right Panel - Notifications
-        JPanel notificationsPanel = createNotificationsPanel(mainMenu);
-        contentPanel.add(notificationsPanel);
-
+        // Section 2: Main Content Panel (CENTER)
+        JPanel contentPanel = createContentPanel(mainMenu);
         add(contentPanel, BorderLayout.CENTER);
 
-        // === Section 3: Action Panel (SOUTH) ===
+        // Section 3: Action Panel (SOUTH)
         JPanel actionPanel = createActionPanel(mainMenu);
         add(actionPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Creates the title panel with the dashboard heading.
+     *
+     * @return Configured title panel
+     */
+    private JPanel createTitlePanel() {
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        titlePanel.setBackground(Color.WHITE);
+
+        titleLabel = new JLabel("Dashboard");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, fontSize + 4));
+        titleLabel.setForeground(TEXT_COLOR);
+        titlePanel.add(titleLabel);
+
+        return titlePanel;
+    }
+
+    /**
+     * Creates the main content panel containing reminders and notifications sections.
+     *
+     * @param mainMenu Reference to the main menu for file operations
+     * @return Configured content panel
+     */
+    private JPanel createContentPanel(MainMenuGUI mainMenu) {
+        JPanel contentPanel = new JPanel(new GridLayout(1, 2, 30, 0));
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        contentPanel.add(createRemindersPanel(mainMenu));
+        contentPanel.add(createNotificationsPanel(mainMenu));
+
+        return contentPanel;
+    }
+
+    /**
+     * Creates the reminders panel with editing capabilities.
+     *
+     * @param mainMenu Reference to the main menu for file operations
+     * @return Configured reminders panel
+     */
     private JPanel createRemindersPanel(MainMenuGUI mainMenu) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(BORDER_COLOR),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
-
-        // Create a custom titled border
-        TitledBorder titledBorder = BorderFactory.createTitledBorder(
-                BorderFactory.createMatteBorder(0, 0, 2, 0, PRIMARY_COLOR),
-                "Important Reminders",
-                TitledBorder.LEFT,
-                TitledBorder.TOP,
-                new Font("Segoe UI", Font.BOLD, fontSize),
-                TEXT_COLOR
-        );
-        titledBorder.setTitleJustification(TitledBorder.LEFT);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                panel.getBorder(),
-                titledBorder
-        ));
+        panel.setBorder(createStyledBorder("Important Reminders"));
 
         textReminder = new JTextArea(mainMenu.loadTextFromFile(FILE_NAME));
-        textReminder.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
-        textReminder.setLineWrap(true);
-        textReminder.setWrapStyleWord(true);
-        textReminder.setEditable(false);
-        textReminder.setMargin(new Insets(10, 10, 10, 10));
+        configureTextArea(textReminder);
 
         JScrollPane scrollPane = new JScrollPane(textReminder);
         scrollPane.setPreferredSize(new Dimension(400, 300));
         scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // Add action buttons specific to reminders
+        panel.add(createReminderButtonPanel(mainMenu), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    /**
+     * Creates the notifications panel with editing capabilities.
+     *
+     * @param mainMenu Reference to the main menu for file operations
+     * @return Configured notifications panel
+     */
+    private JPanel createNotificationsPanel(MainMenuGUI mainMenu) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(createStyledBorder("Notifications"));
+
+        textNotification = new JTextArea(mainMenu.loadTextFromFile(NOTIFICATIONS_FILE));
+        configureTextArea(textNotification);
+
+        JScrollPane scrollPane = new JScrollPane(textNotification);
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+        scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        panel.add(createNotificationButtonPanel(mainMenu), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    /**
+     * Creates a styled border with title for panels.
+     *
+     * @param title The title text for the border
+     * @return Configured compound border
+     */
+    private Border createStyledBorder(String title) {
+        return BorderFactory.createCompoundBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(BORDER_COLOR),
+                        BorderFactory.createEmptyBorder(15, 15, 15, 15)
+                ),
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createMatteBorder(0, 0, 2, 0, PRIMARY_COLOR),
+                        title,
+                        TitledBorder.LEFT,
+                        TitledBorder.TOP,
+                        new Font("Segoe UI", Font.BOLD, fontSize),
+                        TEXT_COLOR
+                )
+        );
+    }
+
+    /**
+     * Configures common properties for text areas.
+     *
+     * @param textArea The text area to configure
+     */
+    private void configureTextArea(JTextArea textArea) {
+        textArea.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        textArea.setMargin(new Insets(10, 10, 10, 10));
+    }
+
+    /**
+     * Creates the button panel for the reminders section.
+     *
+     * @param mainMenu Reference to the main menu for file operations
+     * @return Configured button panel
+     */
+    private JPanel createReminderButtonPanel(MainMenuGUI mainMenu) {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         buttonPanel.setBackground(Color.WHITE);
 
@@ -107,73 +212,23 @@ public class HomePanel extends JPanel {
         undoButton = createStyledButton("Undo", BORDER_COLOR, fontSize);
         undoButton.setVisible(false);
 
-        editButton.addActionListener(e -> {
-            textReminder.setEditable(true);
-            textReminder.setBackground(ACCENT_COLOR);
-            undoButton.setVisible(true);
-        });
-
-        saveButton.addActionListener(e -> {
-            if (textReminder.isEditable()) {
-                mainMenu.saveTextToFile(textReminder.getText(), FILE_NAME);
-                textReminder.setEditable(false);
-                textReminder.setBackground(Color.WHITE);
-                undoButton.setVisible(false);
-                JOptionPane.showMessageDialog(this, "Reminders saved successfully!");
-            }
-        });
-
-        undoButton.addActionListener(e -> {
-            textReminder.setText(mainMenu.loadTextFromFile(FILE_NAME));
-            textReminder.setEditable(false);
-            textReminder.setBackground(Color.WHITE);
-            undoButton.setVisible(false);
-        });
+        editButton.addActionListener(e -> enableEditing(textReminder, undoButton));
+        saveButton.addActionListener(e -> saveContent(mainMenu, textReminder, undoButton, FILE_NAME));
+        undoButton.addActionListener(e -> undoChanges(mainMenu, textReminder, undoButton, FILE_NAME));
 
         buttonPanel.add(undoButton);
         buttonPanel.add(editButton);
         buttonPanel.add(saveButton);
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-
-        return panel;
+        return buttonPanel;
     }
 
-    private JPanel createNotificationsPanel(MainMenuGUI mainMenu) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(BORDER_COLOR),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
-
-        // Create a custom titled border
-        TitledBorder titledBorder = BorderFactory.createTitledBorder(
-                BorderFactory.createMatteBorder(0, 0, 2, 0, PRIMARY_COLOR),
-                "Notifications",
-                TitledBorder.LEFT,
-                TitledBorder.TOP,
-                new Font("Segoe UI", Font.BOLD, fontSize),
-                TEXT_COLOR
-        );
-        titledBorder.setTitleJustification(TitledBorder.LEFT);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                panel.getBorder(),
-                titledBorder
-        ));
-
-        textNotification = new JTextArea(mainMenu.loadTextFromFile(NOTIFICATIONS_FILE));
-        textNotification.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
-        textNotification.setLineWrap(true);
-        textNotification.setWrapStyleWord(true);
-        textNotification.setEditable(false);
-        textNotification.setMargin(new Insets(10, 10, 10, 10));
-
-        JScrollPane scrollPane = new JScrollPane(textNotification);
-        scrollPane.setPreferredSize(new Dimension(400, 300));
-        scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        // Add action buttons specific to notifications
+    /**
+     * Creates the button panel for the notifications section.
+     *
+     * @param mainMenu Reference to the main menu for file operations
+     * @return Configured button panel
+     */
+    private JPanel createNotificationButtonPanel(MainMenuGUI mainMenu) {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         buttonPanel.setBackground(Color.WHITE);
 
@@ -182,37 +237,67 @@ public class HomePanel extends JPanel {
         notifyUndoButton = createStyledButton("Undo", BORDER_COLOR, fontSize);
         notifyUndoButton.setVisible(false);
 
-        notifyEditButton.addActionListener(e -> {
-            textNotification.setEditable(true);
-            textNotification.setBackground(ACCENT_COLOR);
-            notifyUndoButton.setVisible(true);
-        });
-
-        notifySaveButton.addActionListener(e -> {
-            if (textNotification.isEditable()) {
-                mainMenu.saveTextToFile(textNotification.getText(), NOTIFICATIONS_FILE);
-                textNotification.setEditable(false);
-                textNotification.setBackground(Color.WHITE);
-                notifyUndoButton.setVisible(false);
-                JOptionPane.showMessageDialog(this, "Notifications saved successfully!");
-            }
-        });
-
-        notifyUndoButton.addActionListener(e -> {
-            textNotification.setText(mainMenu.loadTextFromFile(NOTIFICATIONS_FILE));
-            textNotification.setEditable(false);
-            textNotification.setBackground(Color.WHITE);
-            notifyUndoButton.setVisible(false);
-        });
+        notifyEditButton.addActionListener(e -> enableEditing(textNotification, notifyUndoButton));
+        notifySaveButton.addActionListener(e -> saveContent(mainMenu, textNotification, notifyUndoButton, NOTIFICATIONS_FILE));
+        notifyUndoButton.addActionListener(e -> undoChanges(mainMenu, textNotification, notifyUndoButton, NOTIFICATIONS_FILE));
 
         buttonPanel.add(notifyUndoButton);
         buttonPanel.add(notifyEditButton);
         buttonPanel.add(notifySaveButton);
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-
-        return panel;
+        return buttonPanel;
     }
 
+    /**
+     * Enables editing mode for a text area.
+     *
+     * @param textArea The text area to enable editing for
+     * @param undoButton The associated undo button to show
+     */
+    private void enableEditing(JTextArea textArea, JButton undoButton) {
+        textArea.setEditable(true);
+        textArea.setBackground(ACCENT_COLOR);
+        undoButton.setVisible(true);
+    }
+
+    /**
+     * Saves content to file and exits editing mode.
+     *
+     * @param mainMenu Reference to the main menu for file operations
+     * @param textArea The text area containing content to save
+     * @param undoButton The associated undo button to hide
+     * @param fileName The file name to save to
+     */
+    private void saveContent(MainMenuGUI mainMenu, JTextArea textArea, JButton undoButton, String fileName) {
+        if (textArea.isEditable()) {
+            mainMenu.saveTextToFile(textArea.getText(), fileName);
+            textArea.setEditable(false);
+            textArea.setBackground(Color.WHITE);
+            undoButton.setVisible(false);
+            JOptionPane.showMessageDialog(this, "Content saved successfully!");
+        }
+    }
+
+    /**
+     * Reverts changes and exits editing mode.
+     *
+     * @param mainMenu Reference to the main menu for file operations
+     * @param textArea The text area to revert
+     * @param undoButton The associated undo button to hide
+     * @param fileName The file name to load original content from
+     */
+    private void undoChanges(MainMenuGUI mainMenu, JTextArea textArea, JButton undoButton, String fileName) {
+        textArea.setText(mainMenu.loadTextFromFile(fileName));
+        textArea.setEditable(false);
+        textArea.setBackground(Color.WHITE);
+        undoButton.setVisible(false);
+    }
+
+    /**
+     * Creates the action panel with logout button.
+     *
+     * @param mainMenu Reference to the main menu for logout functionality
+     * @return Configured action panel
+     */
     private JPanel createActionPanel(MainMenuGUI mainMenu) {
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         actionPanel.setBackground(Color.WHITE);
@@ -225,6 +310,14 @@ public class HomePanel extends JPanel {
         return actionPanel;
     }
 
+    /**
+     * Creates a styled button with consistent appearance and hover effects.
+     *
+     * @param text The button text
+     * @param color The base color for the button
+     * @param fontSize The font size for the button text
+     * @return Configured JButton
+     */
     private JButton createStyledButton(String text, Color color, int fontSize) {
         JButton button = new JButton(text);
         button.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
@@ -236,13 +329,12 @@ public class HomePanel extends JPanel {
         ));
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // Add hover effect
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        button.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 button.setBackground(color.brighter());
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent evt) {
                 button.setBackground(color);
             }
         });
@@ -250,7 +342,11 @@ public class HomePanel extends JPanel {
         return button;
     }
 
-    // Method to update font sizes throughout the panel
+    /**
+     * Updates font sizes throughout the panel and its components.
+     *
+     * @param newFontSize The new font size to apply
+     */
     public void updateFontSizes(int newFontSize) {
         this.fontSize = newFontSize;
 
@@ -262,33 +358,33 @@ public class HomePanel extends JPanel {
         textNotification.setFont(new Font("Segoe UI", Font.PLAIN, fontSize));
 
         // Update buttons
-        editButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
-        undoButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
-        notifyEditButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
-        notifySaveButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
-        notifyUndoButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
-        logoutButton.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
-
-        // Update titled borders
-        Component[] components = getComponents();
-        for (Component component : components) {
-            if (component instanceof JPanel) {
-                updatePanelBorders((JPanel) component);
+        Component[] buttons = {editButton, saveButton, undoButton,
+                notifyEditButton, notifySaveButton, notifyUndoButton,
+                logoutButton};
+        for (Component button : buttons) {
+            if (button != null) {
+                button.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
             }
         }
+
+        // Update titled borders
+        updatePanelBorders(this);
 
         revalidate();
         repaint();
     }
 
+    /**
+     * Recursively updates titled borders in a panel hierarchy.
+     *
+     * @param panel The panel to update borders for
+     */
     private void updatePanelBorders(JPanel panel) {
         Border border = panel.getBorder();
         if (border instanceof TitledBorder titledBorder) {
             titledBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, fontSize));
         }
 
-        // Recursively check child components
         for (Component component : panel.getComponents()) {
             if (component instanceof JPanel) {
                 updatePanelBorders((JPanel) component);
