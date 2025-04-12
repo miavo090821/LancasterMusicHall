@@ -13,30 +13,65 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
+
+
+/**
+ * The MainMenuGUI class represents the main navigation interface for the Lancaster Music Hall application.
+ * It provides access to all major features through a tabbed navigation system.
+ *
+ * <p>This class manages the main application window and coordinates between different panels
+ * (Home, Calendar, Diary, Booking, Reports, Reviews, and Settings) using a CardLayout.</p>
+ *
+ * @author Mysarah
+ * @version 1.2
+ * @see SQLConnection
+ * @see CardLayout
+ */
 
 public class MainMenuGUI {
+    /**
+     * Entry point for standalone testing of the MainMenuGUI.
+     *
+     * @param args Command line arguments (not used)
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainMenuGUI::new);
     }
+
+    /** The SQL connection used throughout the application */
+    private SQLConnection sqlConnection;
+
+    /** Currently selected navigation button */
+    private JButton activeButton = null;
+
+    /** Panel that holds all the cards for different views */
+    private JPanel cardPanel;
+
+    /** Layout manager for switching between views */
+    private CardLayout cardLayout;
+
+    /** Base font size for the application (can be adjusted in settings) */
+    private int fontSize = 18;
+
+    /** The main application frame */
+    private JFrame frame;
+
+    /**
+     * Default constructor for guest access (staffId = 0).
+     * Initializes the GUI with a new SQL connection.
+     */
     public MainMenuGUI() {
         // Use 0 to represent a guest or not-logged-in staff.
         this(0, new SQLConnection());
     }
 
-    private SQLConnection sqlConnection;
-
-    // Track the currently selected navigation button.
-    private JButton activeButton = null;
-    private JPanel cardPanel;
-    private CardLayout cardLayout;
-    private int fontSize = 18;
-    private JFrame frame;
-//    private SQLConnection sqlConnection = new SQLConnection();
-
+    /**
+     * Primary constructor for the MainMenuGUI.
+     *
+     * @param staffId The ID of the logged-in staff member (0 for guest)
+     * @param sqlConnection The SQL connection to use for database operations
+     */
     public MainMenuGUI(int staffId, SQLConnection sqlConnection) {
-
         this.sqlConnection = sqlConnection;
 
         frame = new JFrame("Main Menu");
@@ -57,7 +92,6 @@ public class MainMenuGUI {
         ReportPanel report = new ReportPanel(this, cardLayout, cardPanel);
         HomePanel home = new HomePanel(this);
         BookingPanel booking = new BookingPanel(this);
-        // Instantiate the diary panel using the updated constructor.
         DiaryPanel diary = new DiaryPanel(this, sqlConnection);
         SettingsPanel settings = new SettingsPanel(this);
         ReviewsPanel reviews = new ReviewsPanel(sqlConnection);
@@ -82,35 +116,40 @@ public class MainMenuGUI {
         frame.setVisible(true);
     }
 
+    /**
+     * Creates the navigation bar with tabs for different application sections.
+     *
+     * @return JPanel containing the navigation buttons
+     */
     private JPanel createNavBar() {
         JPanel navigationTab = new JPanel();
-        navigationTab.setPreferredSize(new Dimension(600, 100)); // Ensure consistent height.
+        navigationTab.setPreferredSize(new Dimension(600, 100));
         navigationTab.setBackground(Color.white);
 
         JPanel navBar = new JPanel();
-        navBar.setLayout(new GridLayout(1, 6, 0, 0)); // 1 row, 6 columns.
-        navBar.setPreferredSize(new Dimension(550, 50)); // Fixed width and height.
-        navBar.setBackground(new Color(200, 170, 230)); // Purple background.
-        navBar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Full black border.
+        navBar.setLayout(new GridLayout(1, 6, 0, 0));
+        navBar.setPreferredSize(new Dimension(550, 50));
+        navBar.setBackground(new Color(200, 170, 230));
+        navBar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
         String[] tabs = {"Home", "Calendar", "Diary", "Booking" ,"Reports", "Reviews", "Settings"};
 
         for (String tab : tabs) {
             JButton button = new JButton(tab);
             button.setFont(new Font("Arial", Font.BOLD, 16));
-            button.setPreferredSize(new Dimension(100, 70)); // Match navBar height.
+            button.setPreferredSize(new Dimension(100, 70));
 
             // Default button styling.
             button.setBackground(new Color(170, 136, 200));
             button.setFocusPainted(false);
             button.setContentAreaFilled(true);
-            button.setBorder(new EmptyBorder(0, 0, 0, 0)); // Remove extra padding.
+            button.setBorder(new EmptyBorder(0, 0, 0, 0));
             button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
             // Hover and selection colors.
             Color defaultColor = new Color(170, 136, 200);
-            Color hoverColor = new Color(210, 180, 255); // Light purple hover.
-            Color borderColor = new Color(128, 0, 128); // Purple outline.
+            Color hoverColor = new Color(210, 180, 255);
+            Color borderColor = new Color(128, 0, 128);
 
             // Hover effect.
             button.addMouseListener(new MouseAdapter() {
@@ -134,17 +173,14 @@ public class MainMenuGUI {
             // Click action to switch tabs and highlight the active button.
             button.addActionListener(_ -> {
                 if (activeButton != null) {
-                    // Reset previous active button.
                     activeButton.setBackground(defaultColor);
                     activeButton.setBorder(BorderFactory.createEmptyBorder());
                 }
 
-                // Set new active button.
                 activeButton = button;
                 button.setBackground(hoverColor);
                 button.setBorder(BorderFactory.createLineBorder(borderColor, 2));
 
-                // Switch to the selected panel.
                 cardLayout.show(cardPanel, tab);
             });
 
@@ -155,6 +191,11 @@ public class MainMenuGUI {
         return navigationTab;
     }
 
+    /**
+     * Creates the top panel with the application title.
+     *
+     * @return JPanel containing the title label
+     */
     private JPanel getTopPanel() {
         JPanel topPanel = new JPanel();
         topPanel.setBackground(Color.WHITE);
@@ -167,19 +208,32 @@ public class MainMenuGUI {
         return topPanel;
     }
 
+    /**
+     * Saves text content to a file.
+     *
+     * @param text The content to save
+     * @param fileName The name/path of the file to save to
+     */
     public void saveTextToFile(String text, String fileName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             writer.write(text);
-            System.out.println("Saved to: " + new File(fileName).getAbsolutePath()); // Debugging.
+            System.out.println("Saved to: " + new File(fileName).getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+
+    /**
+     * Loads text content from a file.
+     *
+     * @param fileName The name/path of the file to load
+     * @return The content of the file, or empty string if file doesn't exist
+     */
     public String loadTextFromFile(String fileName) {
         StringBuilder content = new StringBuilder();
         File file = new File(fileName);
-        System.out.println("Trying to load from: " + file.getAbsolutePath()); // Debugging.
+        System.out.println("Trying to load from: " + file.getAbsolutePath());
         if (!file.exists()) {
             System.out.println("No saved file found: " + file.getAbsolutePath());
             return "";
@@ -195,6 +249,11 @@ public class MainMenuGUI {
         return content.toString();
     }
 
+    /**
+     * Applies standard styling to a button.
+     *
+     * @param button The button to stylize
+     */
     public void stylizeButton(JButton button) {
         button.setFont(new Font("Arial", Font.BOLD, 16));
         button.setBackground(Color.WHITE);
@@ -202,27 +261,50 @@ public class MainMenuGUI {
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
-    // Method to stylize dropdown menus.
+    /**
+     * Applies standard styling to a dropdown menu.
+     *
+     * @param dropdown The JComboBox to stylize
+     */
     public void styleDropdown(JComboBox<String> dropdown) {
-        dropdown.setFont(new Font("Arial", Font.PLAIN, 14)); // Set font size.
-        dropdown.setBackground(Color.WHITE); // Set background color.
-        dropdown.setForeground(Color.BLACK); // Set text color.
-        dropdown.setBorder(new LineBorder(Color.BLACK, 1)); // Add border.
+        dropdown.setFont(new Font("Arial", Font.PLAIN, 14));
+        dropdown.setBackground(Color.WHITE);
+        dropdown.setForeground(Color.BLACK);
+        dropdown.setBorder(new LineBorder(Color.BLACK, 1));
     }
 
+
+    /**
+     * Gets the SQL connection used by this application.
+     *
+     * @return The SQLConnection instance
+     */
     public SQLConnection getSqlConnection() {
         return sqlConnection;
     }
 
+    /**
+     * Logs out the current user and returns to the login screen.
+     */
     public void logout() {
         new StaffLoginGUI();
-        frame.dispose(); // Close login window.
+        frame.dispose();
     }
 
+    /**
+     * Gets the current base font size for the application.
+     *
+     * @return The current font size
+     */
     public int getFontSize() {
         return fontSize;
     }
 
+    /**
+     * Sets a new base font size for the application.
+     *
+     * @param newFontSize The new font size to use
+     */
     public void setFontSize(int newFontSize) {
         fontSize = newFontSize;
     }

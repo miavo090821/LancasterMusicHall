@@ -7,27 +7,45 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import Database.SQLConnection;
 
+/**
+ * The StaffLoginGUI class provides a graphical user interface for staff members to log in
+ * to the Lancaster Music Hall management system. It handles authentication and provides
+ * password reset functionality.
+ *
+ * <p>This class integrates with the SQLConnection class to validate credentials and
+ * perform password resets against the database.</p>
+ *
+ * @author Mia
+ * @version 1.0
+ * @see SQLConnection
+ */
 public class StaffLoginGUI {
-    // Fields for staff ID and password input
+    /** Text field for staff ID input */
     private JTextField staffIdField;
+
+    /** Password field for password input */
     private JPasswordField passwordField;
+
+    /** Main application frame */
     private JFrame frame;
 
-    // SQLConnection instance to interact with the database.
+    /** Database connection handler */
     private SQLConnection sqlConnection;
 
     /**
-     * Main method to start the Staff Login GUI.
+     * Main method to launch the Staff Login GUI.
+     *
+     * @param args Command line arguments (not used)
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(StaffLoginGUI::new);
     }
 
     /**
-     * Constructor to initialize the Staff Login GUI and SQL connection.
+     * Constructs a new StaffLoginGUI and initializes the UI components.
+     * Creates a new SQLConnection instance for database operations.
      */
     public StaffLoginGUI() {
-        // Initialize SQL connection instance.
         sqlConnection = new SQLConnection();
 
         staffIdField = new JTextField(15);
@@ -38,7 +56,6 @@ public class StaffLoginGUI {
         frame.setSize(500, 400);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
-        // Add panels to the frame.
         frame.add(getTopPanel());
         frame.add(getMainCenterPanel());
         frame.add(getBottomPanel());
@@ -46,7 +63,11 @@ public class StaffLoginGUI {
         frame.setVisible(true);
     }
 
-    // [1] Top Panel - Application Title
+    /**
+     * Creates the top panel containing the application title.
+     *
+     * @return JPanel with the title label
+     */
     private JPanel getTopPanel() {
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 20));
         topPanel.setBackground(Color.white);
@@ -59,7 +80,11 @@ public class StaffLoginGUI {
         return topPanel;
     }
 
-    // [2] Main Center Panel - Contains login components
+    /**
+     * Creates the main center panel that contains all login components.
+     *
+     * @return JPanel containing login form elements
+     */
     private JPanel getMainCenterPanel() {
         JPanel mainCenterPanel = new JPanel();
         mainCenterPanel.setLayout(new BoxLayout(mainCenterPanel, BoxLayout.Y_AXIS));
@@ -72,7 +97,11 @@ public class StaffLoginGUI {
         return mainCenterPanel;
     }
 
-    // [3] Center Panel - Login Section Header
+    /**
+     * Creates the login header panel.
+     *
+     * @return JPanel with the "Staff Login" label
+     */
     private JPanel getLoginPanel() {
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 15));
         centerPanel.setBackground(Color.white);
@@ -85,7 +114,11 @@ public class StaffLoginGUI {
         return centerPanel;
     }
 
-    // [4] Staff ID Panel - Label and Input Field
+    /**
+     * Creates the staff ID input panel.
+     *
+     * @return JPanel with staff ID label and text field
+     */
     private JPanel getStaffIDPanel() {
         JPanel staffIDPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         staffIDPanel.add(Box.createHorizontalStrut(90));
@@ -100,7 +133,11 @@ public class StaffLoginGUI {
         return staffIDPanel;
     }
 
-    // [5] Password Panel - Label and Input Field
+    /**
+     * Creates the password input panel.
+     *
+     * @return JPanel with password label and password field
+     */
     private JPanel getPasswordPanel() {
         JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         passwordPanel.add(Box.createHorizontalStrut(90));
@@ -115,7 +152,11 @@ public class StaffLoginGUI {
         return passwordPanel;
     }
 
-    // [6] Enter Button Panel - Handles Login Action
+    /**
+     * Creates the login button panel with hover effects.
+     *
+     * @return JPanel containing the login button
+     */
     private JPanel getButtonPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
         buttonPanel.setPreferredSize(new Dimension(500, 30));
@@ -128,7 +169,6 @@ public class StaffLoginGUI {
         enterButton.setFocusPainted(false);
         enterButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Hover effects for Enter button
         enterButton.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 enterButton.setBackground(new Color(50, 150, 250));
@@ -138,24 +178,19 @@ public class StaffLoginGUI {
             }
         });
 
-        // Action listener for login validation using SQL query.
-        // In StaffLoginGUI.java, update the login action listener as follows:
         enterButton.addActionListener(_ -> {
             String staffId = getStaffID();
             String password = getPassword();
             if (staffId.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Please enter Staff ID and Password", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
-                // Validate credentials using SQLConnection's loginStaff method.
                 boolean isValid = sqlConnection.loginStaff(staffId, password);
                 if (isValid) {
-                    // Retrieve the current staff id from SQLConnection.
                     Integer currentStaffId = sqlConnection.getCurrentStaffId();
                     if (currentStaffId != null) {
                         System.out.println("Logged in Staff ID: " + currentStaffId);
-                        // Optionally, pass the staff id to the MainMenuGUI.
                         new MainMenuGUI(currentStaffId, sqlConnection);
-                        frame.dispose(); // Close login window.
+                        frame.dispose();
                     } else {
                         JOptionPane.showMessageDialog(null, "Error retrieving Staff ID from session.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
@@ -169,7 +204,11 @@ public class StaffLoginGUI {
         return buttonPanel;
     }
 
-    // [7] Bottom Panel - Contains Forgotten Password Option
+    /**
+     * Creates the bottom panel with password reset option.
+     *
+     * @return JPanel containing the "Forgotten Password" button
+     */
     private JPanel getBottomPanel() {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 50, 0));
         bottomPanel.setBackground(Color.white);
@@ -181,25 +220,33 @@ public class StaffLoginGUI {
         forgotPasswordButton.setForeground(Color.BLUE);
         forgotPasswordButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Action listener to open the Password Reset dialog.
         forgotPasswordButton.addActionListener(_ -> showResetPasswordDialog());
 
         bottomPanel.add(forgotPasswordButton);
         return bottomPanel;
     }
 
-    // Utility method to get Staff ID from input field.
+    /**
+     * Gets the staff ID from the input field.
+     *
+     * @return Trimmed staff ID string
+     */
     private String getStaffID() {
         return staffIdField.getText().trim();
     }
 
-    // Utility method to get Password from input field.
+    /**
+     * Gets the password from the password field.
+     *
+     * @return Password as string
+     */
     private String getPassword() {
         return new String(passwordField.getPassword());
     }
 
     /**
-     * Displays a dialog for resetting the password.
+     * Displays a modal dialog for password reset functionality.
+     * Validates inputs and uses SQLConnection to update the password.
      */
     private void showResetPasswordDialog() {
         JDialog resetDialog = new JDialog(frame, "Reset Password", true);
@@ -247,7 +294,6 @@ public class StaffLoginGUI {
                 return;
             }
 
-            // Call SQLConnection to update the password.
             boolean success = sqlConnection.resetPassword(staffId, email, newPassword);
             if (success) {
                 JOptionPane.showMessageDialog(resetDialog, "Password reset successful", "Success", JOptionPane.INFORMATION_MESSAGE);
